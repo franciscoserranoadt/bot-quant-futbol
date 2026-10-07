@@ -1,0 +1,30 @@
+name: Apex Quant Bot 24/7
+
+on:
+  schedule:
+    # Se ejecuta cada 30 minutos automáticamente
+    - cron: '*/30 * * * *'
+  workflow_dispatch: # Permite probarlo manualmente con un clic
+
+jobs:
+  run-quant:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar librerias
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar Apex Quant Bot
+        env:
+          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
+          THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python bot_quant.py
