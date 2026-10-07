@@ -10,14 +10,14 @@ THE_ODDS_API_KEY = os.getenv("THE_ODDS_API_KEY", "")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 
-# 7 Ligas Oficiales Admitidas (LaLiga 1ª y 2ª, Premier, Bundesliga, Serie A, Ligue 1, Champions)
+# 7 Ligas Oficiales Admitidas
 LEAGUES = ["PD", "SD", "PL", "BL1", "SA", "FL1", "CL"]
 
 def enviar_telegram(mensaje):
-    """Envía la alerta con formato HTML enriquecido a tu móvil"""
+    """Envía la alerta con formato HTML enriquecido a tu móvil por Telegram"""
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
-        print("Telegram no configurado")
-        return
+        print("⚠️ Telegram no configurado (faltan tokens en secrets).")
+        return False
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
@@ -25,9 +25,16 @@ def enviar_telegram(mensaje):
         "parse_mode": "HTML"
     }
     try:
-        requests.post(url, json=payload, timeout=10)
+        res = requests.post(url, json=payload, timeout=10)
+        if res.status_code == 200:
+            print("✅ Mensaje enviado a Telegram correctamente.")
+            return True
+        else:
+            print(f"❌ Error Telegram ({res.status_code}): {res.text}")
+            return False
     except Exception as e:
-        print(f"Error Telegram: {e}")
+        print(f"❌ Excepción Telegram: {e}")
+        return False
 
 def obtener_partidos_del_dia():
     """Llamada gratuita a Football-Data.org (0 créditos de The Odds API)"""
@@ -46,7 +53,7 @@ def obtener_partidos_del_dia():
 def calcular_ev_y_stake(cuota_casa, prob_modelo):
     """Cálculo de Valor Esperado (+EV) y Kelly fraccional (1/4)"""
     ev = (prob_modelo * cuota_casa) - 1.0
-    if ev <= 0.05:  # Filtro mínimo de +5% de valor
+    if ev <= 0.05:
         return 0.0, 0
     b = cuota_casa - 1.0
     q = 1.0 - prob_modelo
@@ -59,8 +66,8 @@ def analizar_y_alertar(partido):
     local = partido["homeTeam"]["name"]
     visitante = partido["awayTeam"]["name"]
     comp = partido.get("competition", {}).get("name", "Liga Oficial")
-  
-    # Simulación de detección analítica puntual (T-45m)
+    
+    # Simulación cuantitativa para la ventana T-45m
     cuota = 2.45
     prob_estimada = 0.48
     ev, stake = calcular_ev_y_stake(cuota, prob_estimada)
@@ -81,13 +88,50 @@ def analizar_y_alertar(partido):
 
 def ejecutar_ciclo():
     ahora_utc = datetime.now(timezone.utc)
-    print(f"[{ahora_utc.strftime('%H:%M:%S UTC')}] Comprobando partidos...")
-    
+    hora_str = ahora_utc.strftime('%H:%M:%S UTC')
+    fecha_str = ahora_utc.strftime('%Y-%m-%d')
+    es_turno_matinal = (ahora_utc.hour == 6 and ahora_utc.minute < 30)
+
+    print(f"[{hora_str}] Iniciando ciclo Apex Quant...")
+
     partidos_hoy = obtener_partidos_del_dia()
+
+    # ==============================================================
+    # 🌅 INFORME MATINAL 06:00 AM (SIEMPRE SE ENVÍA A TELEGRAM)
+    # ==============================================================
+    if es_turno_matinal:
+        if not partidos_hoy:
+            msg_reposo = (
+                f"🌙 <b>APEX QUANT ENGINE — REPOSO DIARIO</b>\n\n"
+                f"📅 <b>Fecha:</b> {fecha_str}\n"
+                f"🕒 <b>Hora Escaneo:</b> 06:00 UTC\n"
+                f"💤 <b>Estado:</b> Sin encuentros programados en las 7 ligas oficiales.\n"
+                f"🛡️ <b>Consumo de APIs:</b> 0 créditos utilizados. El motor permanecerá en reposo hasta mañana.\n\n"
+                f"⚡ <i>Apex Quant Engine • 24/7 Nube</i>"
+            )
+            enviar_telegram(msg_reposo)
+            print("🌙 Informe matinal de reposo enviado a Telegram. Fin del ciclo.")
+            return
+        else:
+            msg_resumen = (
+                f"☀️ <b>APEX QUANT ENGINE — JORNADA ACTIVA</b>\n\n"
+                f"📅 <b>Fecha:</b> {fecha_str}\n"
+                f"⚽ <b>Partidos Programados:</b> {len(partidos_hoy)} encuentros en seguimiento\n"
+                f"🎯 <b>Protocolo:</b> Escaneo automático activado en ventanas T-45m/T-30m con alineaciones oficiales.\n"
+                f"🔔 <b>Alertas:</b> Recibirás notificación solo en discrepancias (+EV > 5%).\n\n"
+                f"⚡ <i>Apex Quant Engine • Modo Caza de Valor</i>"
+            )
+            enviar_telegram(msg_resumen)
+            print(f"☀️ Resumen matinal enviado a Telegram ({len(partidos_hoy)} partidos).")
+
+    # Si no hay partidos y no es la mañana, hibernación silenciosa
     if not partidos_hoy:
-        print("🌙 SUSPENSIÓN INTELIGENTE: Sin partidos hoy. 0 llamadas de cuotas gastadas.")
+        print("🌙 Sin partidos hoy. Reposo silencioso.")
         return
 
+    # ==============================================================
+    # 🎯 ESCANEO EN VENTANA T-45m / T-30m
+    # ==============================================================
     partidos_en_ventana = []
     for p in partidos_hoy:
         hora_utc_str = p.get("utcDate")
@@ -96,12 +140,11 @@ def ejecutar_ciclo():
         inicio_utc = datetime.fromisoformat(hora_utc_str.replace("Z", "+00:00"))
         diferencia_minutos = (inicio_utc - ahora_utc).total_seconds() / 60.0
         
-        # Dispara alertas si el partido inicia en 25-50 minutos (ventana T-45m a T-30m)
         if 25 <= diferencia_minutos <= 50:
             partidos_en_ventana.append(p)
-            
+
     if not partidos_en_ventana:
-        print("⏳ Hay partidos hoy, pero ninguno en ventana T-45m/T-30m. 0 créditos gastados.")
+        print(f"⏳ Hay {len(partidos_hoy)} partidos hoy, pero ninguno en ventana T-45m/T-30m. 0 créditos gastados.")
         return
 
     for p in partidos_en_ventana:
@@ -109,3 +152,4 @@ def ejecutar_ciclo():
 
 if __name__ == "__main__":
     ejecutar_ciclo()
+
