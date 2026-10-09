@@ -94,7 +94,7 @@
       <div class="p-2.5 rounded-xl bg-surface-card border border-surface-border text-center">
         <p class="text-[9px] uppercase font-bold tracking-wider text-slate-400">Efectividad</p>
         <p id="tasaAcierto" class="text-base font-black text-emerald-400 mt-0.5">--%</p>
-        <p id="recordAcierto" class="text-[8px] text-slate-400">0V - 0D</p>
+        <p id="recordAcierto" class="text-[8px] text-slate-400">Telegram</p>
       </div>
     </div>
 
@@ -344,17 +344,40 @@
     }
 
     function actualizarEfectividad() {
+      var alertas = DATOS_GLOBALES.alertas || [];
       var partidos = DATOS_GLOBALES.partidos || [];
       var aciertos = 0;
       var fallos = 0;
 
-      for (var i = 0; i < partidos.length; i++) {
-        var p = partidos[i];
-        var tiempo = calcularTiempoPartido(p);
-        var res = obtenerMarcadorFinal(p, tiempo.minutosRestantes);
-        if (res && res.acertado !== null) {
-          if (res.acertado) { aciertos++; }
-          else { fallos++; }
+      if (!alertas || alertas.length === 0) {
+        var elPctVacio = document.getElementById('tasaAcierto');
+        var elRecVacio = document.getElementById('recordAcierto');
+        if (elPctVacio) { elPctVacio.innerText = '--%'; }
+        if (elRecVacio) { elRecVacio.innerText = '0V - 0D (TG)'; }
+        return;
+      }
+
+      for (var aIdx = 0; aIdx < alertas.length; aIdx++) {
+        var alerta = alertas[aIdx];
+        var nombreAlerta = (alerta.partido || '').toLowerCase();
+        
+        var partidoMatch = null;
+        for (var pIdx = 0; pIdx < partidos.length; pIdx++) {
+          var p = partidos[pIdx];
+          var matchStr = ((p.local || '') + ' vs ' + (p.visitante || '')).toLowerCase();
+          if (nombreAlerta.indexOf((p.local || '').toLowerCase()) !== -1 || matchStr.indexOf(nombreAlerta) !== -1) {
+            partidoMatch = p;
+            break;
+          }
+        }
+
+        if (partidoMatch) {
+          var tiempo = calcularTiempoPartido(partidoMatch);
+          var res = obtenerMarcadorFinal(partidoMatch, tiempo.minutosRestantes);
+          if (res && res.acertado !== null) {
+            if (res.acertado) { aciertos++; }
+            else { fallos++; }
+          }
         }
       }
 
@@ -365,7 +388,7 @@
       var elRec = document.getElementById('recordAcierto');
       if (elPct && elRec) {
         elPct.innerText = total > 0 ? (pct + '%') : '--%';
-        elRec.innerText = aciertos + 'V - ' + fallos + 'D';
+        elRec.innerText = aciertos + 'V - ' + fallos + 'D (TG)';
       }
     }
 
