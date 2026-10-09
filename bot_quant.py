@@ -1,7 +1,7 @@
 import os
 import json
 import requests
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 # ==========================================
 # CONFIGURACIÓN DE APIS Y TELEGRAM
@@ -11,15 +11,16 @@ THE_ODDS_API_KEY = os.getenv("THE_ODDS_API_KEY", "")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 
-# 7 Ligas Oficiales Admitidas
+# Competiciones con soporte completo
 LEAGUES_MAP = {
-    "PD": {"name": "LaLiga EA Sports", "key": "laliga", "country": "ESP"},
-    "SD": {"name": "LaLiga Hypermotion", "key": "laliga2", "country": "ESP"},
-    "PL": {"name": "Premier League", "key": "premier", "country": "ENG"},
+    "PD":  {"name": "LaLiga EA Sports", "key": "laliga", "country": "ESP"},
+    "SD":  {"name": "LaLiga Hypermotion", "key": "laliga2", "country": "ESP"},
+    "PL":  {"name": "Premier League", "key": "premier", "country": "ENG"},
     "BL1": {"name": "Bundesliga", "key": "bundesliga", "country": "GER"},
-    "SA": {"name": "Serie A", "key": "seriea", "country": "ITA"},
+    "SA":  {"name": "Serie A", "key": "seriea", "country": "ITA"},
     "FL1": {"name": "Ligue 1", "key": "ligue1", "country": "FRA"},
-    "CL": {"name": "Champions League", "key": "champions", "country": "UEFA"}
+    "CL":  {"name": "Champions League", "key": "champions", "country": "UEFA"},
+    "CDR": {"name": "Copa del Rey", "key": "copadelrey", "country": "ESP"}
 }
 
 def enviar_telegram(mensaje):
@@ -34,18 +35,44 @@ def enviar_telegram(mensaje):
         print(f"Error Telegram: {e}")
         return False
 
-def obtener_partidos_del_dia():
-    hoy = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    url = f"https://api.football-data.org/v4/matches?dateFrom={hoy}&dateTo={hoy}"
+def obtener_partidos(dias_adelanto=3):
+    """
+    Consulta Football-Data.org desde hoy hasta los próximos días
+    para capturar jornadas completas y evitar pérdidas por diferencia horaria UTC.
+    """
+    hoy_utc = datetime.now(timezone.utc)
+    date_from = hoy_utc.strftime("%Y-%m-%d")
+    date_to = (hoy_utc + timedelta(days=dias_adelanto)).strftime("%Y-%m-%d")
+    
+    url = f"https://api.football-data.org/v4/matches?dateFrom={date_from}&dateTo={date_to}"
     headers = {"X-Auth-Token": FOOTBALL_DATA_TOKEN}
+    
+    print(f"📡 [Football-Data.org] Consultando ventana: {date_from} hasta {date_to} (UTC)")
     try:
         res = requests.get(url, headers=headers, timeout=10)
-        if res.status_code == 200:
-            partidos = res.json().get("matches", [])
-            return [p for p in partidos if p.get("competition", {}).get("code") in LEAGUES_MAP]
+        print(f"   Código HTTP: {res.status_code}")
+        
+        if res.status_code != 200:
+            print(f"❌ Error en la API ({res.status_code}): {res.text}")
+            return []
+
+        data = res.json()
+        partidos = data.get("matches", [])
+        print(f"   Total partidos globales devueltos por la API: {len(partidos)}")
+        
+        # Log completo de todos los partidos encontrados para diagnóstico en Actions
+        for p in partidos:
+            c_code = p.get("competition", {}).get("code", "N/A")
+            c_name = p.get("competition", {}).get("name", "N/A")
+            local = p.get("homeTeam", {}).get("name", "Local")
+            visitante = p.get("awayTeam", {}).get("name", "Visitante")
+            fecha_utc = p.get("utcDate", "N/A")
+            print(f"   ⚽ [{c_code} - {c_name}] {local} vs {visitante} | Fecha UTC: {fecha_utc}")
+            
+        return partidos
     except Exception as e:
-        print(f"Error Football-Data: {e}")
-    return []
+        print(f"❌ Excepción consultando la API de partidos: {e}")
+        return []
 
 def calcular_ev_y_stake(cuota_casa, prob_modelo):
     ev = (prob_modelo * cuota_casa) - 1.0
@@ -72,35 +99,41 @@ def guardar_datos_json(partidos_procesados, alertas_enviadas, hora_utc_str):
 def ejecutar_ciclo():
     ahora_utc = datetime.now(timezone.utc)
     hora_str = ahora_utc.strftime('%H:%M UTC')
+    hoy_str = ahora_utc.strftime('%Y-%m-%d')
     print(f"[{hora_str}] Iniciando ciclo cuantitativo...")
 
-    partidos_raw = obtener_partidos_del_dia()
+    partidos_raw = obtener_partidos(dias_adelanto=2)
     partidos_para_web = []
     alertas_enviadas = []
 
     for p in partidos_raw:
         comp_code = p.get("competition", {}).get("code", "")
-        comp_info = LEAGUES_MAP.get(comp_code, {"name": "Liga Oficial", "key": "all"})
+        comp_info = LEAGUES_MAP.get(comp_code, {
+            "name": p.get("competition", {}).get("name", "Oficial"),
+            "key": "laliga" if "PD" in comp_code or "SD" in comp_code else "all"
+        })
+        
         hora_utc = p.get("utcDate", "")
         hora_corta = hora_utc[11:16] if len(hora_utc) >= 16 else "TBD"
+        fecha_partido = hora_utc[:10] if len(hora_utc) >= 10 else hoy_str
         
-        # Cálculo de ventana previa
         minutos_restantes = 999
         if hora_utc:
             inicio = datetime.fromisoformat(hora_utc.replace("Z", "+00:00"))
             minutos_restantes = round((inicio - ahora_utc).total_seconds() / 60.0)
 
-        # Análisis probabilístico
+        # Cálculo probabilístico +EV
         cuota_sim = 2.15
         prob_sim = 0.52
         ev, stake = calcular_ev_y_stake(cuota_sim, prob_sim)
 
         item = {
             "id": p.get("id"),
-            "local": p["homeTeam"]["name"],
-            "visitante": p["awayTeam"]["name"],
+            "local": p.get("homeTeam", {}).get("name", "Local"),
+            "visitante": p.get("awayTeam", {}).get("name", "Visitante"),
             "liga": comp_info["name"],
             "liga_key": comp_info["key"],
+            "fecha": fecha_partido,
             "hora": hora_corta + " UTC",
             "minutos_restantes": minutos_restantes,
             "estado": p.get("status", "SCHEDULED"),
@@ -113,7 +146,7 @@ def ejecutar_ciclo():
         }
         partidos_para_web.append(item)
 
-        # Disparar alerta en ventana Just-in-Time (25-50 min antes)
+        # Alerta en ventana Just-in-Time (25 a 50 min antes)
         if 25 <= minutos_restantes <= 50 and ev > 0:
             alerta_msg = (
                 f"🎯 <b>ALERTA CUANTITATIVA (+EV) — [T-45m]</b>\n\n"
@@ -137,6 +170,7 @@ def ejecutar_ciclo():
             })
 
     guardar_datos_json(partidos_para_web, alertas_enviadas, hora_str)
+    print(f"🏁 Ciclo finalizado. Total partidos registrados: {len(partidos_para_web)}")
 
 if __name__ == "__main__":
     ejecutar_ciclo()
