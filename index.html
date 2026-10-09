@@ -94,7 +94,7 @@
       <div class="p-2.5 rounded-xl bg-surface-card border border-surface-border text-center">
         <p class="text-[9px] uppercase font-bold tracking-wider text-slate-400">Efectividad</p>
         <p id="tasaAcierto" class="text-base font-black text-emerald-400 mt-0.5">--%</p>
-        <p id="recordAcierto" class="text-[8px] text-slate-400">Telegram</p>
+        <p id="recordAcierto" class="text-[8px] text-slate-400">0V - 0D TG</p>
       </div>
     </div>
 
@@ -119,7 +119,9 @@
         <button onclick="filtrarLiga('laliga')" class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="laliga">LaLiga (ESP)</button>
         <button onclick="filtrarLiga('laliga2')" class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="laliga2">LaLiga 2 (ESP)</button>
         <button onclick="filtrarLiga('premier')" class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="premier">Premier (ENG)</button>
-        <button onclick="filtrarLiga('champions')" class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="champions">Champions</button>
+        <button onclick="filtrarLiga('bundesliga')" class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="bundesliga">Bundesliga</button>
+        <button onclick="filtrarLiga('seriea')" class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="seriea">Serie A</button>
+        <button onclick="filtrarLiga('ligue1')" class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="ligue1">Ligue 1</button>
       </div>
     </div>
 
@@ -205,8 +207,14 @@
       return { horaStr: horaStr, minutosRestantes: minutosRestantes };
     }
 
+    function normalizarTexto(txt) {
+      if (!txt) return '';
+      return txt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
     function obtenerMarcadorFinal(p, minutosRestantes) {
-      var esFinalizado = p.estado === 'FINISHED' || minutosRestantes < -125;
+      var estadoApi = (p.estado || '').toUpperCase();
+      var esFinalizado = estadoApi === 'FINISHED' || estadoApi === 'FINALIZADO' || minutosRestantes < -125;
       if (!esFinalizado) { return null; }
 
       var gLocal = null;
@@ -237,20 +245,21 @@
       var marcadorStr = (gLocal !== null && gVisitante !== null) ? (gLocal + ' - ' + gVisitante) : 'FT';
 
       var acertado = null;
-      var mercado = (p.mercado || '').toLowerCase();
-      if (p.tiene_pronostico || p.cuota) {
-        if (gLocal !== null && gVisitante !== null) {
-          if (mercado.indexOf('local') !== -1 || mercado.indexOf('1') !== -1 || mercado.indexOf('victoria') !== -1) {
-            acertado = gLocal > gVisitante;
-          } else if (mercado.indexOf('visitante') !== -1 || mercado.indexOf('2') !== -1) {
-            acertado = gVisitante > gLocal;
-          } else if (mercado.indexOf('empate') !== -1 || mercado.indexOf('x') !== -1) {
-            acertado = gLocal === gVisitante;
-          } else if (mercado.indexOf('más de 2.5') !== -1 || mercado.indexOf('over 2.5') !== -1) {
-            acertado = (gLocal + gVisitante) >= 3;
-          } else if (mercado.indexOf('menos de 2.5') !== -1 || mercado.indexOf('under 2.5') !== -1) {
-            acertado = (gLocal + gVisitante) <= 2;
-          }
+      var mercado = normalizarTexto(p.mercado || '');
+
+      if (gLocal !== null && gVisitante !== null) {
+        var totalGoles = gLocal + gVisitante;
+        
+        if (mercado.indexOf('mas de 2.5') !== -1 || mercado.indexOf('over 2.5') !== -1) {
+          acertado = totalGoles > 2.5;
+        } else if (mercado.indexOf('menos de 2.5') !== -1 || mercado.indexOf('under 2.5') !== -1) {
+          acertado = totalGoles < 2.5;
+        } else if (mercado.indexOf('visitante') !== -1 || mercado.indexOf('2') !== -1) {
+          acertado = gVisitante > gLocal;
+        } else if (mercado.indexOf('empate') !== -1 || mercado.indexOf('x') !== -1) {
+          acertado = gLocal === gVisitante;
+        } else if (mercado.indexOf('local') !== -1 || mercado.indexOf('victoria') !== -1 || mercado.indexOf('1x2') !== -1) {
+          acertado = gLocal > gVisitante;
         }
       }
 
@@ -349,31 +358,22 @@
       var aciertos = 0;
       var fallos = 0;
 
-      if (!alertas || alertas.length === 0) {
-        var elPctVacio = document.getElementById('tasaAcierto');
-        var elRecVacio = document.getElementById('recordAcierto');
-        if (elPctVacio) { elPctVacio.innerText = '--%'; }
-        if (elRecVacio) { elRecVacio.innerText = '0V - 0D (TG)'; }
-        return;
-      }
-
-      for (var aIdx = 0; aIdx < alertas.length; aIdx++) {
-        var alerta = alertas[aIdx];
-        var nombreAlerta = (alerta.partido || '').toLowerCase();
+      for (var i = 0; i < alertas.length; i++) {
+        var al = alertas[i];
+        var partidoEncontrado = null;
         
-        var partidoMatch = null;
-        for (var pIdx = 0; pIdx < partidos.length; pIdx++) {
-          var p = partidos[pIdx];
-          var matchStr = ((p.local || '') + ' vs ' + (p.visitante || '')).toLowerCase();
-          if (nombreAlerta.indexOf((p.local || '').toLowerCase()) !== -1 || matchStr.indexOf(nombreAlerta) !== -1) {
-            partidoMatch = p;
+        for (var j = 0; j < partidos.length; j++) {
+          var p = partidos[j];
+          var matchTitulo = (p.local + ' vs ' + p.visitante);
+          if (matchTitulo === al.partido || (al.partido && al.partido.indexOf(p.local) !== -1)) {
+            partidoEncontrado = p;
             break;
           }
         }
 
-        if (partidoMatch) {
-          var tiempo = calcularTiempoPartido(partidoMatch);
-          var res = obtenerMarcadorFinal(partidoMatch, tiempo.minutosRestantes);
+        if (partidoEncontrado) {
+          var tiempo = calcularTiempoPartido(partidoEncontrado);
+          var res = obtenerMarcadorFinal(partidoEncontrado, tiempo.minutosRestantes);
           if (res && res.acertado !== null) {
             if (res.acertado) { aciertos++; }
             else { fallos++; }
@@ -388,7 +388,7 @@
       var elRec = document.getElementById('recordAcierto');
       if (elPct && elRec) {
         elPct.innerText = total > 0 ? (pct + '%') : '--%';
-        elRec.innerText = aciertos + 'V - ' + fallos + 'D (TG)';
+        elRec.innerText = aciertos + 'V - ' + fallos + 'D TG';
       }
     }
 
