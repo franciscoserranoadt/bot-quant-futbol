@@ -12,7 +12,7 @@ THE_ODDS_API_KEY = os.getenv("THE_ODDS_API_KEY", "")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 
-# Zona horaria oficial de España Peninsular (Madrid)
+# Huso horario oficial de España Peninsular (Madrid)
 TZ_MADRID = ZoneInfo("Europe/Madrid")
 
 # 7 Ligas Oficiales admitidas con sus códigos de Football-Data.org
@@ -42,7 +42,7 @@ def enviar_telegram(mensaje):
 
 def obtener_partidos(dias_atras=1, dias_adelanto=2):
     """
-    Obtiene partidos desde ayer (para capturar marcadores finalizados)
+    Obtiene partidos desde ayer (para capturar marcadores finales)
     hasta los próximos 2 días (para capturar jornadas completas).
     """
     hoy_utc = datetime.now(timezone.utc)
@@ -74,7 +74,7 @@ def calcular_ev_y_stake(cuota_casa, prob_modelo):
     return round(ev * 100, 1), stake
 
 def guardar_datos_json(partidos_procesados, alertas_enviadas, hora_madrid_str):
-    """Guarda datos.json para sincronización automática con index.html."""
+    """Guarda datos.json con marcadores reales para sincronización con la app."""
     datos = {
         "ultima_actualizacion": hora_madrid_str,
         "huso_horario": "Europe/Madrid",
@@ -84,7 +84,7 @@ def guardar_datos_json(partidos_procesados, alertas_enviadas, hora_madrid_str):
     }
     with open("datos.json", "w", encoding="utf-8") as f:
         json.dump(datos, f, ensure_ascii=False, indent=2)
-    print("📁 Archivo datos.json guardado con éxito (Horario Madrid y Marcadores Reales).")
+    print("📁 Archivo datos.json guardado con éxito con marcadores reales.")
 
 def ejecutar_ciclo():
     ahora_utc = datetime.now(timezone.utc)
@@ -109,27 +109,25 @@ def ejecutar_ciclo():
         hora_madrid_partido = "TBD"
         fecha_madrid_partido = hoy_madrid_str
 
-        # ======================================================================
-        # CORRECCIÓN DE HUSO HORARIO: CONVERSIÓN EXACTA A HORA PENINSULAR (MADRID)
-        # ======================================================================
+        # Conversión a Horario Peninsular Español (Madrid)
         if hora_utc_raw:
             inicio_utc = datetime.fromisoformat(hora_utc_raw.replace("Z", "+00:00"))
             inicio_madrid = inicio_utc.astimezone(TZ_MADRID)
-            
-            # Formato de hora peninsular (si UTC era 19:00, aquí pasa a ser exactamente 21:00)
             hora_madrid_partido = inicio_madrid.strftime('%H:%M Madrid')
             fecha_madrid_partido = inicio_madrid.strftime('%Y-%m-%d')
             minutos_restantes = round((inicio_utc - ahora_utc).total_seconds() / 60.0)
 
-        # Extracción del marcador final si el partido concluyó
+        # ======================================================================
+        # EXTRACCIÓN REAL DE MARCADOR FINAL Y GOLES DE FOOTBALL-DATA.ORG
+        # ======================================================================
         score_data = p.get("score", {})
         full_time = score_data.get("fullTime", {})
-        goles_local = full_time.get("home")
-        goles_visitante = full_time.get("away")
+        g_local = full_time.get("home")
+        g_visitante = full_time.get("away")
         
         marcador_str = None
-        if goles_local is not None and goles_visitante is not None:
-            marcador_str = f"{goles_local} - {goles_visitante}"
+        if g_local is not None and g_visitante is not None:
+            marcador_str = f"{g_local} - {g_visitante}"
 
         estado_api = p.get("status", "SCHEDULED")
 
@@ -149,9 +147,9 @@ def ejecutar_ciclo():
             "hora_utc": hora_utc_raw,
             "minutos_restantes": minutos_restantes,
             "estado": estado_api,
-            "marcador": marcador_str,
-            "goles_local": goles_local,
-            "goles_visitante": goles_visitante,
+            "marcador": marcador_str,        # 👈 Marcador ej: "2 - 1"
+            "goles_local": g_local,          # 👈 Goles local
+            "goles_visitante": g_visitante,  # 👈 Goles visitante
             "mercado": "Victoria Local (1X2)",
             "cuota": cuota_sim,
             "prob_modelo": f"{round(prob_sim*100, 1)}%",
@@ -161,7 +159,7 @@ def ejecutar_ciclo():
         }
         partidos_para_web.append(item)
 
-        # Disparo Just-in-Time a Telegram en ventana 25 a 50 min previos
+        # Disparo Just-in-Time a Telegram (T-45m a T-25m)
         if 25 <= minutos_restantes <= 50 and ev > 0:
             alerta_msg = (
                 f"🎯 <b>ALERTA CUANTITATIVA (+EV) — [T-45m]</b>\n\n"
