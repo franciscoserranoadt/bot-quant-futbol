@@ -6,7 +6,7 @@ from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 
 # ==============================================================================
-# CONFIGURACIÓN DE APIS Y TELEGRAM
+# CONFIGURACIÓN DE APIS Y TELEGRAM (CANAL OFICIAL)
 # ==============================================================================
 FOOTBALL_DATA_TOKEN = os.getenv("FOOTBALL_DATA_TOKEN", "")
 THE_ODDS_API_KEY = os.getenv("THE_ODDS_API_KEY", "")
@@ -29,7 +29,7 @@ LEAGUES_MAP = {
 }
 
 def enviar_telegram(mensaje):
-    """Envía la alerta con formato HTML enriquecido a Telegram."""
+    """Envía la alerta con formato HTML enriquecido al canal oficial de Telegram."""
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         return False
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -125,6 +125,7 @@ def evaluar_mercados_prepartido(partido_id, local, visitante):
         }
 
 def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht):
+    """Módulo Live HT: análisis in-play si al descanso van empatados."""
     seed_str = f"HT_{partido_id}_{local}_{visitante}_{goles_ht}"
     seed_val = int(hashlib.md5(seed_str.encode('utf-8')).hexdigest()[:8], 16)
     subperfil = seed_val % 100
@@ -198,19 +199,7 @@ def ejecutar_ciclo():
     ahora_madrid = ahora_utc.astimezone(TZ_MADRID)
     hora_madrid_str = ahora_madrid.strftime('%H:%M Madrid')
     hoy_madrid_str = ahora_madrid.strftime('%Y-%m-%d')
-    print(f"[{hora_madrid_str}] Iniciando ciclo cuantitativo...")
-
-    # ==============================================================
-    # 🚀 PRUEBA INMEDIATA AL CANAL DE TELEGRAM
-    # ==============================================================
-    msg_test_canal = (
-        f"🚀 <b>CANAL APEX QUANT — PRUEBA DE CONEXIÓN</b>\n\n"
-        f"✅ <b>Estado:</b> Bot operativo como administrador\n"
-        f"🕒 <b>Hora Oficial:</b> {hora_madrid_str}\n"
-        f"📢 <b>Canal Oficial:</b> @apex_quant_alertas\n\n"
-        f"⚡ <i>Las alertas algorítmicas (+EV > 5%) se publicarán aquí automáticamente.</i>"
-    )
-    enviar_telegram(msg_test_canal)
+    print(f"[{hora_madrid_str}] Iniciando ciclo cuantitativo en producción limpia...")
 
     # 1. Recuperar historial previo de alertas para no borrar las anteriores
     alertas_acumuladas = cargar_alertas_previas()
@@ -286,7 +275,7 @@ def ejecutar_ciclo():
         id_alerta_unica = f"{p.get('id')}_{analisis['tipo_mercado']}"
         ya_registrada = any(a.get("id_alerta") == id_alerta_unica or (a.get("partido") == partido_nombre and a.get("tipo_mercado") == analisis["tipo_mercado"]) for a in alertas_acumuladas)
 
-        # 1. DISPARO TELEGRAM: Alerta Descanso Empate (In-Play)
+        # 1. DISPARO AL CANAL TELEGRAM: Alerta Descanso Empate (In-Play)
         if es_empate_descanso and analisis["ev"] > 0 and not ya_registrada:
             fue_enviado_telegram = True
             alerta_msg = (
@@ -315,7 +304,7 @@ def ejecutar_ciclo():
                 "es_ht": True
             })
 
-        # 2. DISPARO TELEGRAM: Pre-partido tradicional (T-45m a T-25m)
+        # 2. DISPARO AL CANAL TELEGRAM: Pre-partido tradicional (T-45m a T-25m)
         elif 25 <= minutos_restantes <= 50 and analisis["ev"] > 0 and not ya_registrada:
             fue_enviado_telegram = True
             icono_mercado = "⚽" if analisis["tipo_mercado"] == "1X2" else "🥅"
