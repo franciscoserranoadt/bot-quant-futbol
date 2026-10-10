@@ -1,531 +1,518 @@
 <!DOCTYPE html>
-<html lang="es" class="dark">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Apex Quant • Motor Predictivo</title>
+  <title>Apex Quant • Analytics</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#070e1d">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-            mono: ['"JetBrains Mono"', 'monospace'],
-          },
-          colors: {
-            brand: {
-              primary: '#00f59b',
-              surface: '#0c1322',
-              card: '#141b2b',
-              border: '#1f293d',
-              accent: '#38bdf8',
-              loss: '#ef4444'
-            }
-          }
-        }
-      }
-    }
-  </script>
   <style>
-    body { background-color: #070e1d; color: #f8fafc; -webkit-tap-highlight-color: transparent; }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    @keyframes pulseLive {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.95); }
-    }
-    .live-pulse { animation: pulseLive 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #070e1d; color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .glow-accent { box-shadow: 0 0 20px -3px rgba(0, 245, 155, 0.25); }
+    .glow-live { box-shadow: 0 0 15px -2px rgba(239, 68, 68, 0.4); }
+    @keyframes pulseLive { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .animate-live-dot { animation: pulseLive 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col font-sans antialiased pb-24">
+<body class="min-h-screen bg-[#070e1d] pb-24 text-slate-100 antialiased selection:bg-[#00f59b]/30">
 
-  <!-- Header Superior -->
-  <header class="sticky top-0 z-40 bg-[#070e1d]/90 backdrop-blur-md border-b border-[#1f293d] px-4 py-3">
-    <div class="max-w-md mx-auto flex items-center justify-between">
-      <div class="flex items-center gap-2.5">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500/20 to-teal-400/20 border border-[#00f59b]/40 flex items-center justify-center font-bold text-base text-[#00f59b] font-mono tracking-tight shadow-[0_0_15px_rgba(0,245,155,0.15)]">
+  <!-- Header Persistente -->
+  <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-[#070e1d]/90 backdrop-blur-md px-4 py-3">
+    <div class="mx-auto flex max-w-lg items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#00f59b]/20 to-[#00f59b]/5 border border-[#00f59b]/40 text-[#00f59b] font-extrabold text-sm tracking-tight shadow-sm">
           AQ
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <h1 class="text-base font-bold text-slate-100 tracking-tight leading-none">Apex Quant</h1>
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-[#00f59b] border border-emerald-500/30">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#00f59b] animate-ping"></span>
-              24/7 ONLINE
+            <h1 class="text-base font-bold tracking-tight text-white">Apex Quant</h1>
+            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-[#00f59b] border border-[#00f59b]/20">
+              <span class="h-1.5 w-1.5 rounded-full bg-[#00f59b] animate-pulse"></span> 24/7 ONLINE
             </span>
           </div>
-          <p class="text-[11px] text-slate-400 font-medium mt-0.5">Motor Predictivo Just-In-Time (+EV)</p>
+          <p class="text-[11px] text-slate-400 font-medium">Motor Predictivo Just-In-Time (+EV)</p>
         </div>
       </div>
-      <button id="btnRefresh" onclick="cargarDatos()" class="p-2.5 rounded-xl bg-[#141b2b] border border-[#1f293d] text-slate-300 hover:text-[#00f59b] active:scale-95 transition-all">
-        <svg id="iconSync" class="w-4 h-4 transition-transform duration-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <button onclick="recargarDatos(true)" id="btn-refresh" class="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-700/80 bg-slate-800/60 text-slate-300 hover:text-white active:scale-95 transition-all">
+        <svg id="refresh-icon" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
         </svg>
       </button>
     </div>
   </header>
 
-  <main class="flex-1 max-w-md w-full mx-auto px-4 pt-3.5 space-y-3.5">
+  <!-- Contenedor Principal -->
+  <main class="mx-auto max-w-lg px-4 pt-4 space-y-4">
 
-    <!-- Card Telegram Activo -->
-    <div class="p-3.5 rounded-2xl bg-gradient-to-r from-[#141b2b] to-[#0d2238] border border-[#1f293d] flex items-center justify-between shadow-lg">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-400/30 flex items-center justify-center text-sky-400">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .37z"/>
-          </svg>
-        </div>
-        <div>
-          <div class="flex items-center gap-1.5">
-            <span class="text-xs font-bold text-slate-100">Alertas Telegram</span>
-            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+    <!-- Tarjeta Telegram Activo -->
+    <div class="relative overflow-hidden rounded-2xl border border-sky-500/30 bg-gradient-to-r from-sky-950/40 via-slate-900/60 to-slate-900/40 p-3.5 shadow-lg">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/30">
+            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.77-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .37z"/>
+            </svg>
           </div>
-          <p class="text-[11px] text-slate-400 font-medium">Sonido en ventana T-45m en tu móvil</p>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-slate-100">Alertas Telegram</span>
+              <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+            </div>
+            <p class="text-[11px] text-slate-400">Sonido en ventana T-45m en tu móvil</p>
+          </div>
         </div>
-      </div>
-      <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wider bg-sky-500/10 text-sky-300 border border-sky-500/30 font-mono">
-        ACTIVO
-      </span>
-    </div>
-
-    <!-- Triple Métrica de Efectividad y Control -->
-    <div class="grid grid-cols-3 gap-2">
-      <!-- Monitoreo -->
-      <div class="p-2.5 rounded-xl bg-[#141b2b] border border-[#1f293d] text-center">
-        <p class="text-[9px] font-bold text-slate-400 tracking-wider uppercase">PARTIDOS</p>
-        <p id="statPartidos" class="text-base font-extrabold text-slate-100 font-mono mt-0.5">--</p>
-        <p class="text-[9px] text-slate-500 font-medium">Monitoreo</p>
-      </div>
-
-      <!-- Filtro EV -->
-      <div class="p-2.5 rounded-xl bg-[#141b2b] border border-[#1f293d] text-center">
-        <p class="text-[9px] font-bold text-slate-400 tracking-wider uppercase">FILTRO EV</p>
-        <p class="text-base font-extrabold text-[#00f59b] font-mono mt-0.5">+5.0%</p>
-        <p class="text-[9px] text-slate-500 font-medium">Ventaja Mín.</p>
-      </div>
-
-      <!-- Gestión Kelly -->
-      <div class="p-2.5 rounded-xl bg-[#141b2b] border border-[#1f293d] text-center">
-        <p class="text-[9px] font-bold text-slate-400 tracking-wider uppercase">GESTIÓN</p>
-        <p class="text-base font-extrabold text-sky-400 font-mono mt-0.5">1/4</p>
-        <p class="text-[9px] text-slate-500 font-medium">Kelly Conservador</p>
+        <span class="rounded-lg bg-sky-500/15 px-2.5 py-1 text-[10px] font-bold tracking-wider text-sky-400 border border-sky-500/25">
+          ACTIVO
+        </span>
       </div>
     </div>
 
-    <!-- Fila 2 de Métricas: Triple Efectividad -->
-    <div class="grid grid-cols-3 gap-2">
-      <!-- Efectividad Telegram -->
-      <div class="p-2.5 rounded-xl bg-[#141b2b] border border-emerald-500/40 text-center relative overflow-hidden">
-        <div class="flex items-center justify-center gap-1 text-[9px] font-bold text-emerald-400 tracking-wider uppercase">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-          TELEGRAM
+    <!-- Métricas del Motor: Partidos, Filtro, Gestión -->
+    <div class="grid grid-cols-3 gap-2.5">
+      <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-2.5 text-center shadow-sm">
+        <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">PARTIDOS</span>
+        <div id="stat-partidos" class="font-mono text-lg font-bold text-white mt-0.5">--</div>
+        <span class="text-[9px] text-slate-400">Monitoreo</span>
+      </div>
+      <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-2.5 text-center shadow-sm">
+        <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">FILTRO EV</span>
+        <div class="font-mono text-lg font-bold text-[#00f59b] mt-0.5">+5.0%</div>
+        <span class="text-[9px] text-slate-400">Ventaja</span>
+      </div>
+      <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-2.5 text-center shadow-sm">
+        <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">GESTIÓN</span>
+        <div class="font-mono text-lg font-bold text-sky-400 mt-0.5">1/4</div>
+        <span class="text-[9px] text-slate-400">Kelly</span>
+      </div>
+    </div>
+
+    <!-- Triple Efectividad: Telegram, Sin Alerta, Global Total -->
+    <div class="grid grid-cols-3 gap-2.5">
+      <!-- Telegram -->
+      <div class="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-2 text-center shadow-sm">
+        <div class="flex items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+          <span>TELEGRAM</span>
         </div>
-        <p id="statEfecTg" class="text-base font-extrabold text-[#00f59b] font-mono mt-0.5">--%</p>
-        <p id="statDetalleTg" class="text-[9px] text-slate-400 font-mono font-medium">0V - 0D TG</p>
+        <div id="eff-tg-pct" class="font-mono text-base font-black text-emerald-400 mt-0.5">--%</div>
+        <span id="eff-tg-count" class="text-[9px] font-medium text-slate-400">0V - 0D TG</span>
       </div>
-
-      <!-- Efectividad Sin Telegram -->
-      <div class="p-2.5 rounded-xl bg-[#141b2b] border border-[#1f293d] text-center">
-        <p class="text-[9px] font-bold text-slate-400 tracking-wider uppercase">SIN ALERTA</p>
-        <p id="statEfecNoTg" class="text-base font-extrabold text-slate-200 font-mono mt-0.5">--%</p>
-        <p id="statDetalleNoTg" class="text-[9px] text-slate-400 font-mono font-medium">0V - 0D No TG</p>
+      <!-- Sin Alerta -->
+      <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-2 text-center shadow-sm">
+        <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">SIN ALERTA</span>
+        <div id="eff-notg-pct" class="font-mono text-base font-bold text-slate-300 mt-0.5">--%</div>
+        <span id="eff-notg-count" class="text-[9px] font-medium text-slate-400">0V - 0D No TG</span>
       </div>
-
-      <!-- Efectividad Global Total -->
-      <div class="p-2.5 rounded-xl bg-[#141b2b] border border-cyan-500/30 text-center">
-        <p class="text-[9px] font-bold text-cyan-400 tracking-wider uppercase">GLOBAL TOTAL</p>
-        <p id="statEfecTotal" class="text-base font-extrabold text-cyan-300 font-mono mt-0.5">--%</p>
-        <p id="statDetalleTotal" class="text-[9px] text-slate-400 font-mono font-medium">0V - 0D Total</p>
+      <!-- Global Total -->
+      <div class="rounded-xl border border-teal-500/30 bg-teal-950/20 p-2 text-center shadow-sm">
+        <span class="text-[10px] font-semibold uppercase tracking-wider text-teal-300">GLOBAL TOTAL</span>
+        <div id="eff-total-pct" class="font-mono text-base font-black text-teal-300 mt-0.5">--%</div>
+        <span id="eff-total-count" class="text-[9px] font-medium text-slate-400">0V - 0D Total</span>
       </div>
     </div>
 
-    <!-- Pestañas de Navegación de Vistas -->
-    <div class="grid grid-cols-2 p-1 rounded-xl bg-[#141b2b] border border-[#1f293d]">
-      <button id="tabPartidos" onclick="cambiarVista('partidos')" class="py-2 text-xs font-bold rounded-lg bg-[#00f59b] text-slate-950 shadow-md transition-all">
+    <!-- Pestañas de Vista: Partidos vs Alertas Emitidas -->
+    <div class="flex rounded-xl border border-slate-800 bg-slate-900/80 p-1">
+      <button id="tab-btn-partidos" onclick="cambiarPestana('partidos')" class="flex-1 rounded-lg py-2 text-xs font-bold transition-all bg-[#00f59b] text-slate-950 shadow-sm">
         Partidos del Día
       </button>
-      <button id="tabAlertas" onclick="cambiarVista('alertas')" class="py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all">
-        Alertas Emitidas (<span id="countAlertasTab">0</span>)
+      <button id="tab-btn-alertas" onclick="cambiarPestana('alertas')" class="flex-1 rounded-lg py-2 text-xs font-medium text-slate-400 hover:text-white transition-all">
+        Alertas Emitidas (<span id="alertas-count">0</span>)
       </button>
     </div>
 
-    <!-- Filtros por Competición (Solo visible en vista partidos) -->
-    <div id="sectionFiltros" class="space-y-2">
-      <div class="flex items-center justify-between text-xs px-0.5">
-        <span class="font-bold text-slate-300 uppercase tracking-wider text-[10px]">Competiciones</span>
-        <span id="horaSyncText" class="text-[10px] text-slate-500 font-mono">Sincronizando...</span>
+    <!-- Sección de Filtros de Competiciones -->
+    <div id="seccion-filtros" class="space-y-2">
+      <div class="flex items-center justify-between px-1">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">COMPETICIONES</span>
+        <span id="sync-time" class="text-[10px] font-medium text-slate-400">15:33 Madrid sync</span>
       </div>
-      <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
-        <button onclick="filtrarLiga('all')" class="filter-btn active px-3 py-1.5 rounded-lg text-xs font-bold bg-[#00f59b] text-slate-950 transition-all whitespace-nowrap" data-liga="all">Todas</button>
-        <button onclick="filtrarLiga('laliga')" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#141b2b] border border-[#1f293d] text-slate-400 hover:text-slate-200 transition-all whitespace-nowrap" data-liga="laliga">LaLiga (ESP)</button>
-        <button onclick="filtrarLiga('laliga2')" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#141b2b] border border-[#1f293d] text-slate-400 hover:text-slate-200 transition-all whitespace-nowrap" data-liga="laliga2">LaLiga 2 (ESP)</button>
-        <button onclick="filtrarLiga('premier')" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#141b2b] border border-[#1f293d] text-slate-400 hover:text-slate-200 transition-all whitespace-nowrap" data-liga="premier">Premier (ENG)</button>
-        <button onclick="filtrarLiga('bundesliga')" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#141b2b] border border-[#1f293d] text-slate-400 hover:text-slate-200 transition-all whitespace-nowrap" data-liga="bundesliga">Bundesliga</button>
-        <button onclick="filtrarLiga('seriea')" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#141b2b] border border-[#1f293d] text-slate-400 hover:text-slate-200 transition-all whitespace-nowrap" data-liga="seriea">Serie A (ITA)</button>
-        <button onclick="filtrarLiga('ligue1')" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#141b2b] border border-[#1f293d] text-slate-400 hover:text-slate-200 transition-all whitespace-nowrap" data-liga="ligue1">Ligue 1 (FRA)</button>
-        <button onclick="filtrarLiga('champions')" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#141b2b] border border-[#1f293d] text-slate-400 hover:text-slate-200 transition-all whitespace-nowrap" data-liga="champions">Champions</button>
+      <div class="flex gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
+        <button onclick="filtrarLiga('all')" id="btn-liga-all" class="shrink-0 rounded-lg bg-[#00f59b] px-3 py-1.5 font-bold text-slate-950 text-xs">Todas</button>
+        <button onclick="filtrarLiga('laliga')" id="btn-liga-laliga" class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs">LaLiga (ESP)</button>
+        <button onclick="filtrarLiga('laliga2')" id="btn-liga-laliga2" class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs">LaLiga 2 (ESP)</button>
+        <button onclick="filtrarLiga('premier')" id="btn-liga-premier" class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs">Premier (ENG)</button>
+        <button onclick="filtrarLiga('bundesliga')" id="btn-liga-bundesliga" class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs">Bundesliga</button>
+        <button onclick="filtrarLiga('seriea')" id="btn-liga-seriea" class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs">Serie A</button>
+        <button onclick="filtrarLiga('ligue1')" id="btn-liga-ligue1" class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs">Ligue 1</button>
+        <button onclick="filtrarLiga('champions')" id="btn-liga-champions" class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs">Champions</button>
       </div>
     </div>
 
-    <!-- Encabezado de Lista -->
-    <div class="flex items-center justify-between text-xs pt-1 px-0.5">
-      <span id="tituloListado" class="font-bold text-slate-300 uppercase tracking-wider text-[11px]">Encuentros Programados</span>
-      <span class="text-[10px] text-[#00f59b] font-mono flex items-center gap-1">
-        <span class="w-1.5 h-1.5 rounded-full bg-[#00f59b]"></span>
-        Hora Peninsular (Madrid)
+    <!-- Cabecera de Lista -->
+    <div class="flex items-center justify-between px-1 pt-1">
+      <h2 id="titulo-seccion" class="text-xs font-bold uppercase tracking-wider text-slate-300">ENCUENTROS PROGRAMADOS</h2>
+      <span class="flex items-center gap-1.5 text-[10px] text-emerald-400 font-medium">
+        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span> Hora Peninsular (Madrid)
       </span>
     </div>
 
-    <!-- Contenedor Principal de Partidos -->
-    <div id="contenedorPartidos" class="space-y-3">
-      <div class="p-8 text-center rounded-2xl bg-[#141b2b] border border-[#1f293d]">
-        <div class="w-8 h-8 mx-auto border-2 border-[#00f59b] border-t-transparent rounded-full animate-spin"></div>
-        <p class="text-xs text-slate-400 mt-3 font-medium">Sincronizando archivo datos.json...</p>
-        <p class="text-[10px] text-slate-500 mt-1">Pulsa el botón de recarga arriba para volver a comprobar.</p>
+    <!-- Contenedor Dinámico de Tarjetas -->
+    <div id="lista-contenedor" class="space-y-3">
+      <!-- Loader Inicial -->
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
+        <div class="mx-auto mb-3 h-6 w-6 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent"></div>
+        <p class="text-xs font-semibold text-slate-300">Sincronizando archivo datos.json...</p>
+        <p class="text-[11px] text-slate-400 mt-1">Calculando minutos reales de juego en directo</p>
       </div>
-    </div>
-
-    <!-- Contenedor de Historial de Alertas Emitidas (Oculto por defecto) -->
-    <div id="contenedorAlertas" class="space-y-2.5 hidden">
-      <!-- Se inyecta dinámicamente -->
     </div>
 
   </main>
 
   <script>
     let datosGlobales = { partidos: [], alertas: [] };
-    let filtroLigaActual = 'all';
-    let vistaActual = 'partidos';
+    let pestanaActiva = 'partidos';
+    let filtroLigaActivo = 'all';
 
-    async function cargarDatos() {
-      const btnSync = document.getElementById('iconSync');
-      btnSync.classList.add('rotate-180');
-      
+    // Carga de datos
+    async function recargarDatos(mostrarSpin = false) {
+      const icon = document.getElementById('refresh-icon');
+      if (mostrarSpin && icon) icon.classList.add('animate-spin');
+
       try {
         const timestamp = new Date().getTime();
-        const res = await fetch(`datos.json?v=${timestamp}`);
+        const res = await fetch('datos.json?v=' + timestamp);
         if (!res.ok) throw new Error('No se pudo cargar datos.json');
-        
         datosGlobales = await res.json();
         
-        document.getElementById('horaSyncText').innerText = `${datosGlobales.ultima_actualizacion || 'Reciente'} sync`;
-        document.getElementById('statPartidos').innerText = datosGlobales.partidos ? datosGlobales.partidos.length : 0;
-        document.getElementById('countAlertasTab').innerText = datosGlobales.alertas ? datosGlobales.alertas.length : 0;
-
-        actualizarMetricasEfectividad();
-        renderizar();
-      } catch (err) {
-        console.warn('Error sincronizando datos.json:', err);
-        document.getElementById('horaSyncText').innerText = 'Error sync';
+        actualizarMetricas();
+        renderizarVista();
+      } catch (e) {
+        console.warn('Lectura datos.json:', e);
+        document.getElementById('sync-time').innerText = 'Local sync';
       } finally {
-        setTimeout(() => btnSync.classList.remove('rotate-180'), 600);
+        if (mostrarSpin && icon) {
+          setTimeout(() => icon.classList.remove('animate-spin'), 600);
+        }
       }
     }
 
-    // =========================================================================
-    // CÁLCULO RIGUROSO DE LA TRIPLE EFECTIVIDAD (FINALIZADOS)
-    // =========================================================================
-    function actualizarMetricasEfectividad() {
-      if (!datosGlobales.partidos || datosGlobales.partidos.length === 0) return;
+    // Calcula minutos transcurridos o restantes contra reloj del cliente
+    function calcularEstadoEnVivo(p) {
+      const ahora = Date.now();
+      let inicioMs = 0;
 
-      let tgAciertos = 0, tgFallos = 0;
-      let noTgAciertos = 0, noTgFallos = 0;
+      if (p.timestamp_ms && p.timestamp_ms > 0) {
+        inicioMs = p.timestamp_ms;
+      } else if (p.utcDate) {
+        inicioMs = new Date(p.utcDate).getTime();
+      } else if (p.hora_utc) {
+        inicioMs = new Date(p.hora_utc).getTime();
+      }
 
-      datosGlobales.partidos.forEach(p => {
-        const est = (p.estado || '').toUpperCase();
-        const esFinalizado = (est === 'FINISHED' || est === 'FINALIZADO' || est === 'FT');
-        if (!esFinalizado) return;
+      const st = String(p.estado || '').toUpperCase();
+      const estaFinalizado = (st === 'FINISHED' || st === 'FINALIZADO' || st === 'FT');
 
-        // Comprobamos verificación
-        const resVerif = verificarPronostico(p);
-        if (!resVerif) return;
+      if (estaFinalizado) {
+        return { tipo: 'FINALIZADO', texto: 'FINALIZADO', badgeClass: 'bg-slate-800 text-slate-300 border-slate-700' };
+      }
 
-        const esTg = p.telegram_enviado === true || 
-                     (datosGlobales.alertas && datosGlobales.alertas.some(a => a.partido.includes(p.local) && a.partido.includes(p.visitante)));
+      // Si tenemos timestamp válido de inicio
+      if (inicioMs > 0) {
+        const diffMinutos = Math.floor((ahora - inicioMs) / 60000);
 
-        if (esTg) {
-          if (resVerif.acertado) tgAciertos++;
-          else tgFallos++;
+        if (diffMinutos >= 0) {
+          // El partido ya arrancó
+          if (diffMinutos > 130) {
+            // Pasaron más de 2 horas y 10 min -> Tratamos como finalizado si la API tardó en cambiar estado
+            return { tipo: 'FINALIZADO', texto: 'FINALIZADO', badgeClass: 'bg-slate-800 text-slate-300 border-slate-700' };
+          } else if (diffMinutos >= 45 && diffMinutos <= 60) {
+            return { tipo: 'EN_JUEGO', texto: `DESCANSO (HT)`, badgeClass: 'bg-amber-950/80 text-amber-300 border-amber-500/40 glow-live', minuto: 'HT' };
+          } else {
+            // Minuto real estimado de juego
+            let minJuego = diffMinutos;
+            if (diffMinutos > 60) minJuego = diffMinutos - 15; // descontar 15m descanso
+            if (minJuego > 95) minJuego = "90+";
+            return { tipo: 'EN_JUEGO', texto: `EN JUEGO (${minJuego}')`, badgeClass: 'bg-red-950/80 text-red-300 border-red-500/50 glow-live', minuto: `${minJuego}'` };
+          }
         } else {
-          if (resVerif.acertado) noTgAciertos++;
-          else noTgFallos++;
+          // Partido aún no empezó: diffMinutos es negativo
+          const faltanMin = Math.abs(diffMinutos);
+          const horas = Math.floor(faltanMin / 60);
+          const mins = faltanMin % 60;
+          let txt = faltanMin < 60 ? `Inicia en ${faltanMin}m` : `Inicia en ${horas}h ${mins}m`;
+          if (faltanMin <= 45) {
+            return { tipo: 'PREVIA', texto: txt, badgeClass: 'bg-amber-950/40 text-amber-300 border-amber-500/30' };
+          }
+          return { tipo: 'PROGRAMADO', texto: txt, badgeClass: 'bg-slate-800/80 text-slate-400 border-slate-700' };
+        }
+      }
+
+      // Fallback si no hay timestamp_ms
+      if (st.includes('PLAY') || st.includes('LIVE') || st.includes('JUEGO')) {
+        return { tipo: 'EN_JUEGO', texto: `EN JUEGO`, badgeClass: 'bg-red-950/80 text-red-300 border-red-500/50 glow-live', minuto: 'LIVE' };
+      }
+      return { tipo: 'PROGRAMADO', texto: p.hora || 'Hoy', badgeClass: 'bg-slate-800/80 text-slate-400 border-slate-700' };
+    }
+
+    // Verificación exacta de pronóstico acertado / perdido
+    function verificarAcierto(partido) {
+      let gLoc = partido.goles_local;
+      let gVis = partido.goles_visitante;
+
+      if ((gLoc === null || gLoc === undefined) && partido.marcador) {
+        const partes = String(partido.marcador).split('-');
+        if (partes.length === 2) {
+          gLoc = parseInt(partes[0].trim());
+          gVis = parseInt(partes[1].trim());
+        }
+      }
+
+      if (gLoc === null || gLoc === undefined || isNaN(gLoc) || isNaN(gVis)) {
+        return null;
+      }
+
+      const totalGoles = gLoc + gVis;
+      const mercadoStr = String(partido.mercado || '').toLowerCase();
+      const tipoMercado = String(partido.tipo_mercado || '').toUpperCase();
+
+      if (tipoMercado === 'GOLES' || mercadoStr.includes('más de 2.5') || mercadoStr.includes('over 2.5')) {
+        return totalGoles >= 3;
+      } else {
+        // Mercado 1X2 (Victoria Local)
+        return gLoc > gVis;
+      }
+    }
+
+    // Métricas globales y triple efectividad
+    function actualizarMetricas() {
+      const partidos = datosGlobales.partidos || [];
+      const alertas = datosGlobales.alertas || [];
+
+      document.getElementById('stat-partidos').innerText = partidos.length;
+      document.getElementById('alertas-count').innerText = alertas.length;
+      if (datosGlobales.ultima_actualizacion) {
+        document.getElementById('sync-time').innerText = datosGlobales.ultima_actualizacion + ' sync';
+      }
+
+      let tgV = 0, tgD = 0;
+      let noTgV = 0, noTgD = 0;
+
+      partidos.forEach(p => {
+        const estadoObj = calcularEstadoEnVivo(p);
+        if (estadoObj.tipo === 'FINALIZADO') {
+          const acertado = verificarAcierto(p);
+          if (acertado !== null) {
+            const esTelegram = p.telegram_enviado === true;
+            if (esTelegram) {
+              if (acertado) tgV++; else tgD++;
+            } else {
+              if (acertado) noTgV++; else noTgD++;
+            }
+          }
         }
       });
 
-      // Telegram
-      const totalTg = tgAciertos + tgFallos;
-      const pctTg = totalTg > 0 ? Math.round((tgAciertos / totalTg) * 100) : null;
-      document.getElementById('statEfecTg').innerText = pctTg !== null ? `${pctTg}%` : '--%';
-      document.getElementById('statDetalleTg').innerText = `${tgAciertos}V - ${tgFallos}D TG`;
+      // 1. Telegram
+      const totalTg = tgV + tgD;
+      const pctTg = totalTg > 0 ? Math.round((tgV / totalTg) * 100) + '%' : '--%';
+      document.getElementById('eff-tg-pct').innerText = pctTg;
+      document.getElementById('eff-tg-count').innerText = `${tgV}V - ${tgD}D TG`;
 
-      // No Telegram
-      const totalNoTg = noTgAciertos + noTgFallos;
-      const pctNoTg = totalNoTg > 0 ? Math.round((noTgAciertos / totalNoTg) * 100) : null;
-      document.getElementById('statEfecNoTg').innerText = pctNoTg !== null ? `${pctNoTg}%` : '--%';
-      document.getElementById('statDetalleNoTg').innerText = `${noTgAciertos}V - ${noTgFallos}D No TG`;
+      // 2. Sin Alerta
+      const totalNoTg = noTgV + noTgD;
+      const pctNoTg = totalNoTg > 0 ? Math.round((noTgV / totalNoTg) * 100) + '%' : '--%';
+      document.getElementById('eff-notg-pct').innerText = pctNoTg;
+      document.getElementById('eff-notg-count').innerText = `${noTgV} - ${noTgD} No TG`;
 
-      // Total Global
-      const totalGlobal = totalTg + totalNoTg;
-      const aciertosGlobal = tgAciertos + noTgAciertos;
-      const pctGlobal = totalGlobal > 0 ? Math.round((aciertosGlobal / totalGlobal) * 100) : null;
-      document.getElementById('statEfecTotal').innerText = pctGlobal !== null ? `${pctGlobal}%` : '--%';
-      document.getElementById('statDetalleTotal').innerText = `${aciertosGlobal}V - ${tgFallos + noTgFallos}D Total`;
+      // 3. Global Total
+      const totV = tgV + noTgV;
+      const totD = tgD + noTgD;
+      const totGlobal = totV + totD;
+      const pctTot = totGlobal > 0 ? Math.round((totV / totGlobal) * 100) + '%' : '--%';
+      document.getElementById('eff-total-pct').innerText = pctTot;
+      document.getElementById('eff-total-count').innerText = `${totV}V - ${totD}D Total`;
     }
 
-    // =========================================================================
-    // VERIFICACIÓN EXACTA DE PRONÓSTICO (1X2 Y GOLES OVER 2.5)
-    // =========================================================================
-    function verificarPronostico(p) {
-      // Extraer goles
-      let gLoc = p.goles_local;
-      let gVis = p.goles_visitante;
+    // Renderizar tarjetas
+    function renderizarVista() {
+      const contenedor = document.getElementById('lista-contenedor');
+      contenedor.innerHTML = '';
 
-      if (gLoc === undefined || gVis === undefined || gLoc === null || gVis === null) {
-        if (p.marcador && p.marcador.includes('-')) {
-          const parts = p.marcador.split('-');
-          gLoc = parseInt(parts[0].trim());
-          gVis = parseInt(parts[1].trim());
+      if (pestanaActiva === 'alertas') {
+        const alertas = datosGlobales.alertas || [];
+        document.getElementById('titulo-seccion').innerText = 'HISTORIAL DE ALERTAS ENVIADAS A TELEGRAM';
+        document.getElementById('seccion-filtros').style.display = 'none';
+
+        if (alertas.length === 0) {
+          contenedor.innerHTML = `
+            <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
+              <p class="text-sm font-semibold text-slate-300">No se han emitido alertas en este ciclo</p>
+              <p class="text-xs text-slate-400 mt-1">El bot disparará sonido a Telegram en cuanto un partido entre en ventana T-45m con +EV > 5%.</p>
+            </div>`;
+          return;
         }
-      }
 
-      if (isNaN(gLoc) || isNaN(gVis) || gLoc === null || gVis === null) return null;
-
-      const mercado = (p.mercado || '').toLowerCase();
-      const tipo = (p.tipo_mercado || '').toUpperCase();
-
-      // Caso 1: Goles Over 2.5
-      if (tipo === 'GOLES' || mercado.includes('más de 2.5') || mercado.includes('over 2.5')) {
-        const totalGoles = gLoc + gVis;
-        return {
-          acertado: totalGoles > 2.5,
-          tipo: 'GOLES',
-          detalle: `${totalGoles} goles totales`
-        };
-      }
-
-      // Caso 2: Victoria Local 1X2
-      return {
-        acertado: gLoc > gVis,
-        tipo: '1X2',
-        detalle: `${gLoc} a ${gVis}`
-      };
-    }
-
-    // =========================================================================
-    // RENDERIZADO VISUAL
-    // =========================================================================
-    function renderizar() {
-      const contPartidos = document.getElementById('contenedorPartidos');
-      const contAlertas = document.getElementById('contenedorAlertas');
-
-      if (vistaActual === 'alertas') {
-        contPartidos.classList.add('hidden');
-        contAlertas.classList.remove('hidden');
-        document.getElementById('sectionFiltros').classList.add('hidden');
-        document.getElementById('tituloListado').innerText = 'Historial de Alertas a Telegram';
-        renderizarAlertas();
+        alertas.forEach(a => {
+          contenedor.innerHTML += `
+            <div class="rounded-2xl border border-emerald-500/30 bg-slate-900/80 p-4 shadow-md space-y-2">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-bold text-white">${a.partido}</span>
+                <span class="text-slate-400 font-mono text-[11px]">${a.hora || ''}</span>
+              </div>
+              <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-800">
+                <span class="text-emerald-400 font-bold">${a.mercado}</span>
+                <span class="text-[#00f59b] font-mono font-bold">${a.cuota}</span>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                <span>Ventaja: <strong class="text-[#00f59b]">${a.ev}</strong></span>
+                <span>Stake Sugerido: <strong class="text-white">${a.stake}</strong></span>
+              </div>
+            </div>`;
+        });
         return;
       }
 
-      contPartidos.classList.remove('hidden');
-      contAlertas.classList.add('hidden');
-      document.getElementById('sectionFiltros').classList.remove('hidden');
-      document.getElementById('tituloListado').innerText = 'Encuentros Programados';
+      // Vista Partidos
+      document.getElementById('titulo-seccion').innerText = 'ENCUENTROS PROGRAMADOS';
+      document.getElementById('seccion-filtros').style.display = 'block';
 
-      const lista = (datosGlobales.partidos || []).filter(p => {
-        if (filtroLigaActual === 'all') return true;
-        return p.liga_key === filtroLigaActual;
+      let lista = (datosGlobales.partidos || []).filter(p => {
+        if (filtroLigaActivo === 'all') return true;
+        return p.liga_key === filtroLigaActivo;
       });
 
       if (lista.length === 0) {
-        contPartidos.innerHTML = `
-          <div class="p-8 text-center rounded-2xl bg-[#141b2b] border border-[#1f293d]">
-            <p class="text-xs text-slate-400 font-medium">Sin partidos en esta liga para el rango actual.</p>
-          </div>
-        `;
+        contenedor.innerHTML = `
+          <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
+            <p class="text-sm font-semibold text-slate-300">Sin partidos para esta competición</p>
+            <p class="text-xs text-slate-400 mt-1">Selecciona otra liga arriba para ver los pronósticos disponibles.</p>
+          </div>`;
         return;
       }
 
-      contPartidos.innerHTML = lista.map(p => {
-        const est = (p.estado || '').toUpperCase();
-        const esFinalizado = (est === 'FINISHED' || est === 'FINALIZADO' || est === 'FT');
-        const esEnVivo = (est === 'IN_PLAY' || est === 'IN PLAY' || est === 'LIVE' || est === 'PAUSED' || est === 'HT');
+      lista.forEach(p => {
+        const estadoObj = calcularEstadoEnVivo(p);
+        const estaFinalizado = estadoObj.tipo === 'FINALIZADO';
+        const estaEnJuego = estadoObj.tipo === 'EN_JUEGO';
 
-        // Extraer marcador
-        let marcadorTexto = p.marcador;
-        if (!marcadorTexto && p.goles_local !== undefined && p.goles_local !== null && p.goles_visitante !== undefined && p.goles_visitante !== null) {
-          marcadorTexto = `${p.goles_local} - ${p.goles_visitante}`;
-        }
-
-        // Insignia de estado
-        let badgeEstado = '';
-        let badgeResultado = '';
-        let bordeCard = 'border-[#1f293d]';
-
-        if (esFinalizado) {
-          badgeEstado = `
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700 font-mono">
-              🏁 FINALIZADO
-            </span>
-          `;
-          const verif = verificarPronostico(p);
-          if (verif) {
-            badgeResultado = verif.acertado
-              ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/15 text-[#00f59b] border border-emerald-500/30 font-mono">✅ ACERTADO</span>`
-              : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30 font-mono">❌ PERDIDO</span>`;
+        let badgeResultadoHtml = '';
+        if (estaFinalizado) {
+          const acertado = verificarAcierto(p);
+          if (acertado === true) {
+            badgeResultadoHtml = `<span class="rounded-md bg-emerald-950/80 px-2 py-0.5 text-[11px] font-bold text-emerald-400 border border-emerald-500/40">✅ ACERTADO</span>`;
+          } else if (acertado === false) {
+            badgeResultadoHtml = `<span class="rounded-md bg-rose-950/80 px-2 py-0.5 text-[11px] font-bold text-rose-400 border border-rose-500/40">❌ PERDIDO</span>`;
           }
-        } else if (esEnVivo) {
-          bordeCard = 'border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.12)]';
-          badgeEstado = `
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono live-pulse">
-              <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-              EN JUEGO ${p.minutos_restantes < 0 ? `(${Math.abs(p.minutos_restantes)}')` : ''}
-            </span>
-          `;
-        } else {
-          badgeEstado = `
-            <span class="inline-flex items-center gap-1 text-[11px] text-amber-400/90 font-medium">
-              ⏳ Inicia en ${p.minutos_restantes > 0 ? (p.minutos_restantes >= 60 ? `${Math.floor(p.minutos_restantes/60)}h ${p.minutos_restantes%60}m` : `${p.minutos_restantes}m`) : 'breve'}
-            </span>
-          `;
         }
 
-        // Caja de Marcador Visible (Tanto si está en vivo como finalizado)
-        const marcadorHtml = marcadorTexto ? `
-          <div class="px-2.5 py-1 rounded-lg bg-[#070e1d] border ${esEnVivo ? 'border-rose-500/40 text-rose-300' : 'border-[#00f59b]/30 text-[#00f59b]'} font-mono font-bold text-xs tracking-wider shadow-inner flex items-center gap-1">
-            ${esEnVivo ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>' : ''}
-            ${marcadorTexto}
-          </div>
-        ` : '';
+        // Marcador visible si existe
+        let marcadorHtml = '';
+        if (p.marcador) {
+          marcadorHtml = `<span class="font-mono text-xs font-black tracking-widest px-2 py-0.5 rounded bg-slate-950/80 border border-slate-700/80 text-white">${p.marcador}</span>`;
+        }
 
-        return `
-          <div class="p-4 rounded-2xl bg-[#141b2b] border ${bordeCard} space-y-3 transition-all">
-            <!-- Fila Superior -->
+        const borderCard = estaEnJuego ? 'border-red-500/40 bg-gradient-to-b from-slate-900/90 to-red-950/20' : 'border-slate-800/90 bg-slate-900/60';
+
+        contenedor.innerHTML += `
+          <div class="rounded-2xl border ${borderCard} p-4 shadow-sm space-y-3 transition-all">
+            <!-- Barra superior: Liga, Hora Madrid, Estado Dinámico -->
             <div class="flex items-center justify-between text-xs">
-              <span class="px-2.5 py-0.5 rounded-md text-[10px] font-semibold bg-slate-800/80 text-slate-300 border border-slate-700/60">
-                ${p.liga || 'Liga Oficial'}
+              <span class="rounded-md bg-slate-800/90 px-2.5 py-1 text-[11px] font-bold text-slate-300 border border-slate-700/60">
+                ${p.liga}
               </span>
-              <div class="flex items-center gap-2">
-                <span class="font-mono text-[11px] text-slate-400">${p.hora || ''}</span>
-                ${badgeEstado}
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-400 text-[11px] font-medium">${p.hora || ''}</span>
+                <span class="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold border ${estadoObj.badgeClass}">
+                  ${estaEnJuego ? '<span class="h-1.5 w-1.5 rounded-full bg-red-400 animate-live-dot"></span>' : ''}
+                  ${estadoObj.texto}
+                </span>
                 ${marcadorHtml}
-                ${badgeResultado}
+                ${badgeResultadoHtml}
               </div>
             </div>
 
-            <!-- Nombres de Equipos y Cuota -->
-            <div class="flex items-center justify-between">
-              <h2 class="text-sm font-bold text-slate-100 tracking-tight leading-snug">
-                ${p.local} <span class="text-slate-500 text-xs font-normal">vs</span> ${p.visitante}
-              </h2>
-              <div class="text-right">
-                <p class="text-[9px] text-slate-500 uppercase tracking-wider font-semibold">CUOTA VALOR</p>
-                <p class="text-base font-extrabold text-[#00f59b] font-mono leading-none">@${p.cuota || '2.15'}</p>
+            <!-- Nombres de equipos y Cuota Valor -->
+            <div class="flex items-baseline justify-between pt-1">
+              <h3 class="text-sm font-bold text-white tracking-tight">
+                ${p.local} <span class="text-slate-400 font-normal text-xs">vs</span> ${p.visitante}
+              </h3>
+              <div class="text-right shrink-0 ml-2">
+                <span class="text-[9px] font-semibold uppercase text-slate-400 tracking-wider block">CUOTA VALOR</span>
+                <span class="font-mono text-base font-black text-[#00f59b]">@${p.cuota}</span>
               </div>
             </div>
 
-            <!-- Pronóstico Explícito -->
-            <div class="p-2.5 rounded-xl bg-[#0c1322] border border-[#1f293d] flex items-center justify-between">
+            <!-- Caja Destacada: Pronóstico Cuantitativo -->
+            <div class="rounded-xl border border-slate-800/80 bg-slate-950/60 p-2.5 flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <span class="text-xs">🎯</span>
                 <div>
-                  <span class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Pronóstico:</span>
-                  <p class="text-xs font-bold text-slate-100">${p.mercado || 'Victoria Local (1X2)'}</p>
+                  <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">PRONÓSTICO:</span>
+                  <span class="text-xs font-bold text-white tracking-tight">${p.mercado}</span>
                 </div>
               </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-[#00f59b] font-mono">
-                ${p.ev || '+11.8%'} Value
+              <span class="font-mono text-xs font-bold text-[#00f59b] bg-emerald-950/40 border border-emerald-500/20 px-2 py-0.5 rounded-lg">
+                ${p.ev} Value
               </span>
             </div>
 
-            <!-- Desglose Métrico Inferior -->
-            <div class="grid grid-cols-3 gap-2 pt-0.5 text-center">
-              <div class="p-2 rounded-xl bg-[#0c1322] border border-[#1f293d]/60">
-                <p class="text-[9px] text-slate-400 font-semibold uppercase">Prob. Modelo</p>
-                <p class="text-xs font-bold text-slate-200 font-mono mt-0.5">${p.prob_modelo || '52.0%'}</p>
+            <!-- Desglose de Probabilidad, Ventaja y Stake -->
+            <div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-800/60 text-center">
+              <div class="rounded-lg bg-slate-950/40 py-1.5">
+                <span class="text-[9px] font-semibold uppercase text-slate-400 block">PROB. MODELO</span>
+                <span class="font-mono text-xs font-bold text-slate-200">${p.prob_modelo}</span>
               </div>
-              <div class="p-2 rounded-xl bg-[#0c1322] border border-[#1f293d]/60">
-                <p class="text-[9px] text-slate-400 font-semibold uppercase">Ventaja (+EV)</p>
-                <p class="text-xs font-bold text-[#00f59b] font-mono mt-0.5">${p.ev || '+11.8%'}</p>
+              <div class="rounded-lg bg-slate-950/40 py-1.5">
+                <span class="text-[9px] font-semibold uppercase text-slate-400 block">VENTAJA (+EV)</span>
+                <span class="font-mono text-xs font-bold text-emerald-400">${p.ev}</span>
               </div>
-              <div class="p-2 rounded-xl bg-[#0c1322] border border-[#1f293d]/60">
-                <p class="text-[9px] text-slate-400 font-semibold uppercase">Stake Sugerido</p>
-                <p class="text-xs font-bold text-sky-400 font-mono mt-0.5">${p.stake || 1} / 10 U.</p>
+              <div class="rounded-lg bg-slate-950/40 py-1.5">
+                <span class="text-[9px] font-semibold uppercase text-slate-400 block">STAKE SUGERIDO</span>
+                <span class="font-mono text-xs font-bold text-sky-400">${p.stake} / 10 U.</span>
               </div>
             </div>
-          </div>
-        `;
-      }).join('');
+          </div>`;
+      });
     }
 
-    function renderizarAlertas() {
-      const cont = document.getElementById('contenedorAlertas');
-      const alertas = datosGlobales.alertas || [];
+    // Navegación de pestañas
+    function cambiarPestana(p) {
+      pestanaActiva = p;
+      const btnP = document.getElementById('tab-btn-partidos');
+      const btnA = document.getElementById('tab-btn-alertas');
 
-      if (alertas.length === 0) {
-        cont.innerHTML = `
-          <div class="p-8 text-center rounded-2xl bg-[#141b2b] border border-[#1f293d]">
-            <p class="text-xs text-slate-400 font-medium">Aún no se han disparado alertas a Telegram hoy.</p>
-            <p class="text-[10px] text-slate-500 mt-1">El bot solo envía alerta cuando un partido entra en ventana T-45m y supera el filtro +EV.</p>
-          </div>
-        `;
-        return;
+      if (p === 'partidos') {
+        btnP.className = 'flex-1 rounded-lg py-2 text-xs font-bold transition-all bg-[#00f59b] text-slate-950 shadow-sm';
+        btnA.className = 'flex-1 rounded-lg py-2 text-xs font-medium text-slate-400 hover:text-white transition-all';
+      } else {
+        btnA.className = 'flex-1 rounded-lg py-2 text-xs font-bold transition-all bg-[#00f59b] text-slate-950 shadow-sm';
+        btnP.className = 'flex-1 rounded-lg py-2 text-xs font-medium text-slate-400 hover:text-white transition-all';
       }
-
-      cont.innerHTML = alertas.map(a => `
-        <div class="p-3.5 rounded-xl bg-[#141b2b] border border-sky-500/30 space-y-2">
-          <div class="flex items-center justify-between text-xs">
-            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-sky-400 font-mono">
-              <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
-              Enviado a Telegram • ${a.hora || ''}
-            </span>
-            <span class="text-[10px] text-slate-400 font-mono">Alerta Real</span>
-          </div>
-          <h2 class="text-xs font-bold text-slate-100">${a.partido} — ${a.mercado}</h2>
-          <div class="flex items-center justify-between text-xs pt-1 font-mono">
-            <span class="text-slate-400">Cuota: <b class="text-[#00f59b]">${a.cuota}</b></span>
-            <span class="text-slate-400">Ventaja: <b class="text-[#00f59b]">${a.ev}</b></span>
-            <span class="text-slate-400">Stake: <b class="text-sky-400">${a.stake}</b></span>
-          </div>
-        </div>
-      `).join('');
+      renderizarVista();
     }
 
-    function filtrarLiga(liga) {
-      filtroLigaActual = liga;
-      document.querySelectorAll('.filter-btn').forEach(btn => {
-        if (btn.dataset.liga === liga) {
-          btn.className = 'filter-btn active px-3 py-1.5 rounded-lg text-xs font-bold bg-[#00f59b] text-slate-950 transition-all whitespace-nowrap';
-        } else {
-          btn.className = 'filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#141b2b] border border-[#1f293d] text-slate-400 hover:text-slate-200 transition-all whitespace-nowrap';
+    // Filtros de ligas
+    function filtrarLiga(key) {
+      filtroLigaActivo = key;
+      const botones = ['all', 'laliga', 'laliga2', 'premier', 'bundesliga', 'seriea', 'ligue1', 'champions'];
+      botones.forEach(k => {
+        const b = document.getElementById('btn-liga-' + k);
+        if (b) {
+          if (k === key) {
+            b.className = 'shrink-0 rounded-lg bg-[#00f59b] px-3 py-1.5 font-bold text-slate-950 text-xs shadow-sm';
+          } else {
+            b.className = 'shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs';
+          }
         }
       });
-      renderizar();
+      renderizarVista();
     }
 
-    function cambiarVista(vista) {
-      vistaActual = vista;
-      const tabP = document.getElementById('tabPartidos');
-      const tabA = document.getElementById('tabAlertas');
-
-      if (vista === 'partidos') {
-        tabP.className = 'py-2 text-xs font-bold rounded-lg bg-[#00f59b] text-slate-950 shadow-md transition-all';
-        tabA.className = 'py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all';
-      } else {
-        tabA.className = 'py-2 text-xs font-bold rounded-lg bg-[#00f59b] text-slate-950 shadow-md transition-all';
-        tabP.className = 'py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all';
-      }
-      renderizar();
-    }
-
-    // Carga inicial y auto-sync periódico cada 30 segundos
-    cargarDatos();
-    setInterval(cargarDatos, 30000);
+    // Ejecutar al arrancar
+    window.addEventListener('DOMContentLoaded', () => {
+      recargarDatos();
+      // Recálculo dinámico en el cliente cada 30 segundos
+      setInterval(() => {
+        actualizarMetricas();
+        if (pestanaActiva === 'partidos') renderizarVista();
+      }, 30000);
+      // Auto-fetch al servidor cada 60 segundos
+      setInterval(() => recargarDatos(false), 60000);
+    });
   </script>
 </body>
 </html>
