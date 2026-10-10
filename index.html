@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="es" class="dark">
+
+<html class="dark" lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Apex Quant Analytics</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#070e1d">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Apex Quant Analytics</title>
+<link href="manifest.json" rel="manifest"/>
+<meta content="#070e1d" name="theme-color"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
@@ -25,133 +26,100 @@
       }
     };
   </script>
-  <style>
+<style>
     body { background-color: #070e1d; color: #f1f5f9; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
     .pulse-dot { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
   </style>
 </head>
 <body class="min-h-screen flex flex-col pb-24 select-none">
-
-  <!-- Header Superior -->
-  <header class="sticky top-0 z-30 bg-[#070e1d]/90 backdrop-blur border-b border-surface-border px-4 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand/20 to-brand/5 border border-brand/40 flex items-center justify-center font-black text-brand text-lg tracking-tight">
+<!-- Header Superior -->
+<header class="sticky top-0 z-30 bg-[#070e1d]/90 backdrop-blur border-b border-surface-border px-4 py-3 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand/20 to-brand/5 border border-brand/40 flex items-center justify-center font-black text-brand text-lg tracking-tight">
         AQ
       </div>
-      <div>
-        <div class="flex items-center gap-2">
-          <h1 class="text-base font-bold text-slate-100">Apex Quant</h1>
-          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-brand/10 text-brand border border-brand/30">
-            <span class="w-1.5 h-1.5 rounded-full bg-brand pulse-dot"></span> 24/7 ONLINE
+<div>
+<div class="flex items-center gap-2">
+<h1 class="text-base font-bold text-slate-100">Apex Quant</h1>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-brand/10 text-brand border border-brand/30">
+<span class="w-1.5 h-1.5 rounded-full bg-brand pulse-dot"></span> 24/7 ONLINE
           </span>
-        </div>
-        <p class="text-[11px] text-slate-400">Motor Predictivo Just-In-Time (+EV)</p>
-      </div>
-    </div>
-    <button onclick="cargarDatos(true)" id="btnSync" class="w-9 h-9 rounded-xl bg-surface-card border border-surface-border flex items-center justify-center text-slate-300 hover:text-white active:scale-95 transition">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-    </button>
-  </header>
-
-  <!-- Contenedor Principal -->
-  <main class="flex-1 px-4 py-4 max-w-lg mx-auto w-full space-y-4">
-
-    <!-- Tarjeta Telegram -->
-    <div class="p-3.5 rounded-2xl bg-gradient-to-r from-blue-950/40 to-surface-card border border-blue-500/30 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.77-1.18 3.35-1.39 3.73-1.39.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06-.01.19-.03.35z"/></svg>
-        </div>
-        <div>
-          <div class="flex items-center gap-1.5">
-            <span class="text-xs font-semibold text-slate-200">Alertas Telegram</span>
-            <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-          </div>
-          <p class="text-[10px] text-slate-400">Sonido en ventana T-45m en tu móvil</p>
-        </div>
-      </div>
-      <span class="text-[11px] font-semibold text-blue-400 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20">ACTIVO</span>
-    </div>
-
-    <!-- Métricas del Motor -->
-    <div class="grid grid-cols-4 gap-2">
-      <div class="p-2.5 rounded-xl bg-surface-card border border-surface-border text-center">
-        <p class="text-[9px] uppercase font-bold tracking-wider text-slate-400">Partidos</p>
-        <p id="totalPartidos" class="text-base font-black text-slate-100 mt-0.5">--</p>
-        <p class="text-[8px] text-slate-500">Monitoreo</p>
-      </div>
-      <div class="p-2.5 rounded-xl bg-surface-card border border-surface-border text-center">
-        <p class="text-[9px] uppercase font-bold tracking-wider text-slate-400">Filtro EV</p>
-        <p class="text-base font-black text-brand mt-0.5">+5.0%</p>
-        <p class="text-[8px] text-slate-500">Ventaja</p>
-      </div>
-      <div class="p-2.5 rounded-xl bg-surface-card border border-surface-border text-center">
-        <p class="text-[9px] uppercase font-bold tracking-wider text-slate-400">Gestión</p>
-        <p class="text-base font-black text-sky-400 mt-0.5">1/4</p>
-        <p class="text-[8px] text-slate-500">Kelly</p>
-      </div>
-      <div class="p-2.5 rounded-xl bg-surface-card border border-surface-border text-center">
-        <p class="text-[9px] uppercase font-bold tracking-wider text-slate-400">Efectividad</p>
-        <p id="tasaAcierto" class="text-base font-black text-emerald-400 mt-0.5">--%</p>
-        <p id="recordAcierto" class="text-[8px] text-slate-400">0V - 0D TG</p>
-      </div>
-    </div>
-
-    <!-- Pestañas de Vista -->
-    <div class="flex gap-2 p-1 bg-surface-card rounded-xl border border-surface-border">
-      <button onclick="cambiarVista('partidos')" id="tabPartidos" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-brand text-slate-950 transition">
+</div>
+<p class="text-[11px] text-slate-400">Motor Predictivo Just-In-Time (+EV)</p>
+</div>
+</div>
+<button class="w-9 h-9 rounded-xl bg-surface-card border border-surface-border flex items-center justify-center text-slate-300 hover:text-white active:scale-95 transition" id="btnSync" onclick="cargarDatos(true)">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</header>
+<!-- Contenedor Principal -->
+<main class="flex-1 px-4 py-4 max-w-lg mx-auto w-full space-y-4">
+<!-- Tarjeta Telegram -->
+<div class="p-3.5 rounded-2xl bg-gradient-to-r from-blue-950/40 to-surface-card border border-blue-500/30 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
+<svg class="w-5 h-5" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.77-1.18 3.35-1.39 3.73-1.39.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06-.01.19-.03.35z"></path></svg>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="text-xs font-semibold text-slate-200">Alertas Telegram</span>
+<span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+</div>
+<p class="text-[10px] text-slate-400">Sonido en ventana T-45m en tu móvil</p>
+</div>
+</div>
+<span class="text-[11px] font-semibold text-blue-400 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20">ACTIVO</span>
+</div>
+<!-- Métricas del Motor -->
+<div class="space-y-2"><div class="grid grid-cols-3 gap-2"><div class="p-2.5 rounded-xl bg-surface-card border border-surface-border text-center"><p class="text-[9px] uppercase font-bold tracking-wider text-slate-400">Partidos</p><p class="text-base font-black text-slate-100 mt-0.5" id="totalPartidos">--</p><p class="text-[8px] text-slate-500">Monitoreo</p></div><div class="p-2.5 rounded-xl bg-surface-card border border-surface-border text-center"><p class="text-[9px] uppercase font-bold tracking-wider text-slate-400">Filtro EV</p><p class="text-base font-black text-brand mt-0.5">+5.0%</p><p class="text-[8px] text-slate-500">Ventaja</p></div><div class="p-2.5 rounded-xl bg-surface-card border border-surface-border text-center"><p class="text-[9px] uppercase font-bold tracking-wider text-slate-400">Gestión</p><p class="text-base font-black text-sky-400 mt-0.5">1/4</p><p class="text-[8px] text-slate-500">Kelly</p></div></div><div class="grid grid-cols-3 gap-2"><div class="p-2.5 rounded-xl bg-surface-card border border-brand/30 text-center"><p class="text-[9px] uppercase font-bold tracking-wider text-blue-400 flex items-center justify-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>Telegram</p><p class="text-base font-black text-emerald-400 mt-0.5" id="tasaAciertoTelegram">--%</p><p class="text-[8px] text-slate-400" id="recordTelegram">0V - 0D TG</p></div><div class="p-2.5 rounded-xl bg-surface-card border border-surface-border text-center"><p class="text-[9px] uppercase font-bold tracking-wider text-slate-400">Sin Alerta</p><p class="text-base font-black text-emerald-400 mt-0.5" id="tasaAciertoNoTelegram">--%</p><p class="text-[8px] text-slate-400" id="recordNoTelegram">0V - 0D No TG</p></div><div class="p-2.5 rounded-xl bg-surface-card border border-brand/40 bg-brand/5 text-center"><p class="text-[9px] uppercase font-bold tracking-wider text-brand">Global Total</p><p class="text-base font-black text-emerald-400 mt-0.5" id="tasaAciertoGlobal">--%</p><p class="text-[8px] text-slate-300 font-semibold" id="recordGlobal">0V - 0D Total</p></div></div></div>
+<!-- Pestañas de Vista -->
+<div class="flex gap-2 p-1 bg-surface-card rounded-xl border border-surface-border">
+<button class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-brand text-slate-950 transition" id="tabPartidos" onclick="cambiarVista('partidos')">
         Partidos del Día
       </button>
-      <button onclick="cambiarVista('alertas')" id="tabAlertas" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition">
+<button class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition" id="tabAlertas" onclick="cambiarVista('alertas')">
         Alertas Emitidas (<span id="contadorAlertas">0</span>)
       </button>
-    </div>
-
-    <!-- Filtros de Ligas -->
-    <div id="seccionFiltros" class="space-y-2">
-      <div class="flex items-center justify-between text-xs text-slate-400">
-        <span class="font-semibold text-[11px] uppercase tracking-wider">Competiciones</span>
-        <span id="horaSync" class="text-[10px] font-mono text-slate-400">Sincronizando...</span>
-      </div>
-      <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
-        <button onclick="filtrarLiga('all')" class="filtro-btn px-3 py-1.5 rounded-lg bg-brand text-slate-950 font-bold whitespace-nowrap active:scale-95 transition" data-liga="all">Todas</button>
-        <button onclick="filtrarLiga('laliga')" class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="laliga">LaLiga (ESP)</button>
-        <button onclick="filtrarLiga('laliga2')" class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="laliga2">LaLiga 2 (ESP)</button>
-        <button onclick="filtrarLiga('premier')" class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="premier">Premier (ENG)</button>
-        <button onclick="filtrarLiga('bundesliga')" class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="bundesliga">Bundesliga</button>
-        <button onclick="filtrarLiga('seriea')" class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="seriea">Serie A</button>
-        <button onclick="filtrarLiga('ligue1')" class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="ligue1">Ligue 1</button>
-      </div>
-    </div>
-
-    <!-- Lista de Partidos -->
-    <div id="vistaPartidos" class="space-y-3">
-      <div class="flex items-center justify-between">
-        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Encuentros Programados</h2>
-        <span class="text-[10px] font-mono text-brand flex items-center gap-1">
-          <span class="w-1.5 h-1.5 rounded-full bg-brand"></span> Hora Peninsular (Madrid)
+</div>
+<!-- Filtros de Ligas -->
+<div class="space-y-2" id="seccionFiltros">
+<div class="flex items-center justify-between text-xs text-slate-400">
+<span class="font-semibold text-[11px] uppercase tracking-wider">Competiciones</span>
+<span class="text-[10px] font-mono text-slate-400" id="horaSync">Sincronizando...</span>
+</div>
+<div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
+<button class="filtro-btn px-3 py-1.5 rounded-lg bg-brand text-slate-950 font-bold whitespace-nowrap active:scale-95 transition" data-liga="all" onclick="filtrarLiga('all')">Todas</button>
+<button class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="laliga" onclick="filtrarLiga('laliga')">LaLiga (ESP)</button>
+<button class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="laliga2" onclick="filtrarLiga('laliga2')">LaLiga 2 (ESP)</button>
+<button class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="premier" onclick="filtrarLiga('premier')">Premier (ENG)</button>
+<button class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="bundesliga" onclick="filtrarLiga('bundesliga')">Bundesliga</button>
+<button class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="seriea" onclick="filtrarLiga('seriea')">Serie A</button>
+<button class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="ligue1" onclick="filtrarLiga('ligue1')">Ligue 1</button>
+</div>
+</div>
+<!-- Lista de Partidos -->
+<div class="space-y-3" id="vistaPartidos">
+<div class="flex items-center justify-between">
+<h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Encuentros Programados</h2>
+<span class="text-[10px] font-mono text-brand flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-brand"></span> Hora Peninsular (Madrid)
         </span>
-      </div>
-      <div id="listaPartidos" class="space-y-2.5">
-        <div class="p-8 text-center text-slate-500 rounded-2xl bg-surface-card border border-surface-border text-xs">
-          Cargando partidos reales de datos.json...
-        </div>
-      </div>
-    </div>
-
-    <!-- Lista de Alertas Emitidas -->
-    <div id="vistaAlertas" class="hidden space-y-3">
-      <div class="flex items-center justify-between">
-        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Historial de Alertas</h2>
-        <span class="text-[10px] text-brand px-2 py-0.5 rounded bg-brand/10 border border-brand/20">Enviadas a Telegram</span>
-      </div>
-      <div id="listaAlertas" class="space-y-2.5"></div>
-    </div>
-
-  </main>
-
-  <script>
+</div>
+<div class="space-y-2.5" id="listaPartidos">
+<div class="p-8 text-center text-slate-500 rounded-2xl bg-surface-card border border-surface-border text-xs"><div class="flex items-center justify-center gap-2"><span class="w-2 h-2 rounded-full bg-brand pulse-dot"></span><span>Cargando partidos y eventos en directo...</span></div></div>
+</div>
+</div>
+<!-- Lista de Alertas Emitidas -->
+<div class="hidden space-y-3" id="vistaAlertas">
+<div class="flex items-center justify-between">
+<h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Historial de Alertas</h2>
+<span class="text-[10px] text-brand px-2 py-0.5 rounded bg-brand/10 border border-brand/20">Enviadas a Telegram</span>
+</div>
+<div class="space-y-2.5" id="listaAlertas"></div>
+</div>
+</main>
+<script>
     var DATOS_GLOBALES = { partidos: [], alertas: [] };
     var LIGA_ACTIVA = 'all';
 
