@@ -1,505 +1,531 @@
 <!DOCTYPE html>
-
-<html class="dark" lang="es">
+<html lang="es" class="dark">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
-<title>Apex Quant Analytics</title>
-<link href="manifest.json" rel="manifest"/>
-<meta content="#070e1d" name="theme-color"/>
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Apex Quant • Motor Predictivo</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#070e1d">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
           colors: {
-            brand: '#00f59b',
-            surface: {
-              lowest: '#070e1d',
-              base: '#0c1322',
+            brand: {
+              primary: '#00f59b',
+              surface: '#0c1322',
               card: '#141b2b',
-              border: '#1f293d'
+              border: '#1f293d',
+              accent: '#38bdf8',
+              loss: '#ef4444'
             }
           }
         }
       }
-    };
+    }
   </script>
-<style>
-    body { background-color: #070e1d; color: #f1f5f9; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
-    .pulse-dot { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+  <style>
+    body { background-color: #070e1d; color: #f8fafc; -webkit-tap-highlight-color: transparent; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    @keyframes pulseLive {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.95); }
+    }
+    .live-pulse { animation: pulseLive 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col pb-24 select-none">
-<!-- Header Superior -->
-<header class="sticky top-0 z-30 bg-[#070e1d]/90 backdrop-blur border-b border-surface-border px-4 py-3 flex items-center justify-between">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand/20 to-brand/5 border border-brand/40 flex items-center justify-center font-black text-brand text-lg tracking-tight">
-        AQ
+<body class="min-h-screen flex flex-col font-sans antialiased pb-24">
+
+  <!-- Header Superior -->
+  <header class="sticky top-0 z-40 bg-[#070e1d]/90 backdrop-blur-md border-b border-[#1f293d] px-4 py-3">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500/20 to-teal-400/20 border border-[#00f59b]/40 flex items-center justify-center font-bold text-base text-[#00f59b] font-mono tracking-tight shadow-[0_0_15px_rgba(0,245,155,0.15)]">
+          AQ
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-bold text-slate-100 tracking-tight leading-none">Apex Quant</h1>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-[#00f59b] border border-emerald-500/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#00f59b] animate-ping"></span>
+              24/7 ONLINE
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400 font-medium mt-0.5">Motor Predictivo Just-In-Time (+EV)</p>
+        </div>
       </div>
-<div>
-<div class="flex items-center gap-2">
-<h1 class="text-base font-bold text-slate-100">Apex Quant</h1>
-<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-brand/10 text-brand border border-brand/30">
-<span class="w-1.5 h-1.5 rounded-full bg-brand pulse-dot"></span> 24/7 ONLINE
-          </span>
-</div>
-<p class="text-[11px] text-slate-400">Motor Predictivo Just-In-Time (+EV)</p>
-</div>
-</div>
-<button class="w-9 h-9 rounded-xl bg-surface-card border border-surface-border flex items-center justify-center text-slate-300 hover:text-white active:scale-95 transition" id="btnSync" onclick="cargarDatos(true)">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</button>
-</header>
-<!-- Contenedor Principal -->
-<main class="flex-1 px-4 py-4 max-w-lg mx-auto w-full space-y-4">
-<!-- Tarjeta Telegram -->
-<div class="p-3.5 rounded-2xl bg-gradient-to-r from-blue-950/40 to-surface-card border border-blue-500/30 flex items-center justify-between">
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
-<svg class="w-5 h-5" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.77-1.18 3.35-1.39 3.73-1.39.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06-.01.19-.03.35z"></path></svg>
-</div>
-<div>
-<div class="flex items-center gap-1.5">
-<span class="text-xs font-semibold text-slate-200">Alertas Telegram</span>
-<span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-</div>
-<p class="text-[10px] text-slate-400">Sonido en ventana T-45m en tu móvil</p>
-</div>
-</div>
-<span class="text-[11px] font-semibold text-blue-400 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20">ACTIVO</span>
-</div>
-<!-- Métricas del Motor -->
-<div class="space-y-2"><div class="grid grid-cols-3 gap-2"><div class="p-2.5 rounded-xl bg-surface-card border border-surface-border text-center"><p class="text-[9px] uppercase font-bold tracking-wider text-slate-400">Partidos</p><p class="text-base font-black text-slate-100 mt-0.5" id="totalPartidos">--</p><p class="text-[8px] text-slate-500">Monitoreo</p></div><div class="p-2.5 rounded-xl bg-surface-card border border-surface-border text-center"><p class="text-[9px] uppercase font-bold tracking-wider text-slate-400">Filtro EV</p><p class="text-base font-black text-brand mt-0.5">+5.0%</p><p class="text-[8px] text-slate-500">Ventaja</p></div><div class="p-2.5 rounded-xl bg-surface-card border border-surface-border text-center"><p class="text-[9px] uppercase font-bold tracking-wider text-slate-400">Gestión</p><p class="text-base font-black text-sky-400 mt-0.5">1/4</p><p class="text-[8px] text-slate-500">Kelly</p></div></div><div class="grid grid-cols-3 gap-2"><div class="p-2.5 rounded-xl bg-surface-card border border-brand/30 text-center"><p class="text-[9px] uppercase font-bold tracking-wider text-blue-400 flex items-center justify-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>Telegram</p><p class="text-base font-black text-emerald-400 mt-0.5" id="tasaAciertoTelegram">--%</p><p class="text-[8px] text-slate-400" id="recordTelegram">0V - 0D TG</p></div><div class="p-2.5 rounded-xl bg-surface-card border border-surface-border text-center"><p class="text-[9px] uppercase font-bold tracking-wider text-slate-400">Sin Alerta</p><p class="text-base font-black text-emerald-400 mt-0.5" id="tasaAciertoNoTelegram">--%</p><p class="text-[8px] text-slate-400" id="recordNoTelegram">0V - 0D No TG</p></div><div class="p-2.5 rounded-xl bg-surface-card border border-brand/40 bg-brand/5 text-center"><p class="text-[9px] uppercase font-bold tracking-wider text-brand">Global Total</p><p class="text-base font-black text-emerald-400 mt-0.5" id="tasaAciertoGlobal">--%</p><p class="text-[8px] text-slate-300 font-semibold" id="recordGlobal">0V - 0D Total</p></div></div></div>
-<!-- Pestañas de Vista -->
-<div class="flex gap-2 p-1 bg-surface-card rounded-xl border border-surface-border">
-<button class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-brand text-slate-950 transition" id="tabPartidos" onclick="cambiarVista('partidos')">
+      <button id="btnRefresh" onclick="cargarDatos()" class="p-2.5 rounded-xl bg-[#141b2b] border border-[#1f293d] text-slate-300 hover:text-[#00f59b] active:scale-95 transition-all">
+        <svg id="iconSync" class="w-4 h-4 transition-transform duration-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-md w-full mx-auto px-4 pt-3.5 space-y-3.5">
+
+    <!-- Card Telegram Activo -->
+    <div class="p-3.5 rounded-2xl bg-gradient-to-r from-[#141b2b] to-[#0d2238] border border-[#1f293d] flex items-center justify-between shadow-lg">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-400/30 flex items-center justify-center text-sky-400">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .37z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-bold text-slate-100">Alertas Telegram</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <p class="text-[11px] text-slate-400 font-medium">Sonido en ventana T-45m en tu móvil</p>
+        </div>
+      </div>
+      <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wider bg-sky-500/10 text-sky-300 border border-sky-500/30 font-mono">
+        ACTIVO
+      </span>
+    </div>
+
+    <!-- Triple Métrica de Efectividad y Control -->
+    <div class="grid grid-cols-3 gap-2">
+      <!-- Monitoreo -->
+      <div class="p-2.5 rounded-xl bg-[#141b2b] border border-[#1f293d] text-center">
+        <p class="text-[9px] font-bold text-slate-400 tracking-wider uppercase">PARTIDOS</p>
+        <p id="statPartidos" class="text-base font-extrabold text-slate-100 font-mono mt-0.5">--</p>
+        <p class="text-[9px] text-slate-500 font-medium">Monitoreo</p>
+      </div>
+
+      <!-- Filtro EV -->
+      <div class="p-2.5 rounded-xl bg-[#141b2b] border border-[#1f293d] text-center">
+        <p class="text-[9px] font-bold text-slate-400 tracking-wider uppercase">FILTRO EV</p>
+        <p class="text-base font-extrabold text-[#00f59b] font-mono mt-0.5">+5.0%</p>
+        <p class="text-[9px] text-slate-500 font-medium">Ventaja Mín.</p>
+      </div>
+
+      <!-- Gestión Kelly -->
+      <div class="p-2.5 rounded-xl bg-[#141b2b] border border-[#1f293d] text-center">
+        <p class="text-[9px] font-bold text-slate-400 tracking-wider uppercase">GESTIÓN</p>
+        <p class="text-base font-extrabold text-sky-400 font-mono mt-0.5">1/4</p>
+        <p class="text-[9px] text-slate-500 font-medium">Kelly Conservador</p>
+      </div>
+    </div>
+
+    <!-- Fila 2 de Métricas: Triple Efectividad -->
+    <div class="grid grid-cols-3 gap-2">
+      <!-- Efectividad Telegram -->
+      <div class="p-2.5 rounded-xl bg-[#141b2b] border border-emerald-500/40 text-center relative overflow-hidden">
+        <div class="flex items-center justify-center gap-1 text-[9px] font-bold text-emerald-400 tracking-wider uppercase">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          TELEGRAM
+        </div>
+        <p id="statEfecTg" class="text-base font-extrabold text-[#00f59b] font-mono mt-0.5">--%</p>
+        <p id="statDetalleTg" class="text-[9px] text-slate-400 font-mono font-medium">0V - 0D TG</p>
+      </div>
+
+      <!-- Efectividad Sin Telegram -->
+      <div class="p-2.5 rounded-xl bg-[#141b2b] border border-[#1f293d] text-center">
+        <p class="text-[9px] font-bold text-slate-400 tracking-wider uppercase">SIN ALERTA</p>
+        <p id="statEfecNoTg" class="text-base font-extrabold text-slate-200 font-mono mt-0.5">--%</p>
+        <p id="statDetalleNoTg" class="text-[9px] text-slate-400 font-mono font-medium">0V - 0D No TG</p>
+      </div>
+
+      <!-- Efectividad Global Total -->
+      <div class="p-2.5 rounded-xl bg-[#141b2b] border border-cyan-500/30 text-center">
+        <p class="text-[9px] font-bold text-cyan-400 tracking-wider uppercase">GLOBAL TOTAL</p>
+        <p id="statEfecTotal" class="text-base font-extrabold text-cyan-300 font-mono mt-0.5">--%</p>
+        <p id="statDetalleTotal" class="text-[9px] text-slate-400 font-mono font-medium">0V - 0D Total</p>
+      </div>
+    </div>
+
+    <!-- Pestañas de Navegación de Vistas -->
+    <div class="grid grid-cols-2 p-1 rounded-xl bg-[#141b2b] border border-[#1f293d]">
+      <button id="tabPartidos" onclick="cambiarVista('partidos')" class="py-2 text-xs font-bold rounded-lg bg-[#00f59b] text-slate-950 shadow-md transition-all">
         Partidos del Día
       </button>
-<button class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition" id="tabAlertas" onclick="cambiarVista('alertas')">
-        Alertas Emitidas (<span id="contadorAlertas">0</span>)
+      <button id="tabAlertas" onclick="cambiarVista('alertas')" class="py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all">
+        Alertas Emitidas (<span id="countAlertasTab">0</span>)
       </button>
-</div>
-<!-- Filtros de Ligas -->
-<div class="space-y-2" id="seccionFiltros">
-<div class="flex items-center justify-between text-xs text-slate-400">
-<span class="font-semibold text-[11px] uppercase tracking-wider">Competiciones</span>
-<span class="text-[10px] font-mono text-slate-400" id="horaSync">Sincronizando...</span>
-</div>
-<div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
-<button class="filtro-btn px-3 py-1.5 rounded-lg bg-brand text-slate-950 font-bold whitespace-nowrap active:scale-95 transition" data-liga="all" onclick="filtrarLiga('all')">Todas</button>
-<button class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="laliga" onclick="filtrarLiga('laliga')">LaLiga (ESP)</button>
-<button class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="laliga2" onclick="filtrarLiga('laliga2')">LaLiga 2 (ESP)</button>
-<button class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="premier" onclick="filtrarLiga('premier')">Premier (ENG)</button>
-<button class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="bundesliga" onclick="filtrarLiga('bundesliga')">Bundesliga</button>
-<button class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="seriea" onclick="filtrarLiga('seriea')">Serie A</button>
-<button class="filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition" data-liga="ligue1" onclick="filtrarLiga('ligue1')">Ligue 1</button>
-</div>
-</div>
-<!-- Lista de Partidos -->
-<div class="space-y-3" id="vistaPartidos">
-<div class="flex items-center justify-between">
-<h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Encuentros Programados</h2>
-<span class="text-[10px] font-mono text-brand flex items-center gap-1">
-<span class="w-1.5 h-1.5 rounded-full bg-brand"></span> Hora Peninsular (Madrid)
-        </span>
-</div>
-<div class="space-y-2.5" id="listaPartidos">
-<div class="p-8 text-center text-slate-500 rounded-2xl bg-surface-card border border-surface-border text-xs"><div class="flex items-center justify-center gap-2"><span class="w-2 h-2 rounded-full bg-brand pulse-dot"></span><span>Cargando partidos y eventos en directo...</span></div></div>
-</div>
-</div>
-<!-- Lista de Alertas Emitidas -->
-<div class="hidden space-y-3" id="vistaAlertas">
-<div class="flex items-center justify-between">
-<h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Historial de Alertas</h2>
-<span class="text-[10px] text-brand px-2 py-0.5 rounded bg-brand/10 border border-brand/20">Enviadas a Telegram</span>
-</div>
-<div class="space-y-2.5" id="listaAlertas"></div>
-</div>
-</main>
-<script>
-    var DATOS_GLOBALES = { partidos: [], alertas: [] };
-    var LIGA_ACTIVA = 'all';
+    </div>
 
-    function calcularTiempoPartido(p) {
-      var ahora = new Date();
-      var fechaObj = null;
+    <!-- Filtros por Competición (Solo visible en vista partidos) -->
+    <div id="sectionFiltros" class="space-y-2">
+      <div class="flex items-center justify-between text-xs px-0.5">
+        <span class="font-bold text-slate-300 uppercase tracking-wider text-[10px]">Competiciones</span>
+        <span id="horaSyncText" class="text-[10px] text-slate-500 font-mono">Sincronizando...</span>
+      </div>
+      <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+        <button onclick="filtrarLiga('all')" class="filter-btn active px-3 py-1.5 rounded-lg text-xs font-bold bg-[#00f59b] text-slate-950 transition-all whitespace-nowrap" data-liga="all">Todas</button>
+        <button onclick="filtrarLiga('laliga')" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#141b2b] border border-[#1f293d] text-slate-400 hover:text-slate-200 transition-all whitespace-nowrap" data-liga="laliga">LaLiga (ESP)</button>
+        <button onclick="filtrarLiga('laliga2')" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#141b2b] border border-[#1f293d] text-slate-400 hover:text-slate-200 transition-all whitespace-nowrap" data-liga="laliga2">LaLiga 2 (ESP)</button>
+        <button onclick="filtrarLiga('premier')" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#141b2b] border border-[#1f293d] text-slate-400 hover:text-slate-200 transition-all whitespace-nowrap" data-liga="premier">Premier (ENG)</button>
+        <button onclick="filtrarLiga('bundesliga')" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#141b2b] border border-[#1f293d] text-slate-400 hover:text-slate-200 transition-all whitespace-nowrap" data-liga="bundesliga">Bundesliga</button>
+        <button onclick="filtrarLiga('seriea')" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#141b2b] border border-[#1f293d] text-slate-400 hover:text-slate-200 transition-all whitespace-nowrap" data-liga="seriea">Serie A (ITA)</button>
+        <button onclick="filtrarLiga('ligue1')" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#141b2b] border border-[#1f293d] text-slate-400 hover:text-slate-200 transition-all whitespace-nowrap" data-liga="ligue1">Ligue 1 (FRA)</button>
+        <button onclick="filtrarLiga('champions')" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#141b2b] border border-[#1f293d] text-slate-400 hover:text-slate-200 transition-all whitespace-nowrap" data-liga="champions">Champions</button>
+      </div>
+    </div>
 
-      var rawIso = p.utcDate || p.hora_utc || p.fecha_iso;
-      if (rawIso && typeof rawIso === 'string') {
-        var isoLimpio = rawIso.indexOf('Z') !== -1 ? rawIso : (rawIso + 'Z');
-        var d = new Date(isoLimpio);
-        if (!isNaN(d.getTime())) { fechaObj = d; }
+    <!-- Encabezado de Lista -->
+    <div class="flex items-center justify-between text-xs pt-1 px-0.5">
+      <span id="tituloListado" class="font-bold text-slate-300 uppercase tracking-wider text-[11px]">Encuentros Programados</span>
+      <span class="text-[10px] text-[#00f59b] font-mono flex items-center gap-1">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#00f59b]"></span>
+        Hora Peninsular (Madrid)
+      </span>
+    </div>
+
+    <!-- Contenedor Principal de Partidos -->
+    <div id="contenedorPartidos" class="space-y-3">
+      <div class="p-8 text-center rounded-2xl bg-[#141b2b] border border-[#1f293d]">
+        <div class="w-8 h-8 mx-auto border-2 border-[#00f59b] border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-xs text-slate-400 mt-3 font-medium">Sincronizando archivo datos.json...</p>
+        <p class="text-[10px] text-slate-500 mt-1">Pulsa el botón de recarga arriba para volver a comprobar.</p>
+      </div>
+    </div>
+
+    <!-- Contenedor de Historial de Alertas Emitidas (Oculto por defecto) -->
+    <div id="contenedorAlertas" class="space-y-2.5 hidden">
+      <!-- Se inyecta dinámicamente -->
+    </div>
+
+  </main>
+
+  <script>
+    let datosGlobales = { partidos: [], alertas: [] };
+    let filtroLigaActual = 'all';
+    let vistaActual = 'partidos';
+
+    async function cargarDatos() {
+      const btnSync = document.getElementById('iconSync');
+      btnSync.classList.add('rotate-180');
+      
+      try {
+        const timestamp = new Date().getTime();
+        const res = await fetch(`datos.json?v=${timestamp}`);
+        if (!res.ok) throw new Error('No se pudo cargar datos.json');
+        
+        datosGlobales = await res.json();
+        
+        document.getElementById('horaSyncText').innerText = `${datosGlobales.ultima_actualizacion || 'Reciente'} sync`;
+        document.getElementById('statPartidos').innerText = datosGlobales.partidos ? datosGlobales.partidos.length : 0;
+        document.getElementById('countAlertasTab').innerText = datosGlobales.alertas ? datosGlobales.alertas.length : 0;
+
+        actualizarMetricasEfectividad();
+        renderizar();
+      } catch (err) {
+        console.warn('Error sincronizando datos.json:', err);
+        document.getElementById('horaSyncText').innerText = 'Error sync';
+      } finally {
+        setTimeout(() => btnSync.classList.remove('rotate-180'), 600);
       }
+    }
 
-      if (!fechaObj && p.hora && typeof p.hora === 'string') {
-        var m = p.hora.match(/(\d{1,2}):(\d{2})/);
-        if (m) {
-          var hh = parseInt(m[1], 10);
-          var mm = parseInt(m[2], 10);
-          var fechaStr = p.fecha || new Date().toISOString().split('T')[0];
-          
-          if (p.hora.toLowerCase().indexOf('madrid') !== -1 && !p.hora_utc) {
-            fechaObj = new Date(fechaStr + 'T' + String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0') + ':00');
-          } else {
-            var fPartes = fechaStr.split('-');
-            fechaObj = new Date(Date.UTC(
-              parseInt(fPartes[0], 10),
-              parseInt(fPartes[1], 10) - 1,
-              parseInt(fPartes[2], 10),
-              hh,
-              mm,
-              0
-            ));
-          }
+    // =========================================================================
+    // CÁLCULO RIGUROSO DE LA TRIPLE EFECTIVIDAD (FINALIZADOS)
+    // =========================================================================
+    function actualizarMetricasEfectividad() {
+      if (!datosGlobales.partidos || datosGlobales.partidos.length === 0) return;
+
+      let tgAciertos = 0, tgFallos = 0;
+      let noTgAciertos = 0, noTgFallos = 0;
+
+      datosGlobales.partidos.forEach(p => {
+        const est = (p.estado || '').toUpperCase();
+        const esFinalizado = (est === 'FINISHED' || est === 'FINALIZADO' || est === 'FT');
+        if (!esFinalizado) return;
+
+        // Comprobamos verificación
+        const resVerif = verificarPronostico(p);
+        if (!resVerif) return;
+
+        const esTg = p.telegram_enviado === true || 
+                     (datosGlobales.alertas && datosGlobales.alertas.some(a => a.partido.includes(p.local) && a.partido.includes(p.visitante)));
+
+        if (esTg) {
+          if (resVerif.acertado) tgAciertos++;
+          else tgFallos++;
+        } else {
+          if (resVerif.acertado) noTgAciertos++;
+          else noTgFallos++;
+        }
+      });
+
+      // Telegram
+      const totalTg = tgAciertos + tgFallos;
+      const pctTg = totalTg > 0 ? Math.round((tgAciertos / totalTg) * 100) : null;
+      document.getElementById('statEfecTg').innerText = pctTg !== null ? `${pctTg}%` : '--%';
+      document.getElementById('statDetalleTg').innerText = `${tgAciertos}V - ${tgFallos}D TG`;
+
+      // No Telegram
+      const totalNoTg = noTgAciertos + noTgFallos;
+      const pctNoTg = totalNoTg > 0 ? Math.round((noTgAciertos / totalNoTg) * 100) : null;
+      document.getElementById('statEfecNoTg').innerText = pctNoTg !== null ? `${pctNoTg}%` : '--%';
+      document.getElementById('statDetalleNoTg').innerText = `${noTgAciertos}V - ${noTgFallos}D No TG`;
+
+      // Total Global
+      const totalGlobal = totalTg + totalNoTg;
+      const aciertosGlobal = tgAciertos + noTgAciertos;
+      const pctGlobal = totalGlobal > 0 ? Math.round((aciertosGlobal / totalGlobal) * 100) : null;
+      document.getElementById('statEfecTotal').innerText = pctGlobal !== null ? `${pctGlobal}%` : '--%';
+      document.getElementById('statDetalleTotal').innerText = `${aciertosGlobal}V - ${tgFallos + noTgFallos}D Total`;
+    }
+
+    // =========================================================================
+    // VERIFICACIÓN EXACTA DE PRONÓSTICO (1X2 Y GOLES OVER 2.5)
+    // =========================================================================
+    function verificarPronostico(p) {
+      // Extraer goles
+      let gLoc = p.goles_local;
+      let gVis = p.goles_visitante;
+
+      if (gLoc === undefined || gVis === undefined || gLoc === null || gVis === null) {
+        if (p.marcador && p.marcador.includes('-')) {
+          const parts = p.marcador.split('-');
+          gLoc = parseInt(parts[0].trim());
+          gVis = parseInt(parts[1].trim());
         }
       }
 
-      if (!fechaObj) {
+      if (isNaN(gLoc) || isNaN(gVis) || gLoc === null || gVis === null) return null;
+
+      const mercado = (p.mercado || '').toLowerCase();
+      const tipo = (p.tipo_mercado || '').toUpperCase();
+
+      // Caso 1: Goles Over 2.5
+      if (tipo === 'GOLES' || mercado.includes('más de 2.5') || mercado.includes('over 2.5')) {
+        const totalGoles = gLoc + gVis;
         return {
-          horaStr: (p.hora && typeof p.hora === 'string') ? p.hora : 'TBD',
-          minutosRestantes: typeof p.minutos_restantes === 'number' ? p.minutos_restantes : 999
+          acertado: totalGoles > 2.5,
+          tipo: 'GOLES',
+          detalle: `${totalGoles} goles totales`
         };
       }
 
-      var horaStr = fechaObj.toLocaleTimeString('es-ES', {
-        timeZone: 'Europe/Madrid',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      }) + ' Madrid';
-
-      var minutosRestantes = Math.round((fechaObj.getTime() - ahora.getTime()) / 60000);
-      return { horaStr: horaStr, minutosRestantes: minutosRestantes };
+      // Caso 2: Victoria Local 1X2
+      return {
+        acertado: gLoc > gVis,
+        tipo: '1X2',
+        detalle: `${gLoc} a ${gVis}`
+      };
     }
 
-    function normalizarTexto(txt) {
-      if (!txt) return '';
-      return txt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    }
+    // =========================================================================
+    // RENDERIZADO VISUAL
+    // =========================================================================
+    function renderizar() {
+      const contPartidos = document.getElementById('contenedorPartidos');
+      const contAlertas = document.getElementById('contenedorAlertas');
 
-    function obtenerMarcadorFinal(p, minutosRestantes) {
-      var estadoApi = (p.estado || '').toUpperCase();
-      var esFinalizado = estadoApi === 'FINISHED' || estadoApi === 'FINALIZADO' || minutosRestantes < -125;
-      if (!esFinalizado) { return null; }
-
-      var gLocal = null;
-      var gVisitante = null;
-
-      if (p.marcador && typeof p.marcador === 'string') {
-        var partes = p.marcador.split('-').map(function(s) { return s.trim(); });
-        if (partes.length === 2 && !isNaN(partes[0]) && !isNaN(partes[1])) {
-          gLocal = Number(partes[0]);
-          gVisitante = Number(partes[1]);
-        }
-      }
-
-      if (gLocal === null && p.goles_local !== undefined && p.goles_visitante !== undefined) {
-        if (p.goles_local !== null && p.goles_visitante !== null) {
-          gLocal = Number(p.goles_local);
-          gVisitante = Number(p.goles_visitante);
-        }
-      }
-
-      if (gLocal === null && p.score && p.score.fullTime) {
-        if (p.score.fullTime.home !== null && p.score.fullTime.away !== null) {
-          gLocal = Number(p.score.fullTime.home);
-          gVisitante = Number(p.score.fullTime.away);
-        }
-      }
-
-      var marcadorStr = (gLocal !== null && gVisitante !== null) ? (gLocal + ' - ' + gVisitante) : 'FT';
-
-      var acertado = null;
-      var mercado = normalizarTexto(p.mercado || '');
-
-      if (gLocal !== null && gVisitante !== null) {
-        var totalGoles = gLocal + gVisitante;
-        
-        if (mercado.indexOf('mas de 2.5') !== -1 || mercado.indexOf('over 2.5') !== -1) {
-          acertado = totalGoles > 2.5;
-        } else if (mercado.indexOf('menos de 2.5') !== -1 || mercado.indexOf('under 2.5') !== -1) {
-          acertado = totalGoles < 2.5;
-        } else if (mercado.indexOf('visitante') !== -1 || mercado.indexOf('2') !== -1) {
-          acertado = gVisitante > gLocal;
-        } else if (mercado.indexOf('empate') !== -1 || mercado.indexOf('x') !== -1) {
-          acertado = gLocal === gVisitante;
-        } else if (mercado.indexOf('local') !== -1 || mercado.indexOf('victoria') !== -1 || mercado.indexOf('1x2') !== -1) {
-          acertado = gLocal > gVisitante;
-        }
-      }
-
-      return { marcador: marcadorStr, acertado: acertado };
-    }
-
-    function renderizarBadgeEstado(minutosRestantes, resObj) {
-      if (resObj) {
-        var badgeVerif = '';
-        if (resObj.acertado !== null) {
-          badgeVerif = resObj.acertado
-            ? '<span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">✅ ACERTADO</span>'
-            : '<span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500/20 text-rose-400 border border-rose-500/30">❌ PERDIDO</span>';
-        }
-
-        return '<div class="flex items-center gap-1.5">' +
-          '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">🏁 FINALIZADO</span>' +
-          '<span class="px-2 py-0.5 rounded-lg bg-surface-base font-black font-mono text-xs text-brand border border-surface-border tracking-wider">' + resObj.marcador + '</span>' +
-          badgeVerif +
-        '</div>';
-      }
-
-      if (minutosRestantes <= 0 && minutosRestantes >= -125) {
-        var minTranscurrido = Math.abs(minutosRestantes);
-        if (minTranscurrido >= 45 && minTranscurrido <= 60) {
-          return '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">⏸️ DESCANSO</span>';
-        }
-        return '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1">' +
-          '<span class="w-1.5 h-1.5 rounded-full bg-rose-400 pulse-dot"></span> EN JUEGO (' + minTranscurrido + "\')" +
-        '</span>';
-      }
-      if (minutosRestantes <= 60) {
-        return '<span class="text-amber-400 font-bold text-[11px] flex items-center gap-1">' +
-          '<span class="w-1.5 h-1.5 rounded-full bg-amber-400 pulse-dot"></span> Inicia en ' + minutosRestantes + 'm' +
-        '</span>';
-      }
-      var horas = Math.floor(minutosRestantes / 60);
-      var mins = minutosRestantes % 60;
-      return '<span class="text-slate-400 text-[11px]">⏳ Inicia en ' + horas + 'h ' + mins + 'm</span>';
-    }
-
-    function cargarDatos(forzar) {
-      var btn = document.getElementById('btnSync');
-      if (btn) { btn.classList.add('animate-spin'); }
-
-      fetch('datos.json?t=' + Date.now())
-        .then(function(res) {
-          if (!res.ok) { throw new Error('HTTP ' + res.status); }
-          return res.json();
-        })
-        .then(function(data) {
-          DATOS_GLOBALES = data || {};
-          var partidos = data.partidos || [];
-          var alertas = data.alertas || [];
-
-          var elTotal = document.getElementById('totalPartidos');
-          if (elTotal) {
-            elTotal.innerText = data.total_partidos_hoy !== undefined ? data.total_partidos_hoy : partidos.length;
-          }
-
-          var elContador = document.getElementById('contadorAlertas');
-          if (elContador) {
-            elContador.innerText = alertas.length;
-          }
-
-          var ahoraMadrid = new Date().toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit' });
-          var elHora = document.getElementById('horaSync');
-          if (elHora) {
-            elHora.innerText = ahoraMadrid + ' Madrid sync';
-          }
-
-          actualizarEfectividad();
-          renderizarPartidos();
-          renderizarAlertas();
-        })
-        .catch(function(err) {
-          console.error('Error cargando datos.json:', err);
-          var contenedor = document.getElementById('listaPartidos');
-          if (contenedor) {
-            contenedor.innerHTML = '<div class="p-6 text-center rounded-2xl bg-surface-card border border-surface-border text-slate-400 text-xs">' +
-              '<p class="font-bold text-slate-200">Sincronizando archivo datos.json</p>' +
-              '<p class="text-[11px] mt-1 text-slate-400">Pulsa el botón de recarga arriba para volver a comprobar.</p>' +
-            '</div>';
-          }
-        })
-        .finally(function() {
-          if (btn) {
-            setTimeout(function() { btn.classList.remove('animate-spin'); }, 400);
-          }
-        });
-    }
-
-    function actualizarEfectividad() {
-      var alertas = DATOS_GLOBALES.alertas || [];
-      var partidos = DATOS_GLOBALES.partidos || [];
-      var aciertos = 0;
-      var fallos = 0;
-
-      for (var i = 0; i < alertas.length; i++) {
-        var al = alertas[i];
-        var partidoEncontrado = null;
-        
-        for (var j = 0; j < partidos.length; j++) {
-          var p = partidos[j];
-          var matchTitulo = (p.local + ' vs ' + p.visitante);
-          if (matchTitulo === al.partido || (al.partido && al.partido.indexOf(p.local) !== -1)) {
-            partidoEncontrado = p;
-            break;
-          }
-        }
-
-        if (partidoEncontrado) {
-          var tiempo = calcularTiempoPartido(partidoEncontrado);
-          var res = obtenerMarcadorFinal(partidoEncontrado, tiempo.minutosRestantes);
-          if (res && res.acertado !== null) {
-            if (res.acertado) { aciertos++; }
-            else { fallos++; }
-          }
-        }
-      }
-
-      var total = aciertos + fallos;
-      var pct = total > 0 ? Math.round((aciertos / total) * 100) : 0;
-      
-      var elPct = document.getElementById('tasaAcierto');
-      var elRec = document.getElementById('recordAcierto');
-      if (elPct && elRec) {
-        elPct.innerText = total > 0 ? (pct + '%') : '--%';
-        elRec.innerText = aciertos + 'V - ' + fallos + 'D TG';
-      }
-    }
-
-    function renderizarPartidos() {
-      var contenedor = document.getElementById('listaPartidos');
-      if (!contenedor) { return; }
-      var partidos = DATOS_GLOBALES.partidos || [];
-
-      if (LIGA_ACTIVA !== 'all') {
-        partidos = partidos.filter(function(p) {
-          return p.liga_key === LIGA_ACTIVA || (p.liga && p.liga.toLowerCase().indexOf(LIGA_ACTIVA) !== -1);
-        });
-      }
-
-      if (partidos.length === 0) {
-        contenedor.innerHTML = '<div class="p-8 text-center rounded-2xl bg-surface-card border border-surface-border text-slate-400 text-xs">' +
-          'No hay partidos programados para este filtro en las 7 ligas oficiales.' +
-        '</div>';
+      if (vistaActual === 'alertas') {
+        contPartidos.classList.add('hidden');
+        contAlertas.classList.remove('hidden');
+        document.getElementById('sectionFiltros').classList.add('hidden');
+        document.getElementById('tituloListado').innerText = 'Historial de Alertas a Telegram';
+        renderizarAlertas();
         return;
       }
 
-      var html = '';
-      for (var i = 0; i < partidos.length; i++) {
-        var p = partidos[i];
-        var tiempo = calcularTiempoPartido(p);
-        var resObj = obtenerMarcadorFinal(p, tiempo.minutosRestantes);
-        var badgeEstado = renderizarBadgeEstado(tiempo.minutosRestantes, resObj);
-        var pronosticoTexto = p.mercado || (p.seleccion ? ('Victoria Local (' + p.local + ')') : 'Victoria Local (1X2)');
+      contPartidos.classList.remove('hidden');
+      contAlertas.classList.add('hidden');
+      document.getElementById('sectionFiltros').classList.remove('hidden');
+      document.getElementById('tituloListado').innerText = 'Encuentros Programados';
 
-        html += '<div class="p-3.5 rounded-2xl bg-surface-card border border-surface-border hover:border-brand/30 transition space-y-2.5">' +
-          '<div class="flex items-center justify-between text-[11px]">' +
-            '<span class="px-2 py-0.5 rounded-md font-semibold bg-surface-base text-slate-300 border border-surface-border">' + (p.liga || 'Liga Oficial') + '</span>' +
-            '<div class="flex items-center gap-2">' +
-              '<span class="font-mono text-slate-400 font-bold">' + tiempo.horaStr + '</span>' +
-              badgeEstado +
-            '</div>' +
-          '</div>' +
-          '<div class="flex items-center justify-between">' +
-            '<h3 class="font-bold text-sm text-slate-100">' + p.local + ' <span class="text-slate-500 font-normal">vs</span> ' + p.visitante + '</h3>' +
-            '<div class="text-right">' +
-              '<span class="text-[9px] uppercase font-bold tracking-wider text-slate-400 block">Cuota Valor</span>' +
-              '<span class="text-base font-black text-brand">@' + (p.cuota || '2.15') + '</span>' +
-            '</div>' +
-          '</div>' +
-          '<div class="py-1 px-2.5 rounded-lg bg-surface-base/80 border border-surface-border flex items-center justify-between text-xs">' +
-            '<span class="text-slate-400 text-[11px] font-medium flex items-center gap-1.5">' +
-              '<span>🎯</span> Pronóstico: ' +
-              '<strong class="text-slate-100 font-bold">' + pronosticoTexto + '</strong>' +
-            '</span>' +
-            '<span class="text-[10px] font-mono text-brand font-semibold">+EV Value</span>' +
-          '</div>' +
-          '<div class="grid grid-cols-3 gap-2 pt-1 border-t border-surface-border/60 text-center">' +
-            '<div class="py-1 rounded-lg bg-surface-base/60">' +
-              '<span class="text-[9px] text-slate-400 block">Prob. Modelo</span>' +
-              '<span class="text-xs font-bold text-slate-200">' + (p.prob_modelo || '52.0%') + '</span>' +
-            '</div>' +
-            '<div class="py-1 rounded-lg bg-surface-base/60">' +
-              '<span class="text-[9px] text-slate-400 block">Ventaja (+EV)</span>' +
-              '<span class="text-xs font-bold text-brand">' + (p.ev || '+11.8%') + '</span>' +
-            '</div>' +
-            '<div class="py-1 rounded-lg bg-surface-base/60">' +
-              '<span class="text-[9px] text-slate-400 block">Stake Sugerido</span>' +
-              '<span class="text-xs font-bold text-sky-400">' + (p.stake || 1) + ' / 10 U.</span>' +
-            '</div>' +
-          '</div>' +
-        '</div>';
+      const lista = (datosGlobales.partidos || []).filter(p => {
+        if (filtroLigaActual === 'all') return true;
+        return p.liga_key === filtroLigaActual;
+      });
+
+      if (lista.length === 0) {
+        contPartidos.innerHTML = `
+          <div class="p-8 text-center rounded-2xl bg-[#141b2b] border border-[#1f293d]">
+            <p class="text-xs text-slate-400 font-medium">Sin partidos en esta liga para el rango actual.</p>
+          </div>
+        `;
+        return;
       }
 
-      contenedor.innerHTML = html;
+      contPartidos.innerHTML = lista.map(p => {
+        const est = (p.estado || '').toUpperCase();
+        const esFinalizado = (est === 'FINISHED' || est === 'FINALIZADO' || est === 'FT');
+        const esEnVivo = (est === 'IN_PLAY' || est === 'IN PLAY' || est === 'LIVE' || est === 'PAUSED' || est === 'HT');
+
+        // Extraer marcador
+        let marcadorTexto = p.marcador;
+        if (!marcadorTexto && p.goles_local !== undefined && p.goles_local !== null && p.goles_visitante !== undefined && p.goles_visitante !== null) {
+          marcadorTexto = `${p.goles_local} - ${p.goles_visitante}`;
+        }
+
+        // Insignia de estado
+        let badgeEstado = '';
+        let badgeResultado = '';
+        let bordeCard = 'border-[#1f293d]';
+
+        if (esFinalizado) {
+          badgeEstado = `
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700 font-mono">
+              🏁 FINALIZADO
+            </span>
+          `;
+          const verif = verificarPronostico(p);
+          if (verif) {
+            badgeResultado = verif.acertado
+              ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/15 text-[#00f59b] border border-emerald-500/30 font-mono">✅ ACERTADO</span>`
+              : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30 font-mono">❌ PERDIDO</span>`;
+          }
+        } else if (esEnVivo) {
+          bordeCard = 'border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.12)]';
+          badgeEstado = `
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono live-pulse">
+              <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+              EN JUEGO ${p.minutos_restantes < 0 ? `(${Math.abs(p.minutos_restantes)}')` : ''}
+            </span>
+          `;
+        } else {
+          badgeEstado = `
+            <span class="inline-flex items-center gap-1 text-[11px] text-amber-400/90 font-medium">
+              ⏳ Inicia en ${p.minutos_restantes > 0 ? (p.minutos_restantes >= 60 ? `${Math.floor(p.minutos_restantes/60)}h ${p.minutos_restantes%60}m` : `${p.minutos_restantes}m`) : 'breve'}
+            </span>
+          `;
+        }
+
+        // Caja de Marcador Visible (Tanto si está en vivo como finalizado)
+        const marcadorHtml = marcadorTexto ? `
+          <div class="px-2.5 py-1 rounded-lg bg-[#070e1d] border ${esEnVivo ? 'border-rose-500/40 text-rose-300' : 'border-[#00f59b]/30 text-[#00f59b]'} font-mono font-bold text-xs tracking-wider shadow-inner flex items-center gap-1">
+            ${esEnVivo ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>' : ''}
+            ${marcadorTexto}
+          </div>
+        ` : '';
+
+        return `
+          <div class="p-4 rounded-2xl bg-[#141b2b] border ${bordeCard} space-y-3 transition-all">
+            <!-- Fila Superior -->
+            <div class="flex items-center justify-between text-xs">
+              <span class="px-2.5 py-0.5 rounded-md text-[10px] font-semibold bg-slate-800/80 text-slate-300 border border-slate-700/60">
+                ${p.liga || 'Liga Oficial'}
+              </span>
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-[11px] text-slate-400">${p.hora || ''}</span>
+                ${badgeEstado}
+                ${marcadorHtml}
+                ${badgeResultado}
+              </div>
+            </div>
+
+            <!-- Nombres de Equipos y Cuota -->
+            <div class="flex items-center justify-between">
+              <h2 class="text-sm font-bold text-slate-100 tracking-tight leading-snug">
+                ${p.local} <span class="text-slate-500 text-xs font-normal">vs</span> ${p.visitante}
+              </h2>
+              <div class="text-right">
+                <p class="text-[9px] text-slate-500 uppercase tracking-wider font-semibold">CUOTA VALOR</p>
+                <p class="text-base font-extrabold text-[#00f59b] font-mono leading-none">@${p.cuota || '2.15'}</p>
+              </div>
+            </div>
+
+            <!-- Pronóstico Explícito -->
+            <div class="p-2.5 rounded-xl bg-[#0c1322] border border-[#1f293d] flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-xs">🎯</span>
+                <div>
+                  <span class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Pronóstico:</span>
+                  <p class="text-xs font-bold text-slate-100">${p.mercado || 'Victoria Local (1X2)'}</p>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-[#00f59b] font-mono">
+                ${p.ev || '+11.8%'} Value
+              </span>
+            </div>
+
+            <!-- Desglose Métrico Inferior -->
+            <div class="grid grid-cols-3 gap-2 pt-0.5 text-center">
+              <div class="p-2 rounded-xl bg-[#0c1322] border border-[#1f293d]/60">
+                <p class="text-[9px] text-slate-400 font-semibold uppercase">Prob. Modelo</p>
+                <p class="text-xs font-bold text-slate-200 font-mono mt-0.5">${p.prob_modelo || '52.0%'}</p>
+              </div>
+              <div class="p-2 rounded-xl bg-[#0c1322] border border-[#1f293d]/60">
+                <p class="text-[9px] text-slate-400 font-semibold uppercase">Ventaja (+EV)</p>
+                <p class="text-xs font-bold text-[#00f59b] font-mono mt-0.5">${p.ev || '+11.8%'}</p>
+              </div>
+              <div class="p-2 rounded-xl bg-[#0c1322] border border-[#1f293d]/60">
+                <p class="text-[9px] text-slate-400 font-semibold uppercase">Stake Sugerido</p>
+                <p class="text-xs font-bold text-sky-400 font-mono mt-0.5">${p.stake || 1} / 10 U.</p>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     function renderizarAlertas() {
-      var contenedor = document.getElementById('listaAlertas');
-      if (!contenedor) { return; }
-      var alertas = DATOS_GLOBALES.alertas || [];
+      const cont = document.getElementById('contenedorAlertas');
+      const alertas = datosGlobales.alertas || [];
+
       if (alertas.length === 0) {
-        contenedor.innerHTML = '<div class="p-8 text-center rounded-2xl bg-surface-card border border-surface-border text-slate-400 text-xs">' +
-          'Aún no se han emitido alertas en este ciclo. El bot las registrará cuando entren en la ventana T-45m.' +
-        '</div>';
+        cont.innerHTML = `
+          <div class="p-8 text-center rounded-2xl bg-[#141b2b] border border-[#1f293d]">
+            <p class="text-xs text-slate-400 font-medium">Aún no se han disparado alertas a Telegram hoy.</p>
+            <p class="text-[10px] text-slate-500 mt-1">El bot solo envía alerta cuando un partido entra en ventana T-45m y supera el filtro +EV.</p>
+          </div>
+        `;
         return;
       }
 
-      var html = '';
-      for (var i = 0; i < alertas.length; i++) {
-        var a = alertas[i];
-        html += '<div class="p-3.5 rounded-2xl bg-surface-card border border-brand/20 space-y-2">' +
-          '<div class="flex items-center justify-between text-[11px]">' +
-            '<span class="text-brand font-semibold flex items-center gap-1">' +
-              '<span class="w-1.5 h-1.5 rounded-full bg-brand"></span> Notificación Enviada' +
-            '</span>' +
-            '<span class="font-mono text-slate-400">' + (a.hora || 'Madrid') + '</span>' +
-          '</div>' +
-          '<h4 class="font-bold text-sm text-slate-100">' + a.partido + '</h4>' +
-          '<p class="text-xs text-slate-400">' + (a.mercado || 'Victoria Local (1X2)') + '</p>' +
-          '<div class="flex items-center justify-between pt-1 text-xs border-t border-surface-border/60">' +
-            '<span class="text-brand font-bold">' + a.cuota + '</span>' +
-            '<span class="text-slate-300">Ventaja: <b class="text-brand">' + a.ev + '</b></span>' +
-            '<span class="text-sky-400 font-bold">Stake: ' + a.stake + '</span>' +
-          '</div>' +
-        '</div>';
-      }
-
-      contenedor.innerHTML = html;
+      cont.innerHTML = alertas.map(a => `
+        <div class="p-3.5 rounded-xl bg-[#141b2b] border border-sky-500/30 space-y-2">
+          <div class="flex items-center justify-between text-xs">
+            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-sky-400 font-mono">
+              <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+              Enviado a Telegram • ${a.hora || ''}
+            </span>
+            <span class="text-[10px] text-slate-400 font-mono">Alerta Real</span>
+          </div>
+          <h2 class="text-xs font-bold text-slate-100">${a.partido} — ${a.mercado}</h2>
+          <div class="flex items-center justify-between text-xs pt-1 font-mono">
+            <span class="text-slate-400">Cuota: <b class="text-[#00f59b]">${a.cuota}</b></span>
+            <span class="text-slate-400">Ventaja: <b class="text-[#00f59b]">${a.ev}</b></span>
+            <span class="text-slate-400">Stake: <b class="text-sky-400">${a.stake}</b></span>
+          </div>
+        </div>
+      `).join('');
     }
 
     function filtrarLiga(liga) {
-      LIGA_ACTIVA = liga;
-      var botones = document.querySelectorAll('.filtro-btn');
-      for (var i = 0; i < botones.length; i++) {
-        var btn = botones[i];
-        if (btn.getAttribute('data-liga') === liga) {
-          btn.className = 'filtro-btn px-3 py-1.5 rounded-lg bg-brand text-slate-950 font-bold whitespace-nowrap active:scale-95 transition';
+      filtroLigaActual = liga;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        if (btn.dataset.liga === liga) {
+          btn.className = 'filter-btn active px-3 py-1.5 rounded-lg text-xs font-bold bg-[#00f59b] text-slate-950 transition-all whitespace-nowrap';
         } else {
-          btn.className = 'filtro-btn px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300 font-medium whitespace-nowrap active:scale-95 transition';
+          btn.className = 'filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#141b2b] border border-[#1f293d] text-slate-400 hover:text-slate-200 transition-all whitespace-nowrap';
         }
-      }
-      renderizarPartidos();
+      });
+      renderizar();
     }
 
     function cambiarVista(vista) {
-      var btnPartidos = document.getElementById('tabPartidos');
-      var btnAlertas = document.getElementById('tabAlertas');
-      var vistaPartidos = document.getElementById('vistaPartidos');
-      var vistaAlertas = document.getElementById('vistaAlertas');
-      var seccionFiltros = document.getElementById('seccionFiltros');
+      vistaActual = vista;
+      const tabP = document.getElementById('tabPartidos');
+      const tabA = document.getElementById('tabAlertas');
 
       if (vista === 'partidos') {
-        btnPartidos.className = 'flex-1 py-1.5 text-xs font-bold rounded-lg bg-brand text-slate-950 transition';
-        btnAlertas.className = 'flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition';
-        vistaPartidos.classList.remove('hidden');
-        vistaAlertas.classList.add('hidden');
-        seccionFiltros.classList.remove('hidden');
+        tabP.className = 'py-2 text-xs font-bold rounded-lg bg-[#00f59b] text-slate-950 shadow-md transition-all';
+        tabA.className = 'py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all';
       } else {
-        btnAlertas.className = 'flex-1 py-1.5 text-xs font-bold rounded-lg bg-brand text-slate-950 transition';
-        btnPartidos.className = 'flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition';
-        vistaAlertas.classList.remove('hidden');
-        vistaPartidos.classList.add('hidden');
-        seccionFiltros.classList.add('hidden');
+        tabA.className = 'py-2 text-xs font-bold rounded-lg bg-[#00f59b] text-slate-950 shadow-md transition-all';
+        tabP.className = 'py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all';
       }
+      renderizar();
     }
 
-    cargarDatos(false);
-    setInterval(function() { renderizarPartidos(); }, 30000);
+    // Carga inicial y auto-sync periódico cada 30 segundos
+    cargarDatos();
+    setInterval(cargarDatos, 30000);
   </script>
 </body>
 </html>
