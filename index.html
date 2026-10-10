@@ -92,10 +92,10 @@
         </div>
         <div>
           <div class="flex items-center space-x-1.5">
-            <span class="text-xs font-semibold text-white">Alertas Telegram</span>
+            <span class="text-xs font-semibold text-white">Canal Telegram Oficial</span>
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
           </div>
-          <p class="text-[10px] text-slate-400">Sonido en ventana T-45m en tu móvil</p>
+          <p class="text-[10px] text-slate-400">Alertas automáticas en @apex_quant_alertas</p>
         </div>
       </div>
       <span class="px-2.5 py-1 text-[11px] font-bold text-blue-400 bg-blue-500/10 rounded-lg border border-blue-500/30">ACTIVO</span>
@@ -192,7 +192,7 @@
       <div class="text-center py-12 bg-slate-900/50 rounded-2xl border border-slate-800/80 p-6 space-y-3">
         <div class="inline-block animate-spin w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full"></div>
         <p class="text-sm font-semibold text-slate-300">Sincronizando archivo datos.json...</p>
-        <p class="text-xs text-slate-500">Calculando minutos reales de juego en directo</p>
+        <p class="text-xs text-slate-500">Calculando minutos reales de juego y estado de alertas</p>
       </div>
     </div>
 
@@ -205,9 +205,76 @@
     let globalPartidos = [];
     let globalAlertas = [];
     let ligaActiva = 'all';
-    let pestanaActiva = 'activos'; // 'activos', 'finalizados', 'alertas'
+    let pestanaActiva = 'activos';
 
-    // Actualiza los contadores en las pestañas en base a la lista completa
+    // Normalizador de texto para emparejamiento flexible de nombres
+    function normalizarTexto(txt) {
+      if (!txt) return '';
+      return String(txt)
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\b(fc|cf|rcd|sv|sc|ac|as|cd|ud|ca)\b/gi, '')
+        .replace(/[^a-z0-9]/g, '');
+    }
+
+    // Busca el partido correspondiente en globalPartidos
+    function encontrarPartidoDeAlerta(a) {
+      if (!a) return null;
+      
+      // 1. Por ID si existe
+      if (a.id) {
+        const porId = globalPartidos.find(p => String(p.id) === String(a.id));
+        if (porId) return porId;
+      }
+      if (a.id_alerta && a.id_alerta.includes('_')) {
+        const idPart = a.id_alerta.split('_')[0];
+        const porId = globalPartidos.find(p => String(p.id) === String(idPart));
+        if (porId) return porId;
+      }
+
+      // 2. Por emparejamiento de nombres
+      const nombreAlerta = a.partido || '';
+      if (!nombreAlerta.includes('vs')) return null;
+
+      const partes = nombreAlerta.split('vs').map(s => normalizarTexto(s));
+      const locNorm = partes[0];
+      const visNorm = partes[1];
+
+      return globalPartidos.find(p => {
+        const pLoc = normalizarTexto(p.local);
+        const pVis = normalizarTexto(p.visitante);
+        return (pLoc.includes(locNorm) || locNorm.includes(pLoc)) &&
+               (pVis.includes(visNorm) || visNorm.includes(pVis));
+      }) || null;
+    }
+
+    // Comprobar si un partido ha concluido
+    function esPartidoFinalizado(p) {
+      if (!p) return false;
+      const st = String(p.estado || '').toUpperCase().trim();
+      if (['FINISHED', 'FT', 'FINALIZADO', 'TERMINADO', 'AWARDED'].includes(st)) return true;
+
+      if (p.marcador) {
+        if (p.timestamp_ms) {
+          const transcurridos = (Date.now() - p.timestamp_ms) / 60000;
+          if (transcurridos > 115) return true;
+        } else if (p.minutos_restantes !== undefined && p.minutos_restantes !== null) {
+          if (p.minutos_restantes < -115) return true;
+        }
+      }
+      return false;
+    }
+
+    // Comprobar si una alerta está finalizada
+    function esAlertaFinalizada(a) {
+      const p = encontrarPartidoDeAlerta(a);
+      if (p && esPartidoFinalizado(p)) return true;
+      if (a.finalizado === true) return true;
+      return false;
+    }
+
+    // Actualiza los contadores en las pestañas
     function actualizarContadoresPestanas() {
       let cActivos = 0;
       let cFinalizados = 0;
@@ -243,7 +310,6 @@
       const seccionFiltrosLigas = document.getElementById('seccionFiltrosLigas');
       const tituloSeccion = document.getElementById('tituloSeccion');
 
-      // Reseteo estilos
       [btnActivos, btnFinalizados, btnAlertas].forEach(b => {
         if (b) b.className = "py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all";
       });
@@ -284,30 +350,12 @@
       renderizarPartidos();
     }
 
-    // Comprobar de forma exhaustiva si un partido ha concluido
-    function esPartidoFinalizado(p) {
-      const st = String(p.estado || '').toUpperCase().trim();
-      if (['FINISHED', 'FT', 'FINALIZADO', 'TERMINADO', 'AWARDED'].includes(st)) return true;
-
-      // Si tiene marcador y empezó hace más de 115 minutos
-      if (p.marcador) {
-        if (p.timestamp_ms) {
-          const transcurridos = (Date.now() - p.timestamp_ms) / 60000;
-          if (transcurridos > 115) return true;
-        } else if (p.minutos_restantes !== undefined && p.minutos_restantes !== null) {
-          if (p.minutos_restantes < -115) return true;
-        }
-      }
-      return false;
-    }
-
     // Calcular estado y minutos dinámicos
     function calcularEstadoYMinuto(p) {
       if (esPartidoFinalizado(p)) {
         return { tipo: 'FINALIZADO', texto: 'FINALIZADO', colorBadge: 'bg-slate-800 text-slate-300 border-slate-700' };
       }
 
-      // Si tiene timestamp_ms o fecha computable
       let diffMin = null;
       if (p.timestamp_ms) {
         diffMin = Math.round((p.timestamp_ms - Date.now()) / 60000);
@@ -343,8 +391,9 @@
       return { tipo: 'SCHEDULED', texto: 'Inicia en breve', colorBadge: 'bg-slate-900 text-amber-400 border-amber-500/30' };
     }
 
-    // Verificar acierto en base a goles reales
-    function verificarAcierto(p) {
+    // Extraer goles de marcador
+    function extraerGoles(p) {
+      if (!p) return { gLoc: null, gVis: null, total: null };
       let gLoc = p.goles_local;
       let gVis = p.goles_visitante;
 
@@ -356,56 +405,100 @@
         }
       }
 
-      if (gLoc === null || gLoc === undefined || isNaN(gLoc)) return null;
+      if (gLoc !== null && gVis !== null && !isNaN(gLoc) && !isNaN(gVis)) {
+        return { gLoc, gVis, total: gLoc + gVis };
+      }
+      return { gLoc: null, gVis: null, total: null };
+    }
 
-      const tipoMercado = p.tipo_mercado || '';
-      const textoMercado = (p.mercado || '').toLowerCase();
+    // Verificar acierto de un pronóstico o alerta en base al marcador
+    function verificarPronostico(mercadoStr, tipoMercadoStr, p) {
+      const { gLoc, gVis, total } = extraerGoles(p);
+      if (total === null) return null;
 
-      // Over 2.5 Goles
-      if (tipoMercado === 'GOLES' || textoMercado.includes('2.5') || textoMercado.includes('over')) {
-        return (gLoc + gVis) > 2.5;
+      const m = (mercadoStr || '').toLowerCase();
+      const tipo = (tipoMercadoStr || '').toUpperCase();
+
+      // 1. Más de 1.5 Goles (Over 1.5 / In-Play 2T)
+      if (m.includes('1.5') && (m.includes('gol') || m.includes('over') || m.includes('mas'))) {
+        return total > 1.5;
       }
 
-      // Victoria Local (1X2)
-      if (tipoMercado === '1X2' || textoMercado.includes('victoria') || textoMercado.includes('1x2')) {
+      // 2. Más de 2.5 Goles (Over 2.5)
+      if (tipo === 'GOLES' || (m.includes('2.5') && (m.includes('gol') || m.includes('over') || m.includes('mas')))) {
+        return total > 2.5;
+      }
+
+      // 3. Menos de 2.5 Goles (Under 2.5)
+      if (m.includes('menos') && m.includes('2.5')) {
+        return total < 2.5;
+      }
+
+      // 4. Victoria Local (1X2 o 1X2 In-Play)
+      if (tipo.includes('1X2') || m.includes('victoria') || m.includes('1x2')) {
         return gLoc > gVis;
       }
 
       return null;
     }
 
-    // Actualizar métricas superiores de Efectividad Triple
+    // Verificar acierto directo para un partido del fixture
+    function verificarAcierto(p) {
+      return verificarPronostico(p.mercado, p.tipo_mercado, p);
+    }
+
+    // Verificar acierto para una alerta del historial
+    function verificarAlerta(a) {
+      const p = encontrarPartidoDeAlerta(a);
+      if (!p || !esPartidoFinalizado(p)) return null;
+      return verificarPronostico(a.mercado, a.tipo_mercado, p);
+    }
+
+    // Actualizar métricas superiores de Efectividad Triple (Vinculando historial de Alertas Telegram)
     function actualizarMetricasEfectividad() {
       let tgV = 0, tgD = 0;
       let noTgV = 0, noTgD = 0;
 
-      globalPartidos.forEach(p => {
-        if (!esPartidoFinalizado(p)) return;
-        const acierto = verificarAcierto(p);
-        if (acierto === null) return;
-
-        const esTg = (p.telegram_enviado === true) || (p.es_alerta === true);
-
-        if (esTg) {
-          if (acierto) tgV++; else tgD++;
-        } else {
-          if (acierto) noTgV++; else noTgD++;
+      // 1. Liquidación de ALERTAS REALES EMITIDAS A TELEGRAM
+      globalAlertas.forEach(a => {
+        const p = encontrarPartidoDeAlerta(a);
+        if (p && esPartidoFinalizado(p)) {
+          const resultado = verificarPronostico(a.mercado, a.tipo_mercado, p);
+          if (resultado !== null) {
+            if (resultado) tgV++; else tgD++;
+          }
         }
       });
 
-      // 1. Telegram
+      // 2. Liquidación de los partidos finalizados que NO fueron enviados a Telegram
+      globalPartidos.forEach(p => {
+        if (!esPartidoFinalizado(p)) return;
+
+        // Comprobar si este partido está en el registro de alertas
+        const tieneAlerta = globalAlertas.some(a => {
+          const matchP = encontrarPartidoDeAlerta(a);
+          return matchP && String(matchP.id) === String(p.id);
+        }) || (p.telegram_enviado === true) || (p.es_alerta === true);
+
+        if (!tieneAlerta) {
+          const acierto = verificarAcierto(p);
+          if (acierto !== null) {
+            if (acierto) noTgV++; else noTgD++;
+          }
+        }
+      });
+
+      // Render de métricas en el DOM
       const totalTg = tgV + tgD;
       const pctTg = totalTg > 0 ? Math.round((tgV / totalTg) * 100) : null;
       document.getElementById('statEffTelegram').textContent = pctTg !== null ? `${pctTg}%` : '--%';
       document.getElementById('statCountsTelegram').textContent = `${tgV}V - ${tgD}D TG`;
 
-      // 2. Sin Alerta
       const totalNoTg = noTgV + noTgD;
       const pctNoTg = totalNoTg > 0 ? Math.round((noTgV / totalNoTg) * 100) : null;
       document.getElementById('statEffNoTelegram').textContent = pctNoTg !== null ? `${pctNoTg}%` : '--%';
       document.getElementById('statCountsNoTelegram').textContent = `${noTgV}V - ${noTgD}D No TG`;
 
-      // 3. Global Total
       const totV = tgV + noTgV;
       const totD = tgD + noTgD;
       const totalGlobal = totV + totD;
@@ -420,19 +513,13 @@
       if (!contenedor) return;
       contenedor.innerHTML = '';
 
-      // Actualizar contadores siempre
       actualizarContadoresPestanas();
 
       const partidosFiltrados = globalPartidos.filter(p => {
         const finalizado = esPartidoFinalizado(p);
         
-        // Pestaña Activos: NO finalizados
         if (pestanaActiva === 'activos' && finalizado) return false;
-        
-        // Pestaña Finalizados: SÍ finalizados
         if (pestanaActiva === 'finalizados' && !finalizado) return false;
-
-        // Filtro de competición
         if (ligaActiva !== 'all' && p.liga_key !== ligaActiva) return false;
 
         return true;
@@ -489,7 +576,6 @@
             </div>
           </div>
 
-          <!-- Nombres de equipos y cuota -->
           <div class="flex items-center justify-between pt-1">
             <h3 class="text-sm font-extrabold text-white tracking-tight">
               ${p.local} <span class="text-slate-500 font-normal text-xs">vs</span> ${p.visitante}
@@ -500,7 +586,6 @@
             </div>
           </div>
 
-          <!-- Pronóstico Clave -->
           <div class="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80 flex items-center justify-between">
             <div class="flex items-center space-x-2">
               <span class="w-2 h-2 rounded-full ${p.tipo_mercado === '1X2' ? 'bg-blue-400' : 'bg-emerald-400'}"></span>
@@ -511,7 +596,6 @@
             <span class="text-[10px] font-extrabold text-emerald-400 font-mono">${p.ev || '+10.0%'} Value</span>
           </div>
 
-          <!-- Métricas del algoritmo -->
           <div class="grid grid-cols-3 gap-2 text-center pt-1 border-t border-slate-800/60">
             <div class="p-1.5 rounded-lg bg-slate-950/40">
               <span class="text-[9px] text-slate-500 font-semibold uppercase block">Prob. Modelo</span>
@@ -532,7 +616,7 @@
       });
     }
 
-    // Renderizar historial de alertas
+    // Renderizar historial de alertas (Con verificación automática de estado y marcador)
     function renderizarAlertas() {
       const contenedor = document.getElementById('contenedorAlertas');
       if (!contenedor) return;
@@ -542,22 +626,48 @@
         contenedor.innerHTML = `
           <div class="text-center py-12 bg-slate-900/60 rounded-2xl border border-slate-800 p-6 space-y-2">
             <p class="text-sm font-semibold text-slate-300">No se han emitido alertas en este ciclo.</p>
-            <p class="text-xs text-slate-500">Las alertas se activan en la ventana T-45m a T-25m antes del inicio.</p>
+            <p class="text-xs text-slate-500">Las alertas se activan en la ventana T-45m a T-25m antes del inicio o en descanso empatado.</p>
           </div>
         `;
         return;
       }
 
       globalAlertas.forEach(a => {
+        const p = encontrarPartidoDeAlerta(a);
+        const finalizado = p ? esPartidoFinalizado(p) : (a.finalizado === true);
+        const acierto = (finalizado && p) ? verificarPronostico(a.mercado, a.tipo_mercado, p) : null;
+        const marcadorPartido = (p && p.marcador) ? p.marcador : (a.marcador || null);
+
         const card = document.createElement('div');
-        card.className = "p-3.5 rounded-2xl bg-slate-900 border border-blue-500/30 space-y-2";
+        card.className = "p-3.5 rounded-2xl bg-slate-900 border border-blue-500/30 space-y-2 transition-all";
+        
         card.innerHTML = `
           <div class="flex items-center justify-between text-xs">
-            <span class="text-blue-400 font-bold font-mono">Enviado a Telegram • ${a.hora || ''}</span>
-            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-blue-500/20 text-blue-300">Alerta Real</span>
+            <div class="flex items-center space-x-2">
+              <span class="text-blue-400 font-bold font-mono">Enviado a Telegram • ${a.hora || ''}</span>
+              ${a.es_ht ? `
+                <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30">In-Play HT</span>
+              ` : ''}
+            </div>
+            <div class="flex items-center space-x-1.5">
+              ${marcadorPartido ? `
+                <span class="px-2 py-0.5 rounded text-[10px] font-black font-mono bg-slate-950 border border-slate-700 text-emerald-400">
+                  ${marcadorPartido}
+                </span>
+              ` : ''}
+              ${acierto !== null ? `
+                <span class="px-2 py-0.5 rounded text-[10px] font-extrabold font-mono ${acierto ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}">
+                  ${acierto ? '✅ ACERTADO' : '❌ PERDIDO'}
+                </span>
+              ` : `
+                <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-blue-500/20 text-blue-300">
+                  Alerta Real
+                </span>
+              `}
+            </div>
           </div>
           <p class="text-sm font-bold text-white">${a.partido} — <span class="text-emerald-400">${a.mercado}</span></p>
-          <div class="flex items-center justify-between text-xs font-mono text-slate-400 pt-1">
+          <div class="flex items-center justify-between text-xs font-mono text-slate-400 pt-1 border-t border-slate-800/60">
             <span>Cuota: <strong class="text-white">${a.cuota}</strong></span>
             <span>Ventaja: <strong class="text-emerald-400">${a.ev}</strong></span>
             <span>Stake: <strong class="text-cyan-400">${a.stake}</strong></span>
@@ -586,7 +696,6 @@
           if (elSync) elSync.textContent = data.ultima_actualizacion + ' sync';
         }
 
-        // Actualizar contadores de inmediato
         actualizarContadoresPestanas();
         actualizarMetricasEfectividad();
 
