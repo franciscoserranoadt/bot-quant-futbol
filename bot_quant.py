@@ -200,6 +200,18 @@ def ejecutar_ciclo():
     hoy_madrid_str = ahora_madrid.strftime('%Y-%m-%d')
     print(f"[{hora_madrid_str}] Iniciando ciclo cuantitativo...")
 
+    # ==============================================================
+    # 🚀 PRUEBA INMEDIATA AL CANAL DE TELEGRAM
+    # ==============================================================
+    msg_test_canal = (
+        f"🚀 <b>CANAL APEX QUANT — PRUEBA DE CONEXIÓN</b>\n\n"
+        f"✅ <b>Estado:</b> Bot operativo como administrador\n"
+        f"🕒 <b>Hora Oficial:</b> {hora_madrid_str}\n"
+        f"📢 <b>Canal Oficial:</b> @apex_quant_alertas\n\n"
+        f"⚡ <i>Las alertas algorítmicas (+EV > 5%) se publicarán aquí automáticamente.</i>"
+    )
+    enviar_telegram(msg_test_canal)
+
     # 1. Recuperar historial previo de alertas para no borrar las anteriores
     alertas_acumuladas = cargar_alertas_previas()
 
