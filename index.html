@@ -1,49 +1,44 @@
 <!DOCTYPE html>
-
-<html class="dark" lang="es"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
-<title>Apex Quant Analytics</title>
-<link href="manifest.json" rel="manifest"/>
-<meta content="#0c1322" name="theme-color"/>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apex Quant Analytics - Motor Predictivo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
     tailwind.config = {
-      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
             sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-            mono: ['"JetBrains Mono"', 'monospace']
+            mono: ['"JetBrains Mono"', 'monospace'],
           },
           colors: {
-            brand: {
+            surface: {
+              DEFAULT: '#070e1d',
+              card: '#0c1322',
+              cardHigh: '#141c2e',
+              border: 'rgba(255, 255, 255, 0.07)',
+              borderFocus: 'rgba(0, 245, 155, 0.3)'
+            },
+            accent: {
               primary: '#00f59b',
-              surface: '#0c1322',
-              card: '#141c2e',
-              border: '#1e293b'
+              secondary: '#38bdf8',
+              gold: '#fbbf24',
+              loss: '#ef4444'
             }
-          },
-          keyframes: {
-            'glow-pulse': {
-              '0%, 100%': { opacity: '1', filter: 'drop-shadow(0 0 8px rgba(0, 245, 155, 0.75))' },
-              '50%': { opacity: '0.6', filter: 'drop-shadow(0 0 2px rgba(0, 245, 155, 0.2))' }
-            }
-          },
-          animation: {
-            'glow-pulse': 'glow-pulse 1.8s ease-in-out infinite'
           }
         }
       }
     }
   </script>
-<style>
+  <style>
     body {
       background-color: #070e1d;
-      color: #f8fafc;
+      color: #f1f5f9;
       font-family: 'Plus Jakarta Sans', sans-serif;
       -webkit-tap-highlight-color: transparent;
     }
@@ -54,847 +49,664 @@
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
-    .glow-tag-live {
-      box-shadow: 0 0 12px rgba(0, 245, 155, 0.35);
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.9; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.08); }
     }
-    .glow-gold {
-      box-shadow: 0 0 14px rgba(250, 204, 21, 0.3);
+    .glow-dot {
+      animation: pulseGlow 2s infinite ease-in-out;
     }
   </style>
 </head>
-<body class="min-h-screen pb-16 custom-scrollbar text-slate-100 select-none">
-<!-- Header Sticky Superior -->
-<header class="sticky top-0 z-40 bg-[#070e1d]/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 flex items-center justify-between">
-<div class="flex items-center space-x-2.5">
-<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center font-black text-slate-950 text-sm shadow-lg shadow-emerald-500/20">
-        AQ
+<body class="min-h-screen bg-[#070e1d] text-slate-100 antialiased selection:bg-[#00f59b]/20 selection:text-[#00f59b]">
+
+  <!-- Cabecera Principal -->
+  <header class="sticky top-0 z-50 bg-[#070e1d]/90 backdrop-blur-md border-b border-white/[0.06] px-4 py-3">
+    <div class="max-w-2xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00f59b]/20 to-[#38bdf8]/10 border border-[#00f59b]/30 flex items-center justify-center font-extrabold text-[#00f59b] text-base tracking-wider shadow-[0_0_15px_rgba(0,245,155,0.15)]">
+          AQ
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-bold tracking-tight text-white leading-tight">Apex Quant</h1>
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#00f59b]/10 text-[#00f59b] border border-[#00f59b]/20">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#00f59b] glow-dot"></span>
+              24/7 ONLINE
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400 font-medium">Motor Predictivo Just-In-Time (+EV)</p>
+        </div>
       </div>
-<div>
-<div class="flex items-center space-x-1.5">
-<h1 class="text-base font-extrabold tracking-tight text-white">Apex Quant</h1>
-<span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-1"></span>
-            24/7 ONLINE
-          </span>
-</div>
-<p class="text-[10px] text-slate-400 font-medium">Motor Predictivo Just-In-Time (+EV)</p>
-</div>
-</div>
-<button class="p-2 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700/50 text-slate-300 transition-all active:scale-95" id="btnRecargar" onclick="cargarDatos()">
-<svg class="w-5 h-5" fill="none" id="iconoRecarga" stroke="currentColor" viewbox="0 0 24 24">
-<path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-</svg>
-</button>
-</header>
-<!-- Contenedor Principal -->
-<main class="max-w-xl mx-auto px-4 pt-4 space-y-4">
-<!-- Tarjeta Interactiva: Canal Oficial de Telegram -->
-<a class="rounded-2xl p-3.5 bg-gradient-to-r from-blue-950/40 via-slate-900 to-slate-900 border border-blue-500/30 flex items-center justify-between shadow-sm hover:border-blue-500/60 transition-all active:scale-95 group" href="https://t.me/apex_quant_alertas" rel="noopener noreferrer" target="_blank">
-<div class="flex items-center space-x-3">
-<div class="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center border border-blue-500/30 group-hover:scale-105 transition-transform">
-<svg class="w-5 h-5" fill="currentColor" viewbox="0 0 24 24">
-<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .37z"></path>
-</svg>
-</div>
-<div>
-<div class="flex items-center space-x-1.5">
-<span class="text-xs font-semibold text-white group-hover:text-blue-300 transition-colors">Canal Telegram Oficial</span>
-<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-</div>
-<p class="text-[10px] text-slate-400">Alertas automáticas en @apex_quant_alertas</p>
-</div>
-</div>
-<span class="px-2.5 py-1 text-[11px] font-bold text-blue-400 bg-blue-500/10 rounded-lg border border-blue-500/30 group-hover:bg-blue-500/20 transition-all">ACTIVO</span>
-</a>
-<!-- Métricas del Motor (Fila 1: Partidos, Filtro EV, Gestión Kelly) -->
-<div class="grid grid-cols-3 gap-2.5">
-<div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-3 text-center">
-<span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-0.5">Partidos</span>
-<span class="text-lg font-extrabold text-white font-mono leading-tight block" id="contadorPartidos">--</span>
-<span class="text-[9px] text-slate-500 font-medium">Monitoreo</span>
-</div>
-<div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-3 text-center">
-<span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-0.5">Filtro EV</span>
-<span class="text-lg font-extrabold text-emerald-400 font-mono leading-tight block">+5.0%</span>
-<span class="text-[9px] text-slate-500 font-medium">Ventaja</span>
-</div>
-<div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-3 text-center">
-<span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-0.5">Gestión</span>
-<span class="text-lg font-extrabold text-blue-400 font-mono leading-tight block">1/4</span>
-<span class="text-[9px] text-slate-500 font-medium">Kelly</span>
-</div>
-</div>
-<!-- Triple Efectividad: Telegram, Sin Alerta y Global Total -->
-<div class="grid grid-cols-3 gap-2.5">
-<!-- 1. Telegram -->
-<div class="bg-slate-900/80 border border-emerald-500/20 rounded-2xl p-3 text-center">
-<div class="flex items-center justify-center space-x-1 mb-0.5">
-<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-<span class="text-[10px] font-semibold uppercase tracking-wider text-emerald-400">Telegram</span>
-</div>
-<span class="text-lg font-extrabold text-emerald-400 font-mono leading-tight block" id="efectividadTelegramPct">--%</span>
-<span class="text-[9px] text-slate-400 font-medium block" id="efectividadTelegramRatio">0V - 0D TG</span>
-</div>
-<!-- 2. Sin Alerta -->
-<div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-3 text-center">
-<span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-0.5">Sin Alerta</span>
-<span class="text-lg font-extrabold text-slate-200 font-mono leading-tight block" id="efectividadNoTelegramPct">--%</span>
-<span class="text-[9px] text-slate-500 font-medium block" id="efectividadNoTelegramRatio">0V - 0D No TG</span>
-</div>
-<!-- 3. Global Total -->
-<div class="bg-slate-900/80 border border-blue-500/20 rounded-2xl p-3 text-center">
-<span class="text-[10px] font-semibold uppercase tracking-wider text-blue-400 block mb-0.5">Global Total</span>
-<span class="text-lg font-extrabold text-blue-400 font-mono leading-tight block" id="efectividadGlobalPct">--%</span>
-<span class="text-[9px] text-slate-400 font-medium block" id="efectividadGlobalRatio">0V - 0D Total</span>
-</div>
-</div>
-<!-- Pestañas Principales: En Juego / Hoy (Activos), Finalizados y Alertas -->
-<div class="grid grid-cols-3 gap-1 bg-slate-900/90 p-1 rounded-2xl border border-slate-800/80">
-<button class="py-2 px-1 text-center font-bold text-xs rounded-xl bg-emerald-400 text-slate-950 shadow transition-all truncate" id="tabPartidos" onclick="cambiarVista('partidos')">
-        En Juego / Hoy (<span id="badgeConteoPartidos">0</span>)
+      <button id="btnRecargar" onclick="recargarDatosManual()" class="w-9 h-9 rounded-xl bg-[#0c1322] border border-white/10 hover:border-[#00f59b]/40 flex items-center justify-center text-slate-300 hover:text-[#00f59b] transition-all active:scale-95 shadow-sm" title="Recargar datos">
+        <svg id="iconRecarga" class="w-4 h-4 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
       </button>
-<button class="py-2 px-1 text-center font-bold text-xs rounded-xl text-slate-400 hover:text-white transition-all truncate" id="tabFinalizados" onclick="cambiarVista('finalizados')">
-        Finalizados (<span id="badgeConteoFinalizados">0</span>)
+    </div>
+  </header>
+
+  <main class="max-w-2xl mx-auto px-4 py-4 space-y-4 pb-20">
+
+    <!-- Tarjeta Interactiva Canal Telegram Oficial -->
+    <a href="https://t.me/apex_quant_alertas" target="_blank" rel="noopener noreferrer" class="block group relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0c1a30] via-[#0f213d] to-[#0c1a30] border border-[#38bdf8]/30 hover:border-[#38bdf8]/60 p-3.5 transition-all duration-300 shadow-[0_4px_20px_rgba(56,189,248,0.08)] active:scale-[0.99]">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-[#38bdf8]/15 border border-[#38bdf8]/30 flex items-center justify-center text-[#38bdf8] shadow-[0_0_12px_rgba(56,189,248,0.2)] flex-shrink-0 group-hover:scale-105 transition-transform">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold text-white group-hover:text-[#38bdf8] transition-colors">Canal Telegram Oficial</span>
+              <span class="w-2 h-2 rounded-full bg-[#00f59b] glow-dot"></span>
+            </div>
+            <p class="text-xs text-slate-300">Alertas automáticas en <span class="text-[#38bdf8] font-semibold">@apex_quant_alertas</span></p>
+          </div>
+        </div>
+        <div class="px-2.5 py-1 rounded-lg bg-[#38bdf8]/15 border border-[#38bdf8]/30 text-[#38bdf8] text-xs font-bold tracking-wide flex-shrink-0 group-hover:bg-[#38bdf8]/25 transition-all">
+          ACTIVO
+        </div>
+      </div>
+    </a>
+
+    <!-- Fila 1: Métricas de Configuración -->
+    <div class="grid grid-cols-3 gap-2.5">
+      <div class="bg-[#0c1322] border border-white/[0.06] rounded-xl p-3 text-center">
+        <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">PARTIDOS</p>
+        <p id="totalPartidosCount" class="text-lg font-extrabold text-white font-mono">--</p>
+        <p class="text-[9px] text-slate-500 font-medium">Monitoreo</p>
+      </div>
+      <div class="bg-[#0c1322] border border-white/[0.06] rounded-xl p-3 text-center">
+        <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">FILTRO EV</p>
+        <p class="text-lg font-extrabold text-[#00f59b] font-mono">+5.0%</p>
+        <p class="text-[9px] text-slate-500 font-medium">Ventaja</p>
+      </div>
+      <div class="bg-[#0c1322] border border-white/[0.06] rounded-xl p-3 text-center">
+        <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">GESTIÓN</p>
+        <p class="text-lg font-extrabold text-[#38bdf8] font-mono">1/4</p>
+        <p class="text-[9px] text-slate-500 font-medium">Kelly</p>
+      </div>
+    </div>
+
+    <!-- Fila 2: Triple Efectividad -->
+    <div class="grid grid-cols-3 gap-2.5">
+      <div class="bg-[#0c1322] border border-[#00f59b]/20 rounded-xl p-3 text-center relative overflow-hidden">
+        <div class="flex items-center justify-center gap-1.5 mb-0.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#00f59b]"></span>
+          <p class="text-[10px] font-bold text-[#00f59b] uppercase tracking-wider">TELEGRAM</p>
+        </div>
+        <p id="efectividadTgPct" class="text-lg font-extrabold text-[#00f59b] font-mono">--%</p>
+        <p id="efectividadTgDetalle" class="text-[9px] text-slate-400 font-mono">0V - 0D TG</p>
+      </div>
+      <div class="bg-[#0c1322] border border-white/[0.06] rounded-xl p-3 text-center">
+        <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">SIN ALERTA</p>
+        <p id="efectividadNoTgPct" class="text-lg font-extrabold text-slate-200 font-mono">--%</p>
+        <p id="efectividadNoTgDetalle" class="text-[9px] text-slate-400 font-mono">0V - 0D No TG</p>
+      </div>
+      <div class="bg-[#0c1322] border border-white/[0.06] rounded-xl p-3 text-center">
+        <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">GLOBAL TOTAL</p>
+        <p id="efectividadGlobalPct" class="text-lg font-extrabold text-[#38bdf8] font-mono">--%</p>
+        <p id="efectividadGlobalDetalle" class="text-[9px] text-slate-400 font-mono">0V - 0D Total</p>
+      </div>
+    </div>
+
+    <!-- Pestañas Principales de Navegación -->
+    <div class="flex bg-[#0c1322] p-1 rounded-xl border border-white/[0.06] gap-1">
+      <button onclick="cambiarTabPrincipal('activos')" id="tabBtnActivos" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-[#00f59b] text-[#070e1d] shadow-sm flex items-center justify-center gap-1.5">
+        <span>En Juego / Hoy</span>
+        <span id="badgeTabActivos" class="px-1.5 py-0.2 rounded-full text-[10px] bg-[#070e1d]/20 text-[#070e1d] font-extrabold">(0)</span>
       </button>
-<button class="py-2 px-1 text-center font-bold text-xs rounded-xl text-slate-400 hover:text-white transition-all truncate" id="tabAlertas" onclick="cambiarVista('alertas')">
-        Alertas (<span id="badgeConteoAlertas">0</span>)
+      <button onclick="cambiarTabPrincipal('finalizados')" id="tabBtnFinalizados" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white flex items-center justify-center gap-1.5">
+        <span>Finalizados</span>
+        <span id="badgeTabFinalizados" class="px-1.5 py-0.2 rounded-full text-[10px] bg-white/10 text-slate-300 font-mono">(0)</span>
       </button>
-</div>
-<!-- Sub-Filtros de Competiciones (solo para Partidos y Finalizados) -->
-<div class="space-y-1.5" id="seccionFiltrosLigas">
-<div class="flex items-center justify-between text-[11px] text-slate-400 px-1">
-<span class="font-bold tracking-wider uppercase text-slate-300">Competiciones</span>
-<span class="text-slate-500 font-mono text-[10px]" id="labelHoraSync">--:-- Madrid sync</span>
-</div>
-<div class="flex space-x-1.5 overflow-x-auto pb-1 custom-scrollbar">
-<button class="btn-liga whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-400 text-slate-950 transition-all" data-liga="all" onclick="filtrarLiga('all')">Todas</button>
-<button class="btn-liga whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all" data-liga="laliga" onclick="filtrarLiga('laliga')">LaLiga (ESP)</button>
-<button class="btn-liga whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all" data-liga="laliga2" onclick="filtrarLiga('laliga2')">LaLiga 2 (ESP)</button>
-<button class="btn-liga whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all" data-liga="premier" onclick="filtrarLiga('premier')">Premier (ENG)</button>
-<button class="btn-liga whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all" data-liga="bundesliga" onclick="filtrarLiga('bundesliga')">Bundesliga</button>
-<button class="btn-liga whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all" data-liga="seriea" onclick="filtrarLiga('seriea')">Serie A (ITA)</button>
-<button class="btn-liga whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all" data-liga="ligue1" onclick="filtrarLiga('ligue1')">Ligue 1 (FRA)</button>
-<button class="btn-liga whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all" data-liga="champions" onclick="filtrarLiga('champions')">Champions</button>
-</div>
-</div>
-<!-- Título de Sección -->
-<div class="flex items-center justify-between px-1 pt-1">
-<h2 class="text-xs font-extrabold uppercase tracking-wider text-slate-300" id="tituloSeccion">
-        Encuentros Programados y en Vivo
-      </h2>
-<span class="text-[10px] font-mono text-emerald-400 flex items-center">
-<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5"></span>
+      <button onclick="cambiarTabPrincipal('alertas')" id="tabBtnAlertas" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white flex items-center justify-center gap-1.5">
+        <span>Alertas</span>
+        <span id="badgeTabAlertas" class="px-1.5 py-0.2 rounded-full text-[10px] bg-white/10 text-slate-300 font-mono">(0)</span>
+      </button>
+    </div>
+
+    <!-- Filtros de Competiciones -->
+    <div class="space-y-2">
+      <div class="flex items-center justify-between text-xs px-0.5">
+        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">COMPETICIONES</span>
+        <span id="labelSyncMadrid" class="text-[10px] font-mono text-slate-400">--:-- Madrid sync</span>
+      </div>
+      <div class="flex gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
+        <button onclick="filtrarLiga('all', this)" class="btn-liga px-3 py-1.5 rounded-lg text-xs font-bold bg-[#00f59b] text-[#070e1d] whitespace-nowrap transition-all shadow-sm">Todas</button>
+        <button onclick="filtrarLiga('laliga', this)" class="btn-liga px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0c1322] border border-white/10 text-slate-300 hover:text-white whitespace-nowrap transition-all">LaLiga (ESP)</button>
+        <button onclick="filtrarLiga('laliga2', this)" class="btn-liga px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0c1322] border border-white/10 text-slate-300 hover:text-white whitespace-nowrap transition-all">LaLiga 2 (ESP)</button>
+        <button onclick="filtrarLiga('premier', this)" class="btn-liga px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0c1322] border border-white/10 text-slate-300 hover:text-white whitespace-nowrap transition-all">Premier (ENG)</button>
+        <button onclick="filtrarLiga('bundesliga', this)" class="btn-liga px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0c1322] border border-white/10 text-slate-300 hover:text-white whitespace-nowrap transition-all">Bundesliga</button>
+        <button onclick="filtrarLiga('seriea', this)" class="btn-liga px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0c1322] border border-white/10 text-slate-300 hover:text-white whitespace-nowrap transition-all">Serie A (ITA)</button>
+        <button onclick="filtrarLiga('ligue1', this)" class="btn-liga px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0c1322] border border-white/10 text-slate-300 hover:text-white whitespace-nowrap transition-all">Ligue 1 (FRA)</button>
+        <button onclick="filtrarLiga('champions', this)" class="btn-liga px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0c1322] border border-white/10 text-slate-300 hover:text-white whitespace-nowrap transition-all">Champions</button>
+      </div>
+    </div>
+
+    <!-- Título de Sección Dinámico -->
+    <div class="flex items-center justify-between pt-1">
+      <h2 id="tituloSeccion" class="text-xs font-bold tracking-wider text-slate-300 uppercase">ENCUENTROS PROGRAMADOS Y EN VIVO</h2>
+      <span class="flex items-center gap-1.5 text-[10px] font-semibold text-[#00f59b]">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#00f59b] glow-dot"></span>
         Hora Peninsular (Madrid)
       </span>
-</div>
-<!-- Lista de Tarjetas Dinámicas -->
-<div class="space-y-3" id="listaContenido">
-<!-- Estado de carga inicial -->
-<div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-8 text-center space-y-3">
-<div class="inline-block animate-spin w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full"></div>
-<p class="text-xs font-medium text-slate-400">Sincronizando archivo datos.json...</p>
-<p class="text-[10px] text-slate-500">Calculando minutos reales de juego y estado de alertas</p>
-</div>
-</div>
-</main>
-<!-- Script Lógico Completo -->
-<script>
-    let datosGlobales = { partidos: [], alertas: [] };
-    let vistaActual = 'partidos'; // 'partidos', 'finalizados' o 'alertas'
-    let filtroLigaActual = 'all';
+    </div>
 
-    function cambiarVista(vista) {
-      vistaActual = vista;
-      const tabPartidos = document.getElementById('tabPartidos');
-      const tabFinalizados = document.getElementById('tabFinalizados');
-      const tabAlertas = document.getElementById('tabAlertas');
-      const seccionFiltros = document.getElementById('seccionFiltrosLigas');
-      const tituloSeccion = document.getElementById('tituloSeccion');
+    <!-- Contenedor Principal de Tarjetas -->
+    <div id="contenedorTarjetas" class="space-y-3">
+      <div class="bg-[#0c1322] border border-white/[0.06] rounded-2xl p-8 text-center text-slate-400">
+        <div class="inline-block animate-spin w-6 h-6 border-2 border-[#00f59b] border-t-transparent rounded-full mb-3"></div>
+        <p class="text-sm font-medium">Cargando partidos reales de datos.json...</p>
+      </div>
+    </div>
 
-      const claseActivo = 'py-2 px-1 text-center font-bold text-xs rounded-xl bg-emerald-400 text-slate-950 shadow transition-all truncate';
-      const claseInactivo = 'py-2 px-1 text-center font-bold text-xs rounded-xl text-slate-400 hover:text-white transition-all truncate';
+  </main>
 
-      tabPartidos.className = vista === 'partidos' ? claseActivo : claseInactivo;
-      tabFinalizados.className = vista === 'finalizados' ? claseActivo : claseInactivo;
-      tabAlertas.className = vista === 'alertas' ? claseActivo : claseInactivo;
+  <script>
+    let globalPartidos = [];
+    let globalAlertas = [];
+    let tabPrincipalActual = 'activos'; // 'activos', 'finalizados', 'alertas'
+    let ligaFiltroActual = 'all';
 
-      if (vista === 'alertas') {
-        seccionFiltros.classList.add('hidden');
-        tituloSeccion.textContent = 'Historial de Alertas Telegram Emitidas';
-      } else if (vista === 'finalizados') {
-        seccionFiltros.classList.remove('hidden');
-        tituloSeccion.textContent = 'Partidos Concluidos (Resultados)';
-      } else {
-        seccionFiltros.classList.remove('hidden');
-        tituloSeccion.textContent = 'Encuentros Programados y en Vivo';
-      }
-
-      renderizarContenido();
-    }
-
-    function filtrarLiga(ligaKey) {
-      filtroLigaActual = ligaKey;
-      document.querySelectorAll('.btn-liga').forEach(btn => {
-        if (btn.getAttribute('data-liga') === ligaKey) {
-          btn.className = 'btn-liga whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-400 text-slate-950 transition-all';
-        } else {
-          btn.className = 'btn-liga whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all';
-        }
-      });
-      renderizarContenido();
-    }
-
-    async function cargarDatos() {
-      const icono = document.getElementById('iconoRecarga');
-      if (icono) icono.classList.add('animate-spin');
-
+    async function cargarDatosJSON() {
       try {
-        const respuesta = await fetch('datos.json?t=' + new Date().getTime());
-        if (!respuesta.ok) throw new Error('Error al cargar datos.json');
+        const resp = await fetch('datos.json?t=' + Date.now());
+        if (!resp.ok) throw new Error('No se pudo acceder a datos.json');
+        const data = await resp.json();
         
-        datosGlobales = await respuesta.json();
-        
-        if (datosGlobales.ultima_actualizacion) {
-          document.getElementById('labelHoraSync').textContent = datosGlobales.ultima_actualizacion + ' sync';
+        globalPartidos = data.partidos || [];
+        globalAlertas = data.alertas || [];
+
+        if (data.ultima_actualizacion) {
+          document.getElementById('labelSyncMadrid').textContent = data.ultima_actualizacion + ' sync';
         }
 
-        actualizarConteoPartidos();
-        actualizarMetricasEfectividad();
-        renderizarContenido();
-      } catch (error) {
-        console.error("Error sincronizando:", error);
+        actualizarMetricas();
+        renderTarjetas();
+      } catch (err) {
+        console.warn('Error cargando datos:', err);
         mostrarErrorConexion();
-      } finally {
-        if (icono) setTimeout(() => icono.classList.remove('animate-spin'), 600);
       }
-    }
-
-    function parsearFechaUTC(p) {
-      const iso = p.utcDate || p.hora_utc || p.fecha_iso;
-      if (iso) return new Date(iso);
-      if (p.timestamp_ms) return new Date(p.timestamp_ms);
-      return null;
-    }
-
-    function esPartidoTerminado(p) {
-      const est = (p.estado || '').toUpperCase();
-      return ['FINISHED', 'FINALIZADO', 'FT', 'TERMINADO'].includes(est);
-    }
-
-    function obtenerInfoMinuto(p) {
-      const est = (p.estado || '').toUpperCase();
-      if (esPartidoTerminado(p)) {
-        return { texto: 'FINALIZADO', minutoNum: 90, enJuego: false, porcentaje: 100 };
-      }
-      if (est === 'PAUSED' || est === 'HT' || est === 'DESCANSO') {
-        return { texto: 'In-Play (HT)', minutoNum: 45, enJuego: true, porcentaje: 50 };
-      }
-
-      const fechaObj = parsearFechaUTC(p);
-      if (!fechaObj || isNaN(fechaObj.getTime())) {
-        return { texto: p.hora || 'Programado', minutoNum: 0, enJuego: false, porcentaje: 0 };
-      }
-
-      const ahora = new Date();
-      const difMinutos = Math.floor((ahora - fechaObj) / 60000);
-
-      if (difMinutos < 0) {
-        const minsRestantes = Math.abs(difMinutos);
-        const horas = Math.floor(minsRestantes / 60);
-        const mins = minsRestantes % 60;
-        const textoPre = horas > 0 ? `Inicia en ${horas}h ${mins}m` : `Inicia en ${mins}m`;
-        return { texto: textoPre, minutoNum: 0, enJuego: false, porcentaje: 0 };
-      } else if (difMinutos <= 45) {
-        const pct = Math.min(Math.round((difMinutos / 90) * 100), 50);
-        return { texto: `EN JUEGO (${difMinutos}')`, minutoNum: difMinutos, enJuego: true, porcentaje: pct };
-      } else if (difMinutos <= 60) {
-        return { texto: `In-Play (HT)`, minutoNum: 45, enJuego: true, porcentaje: 50 };
-      } else if (difMinutos <= 105) {
-        const minEfectivo = difMinutos - 15;
-        const pct = Math.min(Math.round((minEfectivo / 90) * 100), 100);
-        return { texto: `EN JUEGO (${minEfectivo}')`, minutoNum: minEfectivo, enJuego: true, porcentaje: pct };
-      } else if (difMinutos <= 130) {
-        return { texto: `EN JUEGO (90'+)`, minutoNum: 90, enJuego: true, porcentaje: 100 };
-      } else {
-        return { texto: 'FINALIZADO', minutoNum: 90, enJuego: false, porcentaje: 100 };
-      }
-    }
-
-    function extraerGoles(p) {
-      if (p.goles_local !== undefined && p.goles_local !== null && p.goles_visitante !== undefined && p.goles_visitante !== null) {
-        return { gl: Number(p.goles_local), gv: Number(p.goles_visitante) };
-      }
-      if (p.marcador && typeof p.marcador === 'string' && p.marcador.includes('-')) {
-        const partes = p.marcador.split('-').map(s => parseInt(s.trim(), 10));
-        if (partes.length === 2 && !isNaN(partes[0]) && !isNaN(partes[1])) {
-          return { gl: partes[0], gv: partes[1] };
-        }
-      }
-      return null;
-    }
-
-    function parsearValorEV(evRaw) {
-      if (typeof evRaw === 'number') return evRaw;
-      if (!evRaw) return 11.8;
-      const num = parseFloat(String(evRaw).replace('%', '').replace('+', '').trim());
-      return isNaN(num) ? 11.8 : num;
-    }
-
-    function obtenerEstiloEV(evNum) {
-      if (evNum > 25) {
-        return {
-          badgeBg: 'bg-gradient-to-r from-amber-500/20 to-cyan-500/20 border-amber-400/40 text-amber-300 font-black',
-          glowClase: 'glow-gold shadow-amber-500/10',
-          barColor: 'from-cyan-400 via-amber-300 to-amber-400',
-          intensidadLabel: 'VALOR ÉLITE (+25%)',
-          textColor: 'text-amber-300'
-        };
-      } else if (evNum >= 15) {
-        return {
-          badgeBg: 'bg-emerald-500/20 border-emerald-400/50 text-[#00f59b] font-extrabold',
-          glowClase: 'glow-tag-live shadow-emerald-500/20',
-          barColor: 'from-emerald-500 to-[#00f59b]',
-          intensidadLabel: 'VALOR FUERTE (+15%)',
-          textColor: 'text-[#00f59b]'
-        };
-      } else {
-        return {
-          badgeBg: 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300 font-bold',
-          glowClase: '',
-          barColor: 'from-emerald-700 to-emerald-500',
-          intensidadLabel: 'VALOR POSITIVO (+5%)',
-          textColor: 'text-emerald-400'
-        };
-      }
-    }
-
-    function renderizarEscudo(url, nombre) {
-      const iniciales = (nombre || 'EQ')
-        .split(' ')
-        .filter(Boolean)
-        .slice(0, 2)
-        .map(w => w[0].toUpperCase())
-        .join('');
-
-      if (url && typeof url === 'string' && url.trim().length > 0) {
-        return `
-          <div class="relative w-6 h-6 flex-shrink-0 rounded-full bg-slate-950/80 p-0.5 border border-slate-700/80 flex items-center justify-center overflow-hidden">
-            <img src="${url}" alt="${nombre}" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'text-[9px] font-bold text-slate-400 font-mono\\'>${iniciales}</span>';" />
-          </div>
-        `;
-      }
-
-      return `
-        <div class="w-6 h-6 flex-shrink-0 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[9px] font-black font-mono text-emerald-400 shadow-inner">
-          <svg class="w-3.5 h-3.5 text-slate-400 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-          </svg>
-        </div>
-      `;
-    }
-
-    function generarRachaMock(nombreEquipo) {
-      let hash = 0;
-      for (let i = 0; i < nombreEquipo.length; i++) {
-        hash = (hash << 5) - hash + nombreEquipo.charCodeAt(i);
-        hash |= 0;
-      }
-      const resultados = ['W', 'W', 'D', 'W', 'L', 'W', 'D', 'W'];
-      const racha = [];
-      for (let i = 0; i < 5; i++) {
-        const index = Math.abs((hash >> (i * 2)) % resultados.length);
-        racha.push(resultados[index]);
-      }
-      return racha;
-    }
-
-    function calcularTendenciaRacha(rachaArr) {
-      let puntos = 0;
-      rachaArr.forEach(r => {
-        if (r === 'W') puntos += 3;
-        else if (r === 'D') puntos += 1;
-      });
-      if (puntos >= 10) return { label: 'Excelente', color: 'text-emerald-400', icon: '↗' };
-      if (puntos >= 7) return { label: 'Positiva', color: 'text-teal-300', icon: '→' };
-      if (puntos >= 4) return { label: 'Neutral', color: 'text-slate-400', icon: '↘' };
-      return { label: 'Irregular', color: 'text-rose-400', icon: '↓' };
-    }
-
-    function renderizarBadgeRacha(item) {
-      if (item === 'W' || item === 'V') {
-        return `<span class="w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center bg-emerald-500/20 text-emerald-400 border border-emerald-500/40" title="Victoria">W</span>`;
-      } else if (item === 'D' || item === 'E') {
-        return `<span class="w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center bg-slate-700/60 text-slate-300 border border-slate-600/50" title="Empate">D</span>`;
-      } else {
-        return `<span class="w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center bg-rose-500/20 text-rose-400 border border-rose-500/40" title="Derrota">L</span>`;
-      }
-    }
-
-    function verificarPronostico(p) {
-      const marcador = extraerGoles(p);
-      if (!marcador) return null;
-      const { gl, gv } = marcador;
-      const mercado = (p.mercado || '').toLowerCase();
-
-      if (mercado.includes('más de 2.5') || mercado.includes('over 2.5') || mercado.includes('> 2.5')) {
-        return (gl + gv) > 2.5;
-      }
-      if (mercado.includes('más de 1.5') || mercado.includes('over 1.5') || mercado.includes('> 1.5')) {
-        return (gl + gv) > 1.5;
-      }
-      if (mercado.includes('menos de 2.5') || mercado.includes('under 2.5') || mercado.includes('< 2.5')) {
-        return (gl + gv) < 2.5;
-      }
-      if (mercado.includes('victoria') || mercado.includes('1x2')) {
-        return gl > gv;
-      }
-      return null;
-    }
-
-    function normalizarNombre(str) {
-      return (str || '')
-        .toLowerCase()
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-        .replace(/\b(fc|cf|cd|rcd|sv|ud|ca|de|balompie|club|futbol)\b/g, '')
-        .replace(/[^a-z0-9]/g, '')
-        .trim();
-    }
-
-    function encontrarPartidoDeAlerta(alerta) {
-      if (!datosGlobales.partidos || datosGlobales.partidos.length === 0) return null;
-
-      if (alerta.id) {
-        const porId = datosGlobales.partidos.find(p => p.id === alerta.id);
-        if (porId) return porId;
-      }
-
-      const alertaNombre = (alerta.partido || '').toLowerCase();
-      for (const p of datosGlobales.partidos) {
-        const local = normalizarNombre(p.local);
-        const visitante = normalizarNombre(p.visitante);
-        const partidoStr = normalizarNombre(alertaNombre);
-
-        if (local && visitante && partidoStr.includes(local) && partidoStr.includes(visitante)) {
-          return p;
-        }
-      }
-      return null;
-    }
-
-    function actualizarConteoPartidos() {
-      const partidos = datosGlobales.partidos || [];
-      const alertas = datosGlobales.alertas || [];
-
-      let activos = 0;
-      let finalizados = 0;
-
-      partidos.forEach(p => {
-        if (esPartidoTerminado(p)) {
-          finalizados++;
-        } else {
-          activos++;
-        }
-      });
-
-      document.getElementById('contadorPartidos').textContent = partidos.length;
-      document.getElementById('badgeConteoPartidos').textContent = activos;
-      document.getElementById('badgeConteoFinalizados').textContent = finalizados;
-      document.getElementById('badgeConteoAlertas').textContent = alertas.length;
-    }
-
-    function actualizarMetricasEfectividad() {
-      const partidos = datosGlobales.partidos || [];
-      const alertas = datosGlobales.alertas || [];
-
-      let tgAciertos = 0, tgFallos = 0;
-      let noTgAciertos = 0, noTgFallos = 0;
-
-      // 1. Efectividad Telegram
-      alertas.forEach(al => {
-        const pMatch = encontrarPartidoDeAlerta(al);
-        if (pMatch && esPartidoTerminado(pMatch)) {
-          const mockAlerta = {
-            ...pMatch,
-            mercado: al.mercado || pMatch.mercado
-          };
-          const gano = verificarPronostico(mockAlerta);
-          if (gano === true) tgAciertos++;
-          else if (gano === false) tgFallos++;
-        }
-      });
-
-      if (tgAciertos === 0 && tgFallos === 0) {
-        partidos.forEach(p => {
-          if (p.telegram_enviado && esPartidoTerminado(p)) {
-            const gano = verificarPronostico(p);
-            if (gano === true) tgAciertos++;
-            else if (gano === false) tgFallos++;
-          }
-        });
-      }
-
-      // 2. Partidos Sin Alerta
-      partidos.forEach(p => {
-        if (!p.telegram_enviado && esPartidoTerminado(p)) {
-          const gano = verificarPronostico(p);
-          if (gano === true) noTgAciertos++;
-          else if (gano === false) noTgFallos++;
-        }
-      });
-
-      const totalTg = tgAciertos + tgFallos;
-      const pctTg = totalTg > 0 ? Math.round((tgAciertos / totalTg) * 100) + '%' : '--%';
-      document.getElementById('efectividadTelegramPct').textContent = pctTg;
-      document.getElementById('efectividadTelegramRatio').textContent = `${tgAciertos}V - ${tgFallos}D TG`;
-
-      const totalNoTg = noTgAciertos + noTgFallos;
-      const pctNoTg = totalNoTg > 0 ? Math.round((noTgAciertos / totalNoTg) * 100) + '%' : '--%';
-      document.getElementById('efectividadNoTelegramPct').textContent = pctNoTg;
-      document.getElementById('efectividadNoTelegramRatio').textContent = `${noTgAciertos}V - ${noTgFallos}D No TG`;
-
-      const totalGlobal = totalTg + totalNoTg;
-      const globalAciertos = tgAciertos + noTgAciertos;
-      const globalFallos = tgFallos + noTgFallos;
-      const pctGlobal = totalGlobal > 0 ? Math.round((globalAciertos / totalGlobal) * 100) + '%' : '--%';
-      document.getElementById('efectividadGlobalPct').textContent = pctGlobal;
-      document.getElementById('efectividadGlobalRatio').textContent = `${globalAciertos}V - ${globalFallos}D Total`;
-    }
-
-    function renderizarContenido() {
-      const contenedor = document.getElementById('listaContenido');
-      contenedor.innerHTML = '';
-
-      if (vistaActual === 'alertas') {
-        renderizarAlertas(contenedor);
-      } else if (vistaActual === 'finalizados') {
-        renderizarPartidosPorEstado(contenedor, true);
-      } else {
-        renderizarPartidosPorEstado(contenedor, false);
-      }
-    }
-
-    function renderizarPartidosPorEstado(contenedor, soloFinalizados) {
-      const partidos = datosGlobales.partidos || [];
-      
-      const filtrados = partidos.filter(p => {
-        const matchLiga = (filtroLigaActual === 'all') || (p.liga_key === filtroLigaActual);
-        const terminado = esPartidoTerminado(p);
-        const matchEstado = soloFinalizados ? terminado : !terminado;
-        return matchLiga && matchEstado;
-      });
-
-      if (filtrados.length === 0) {
-        contenedor.innerHTML = `
-          <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-8 text-center space-y-2">
-            <span class="text-3xl">${soloFinalizados ? '🏁' : '⚽'}</span>
-            <p class="text-sm font-semibold text-slate-300">
-              ${soloFinalizados ? 'No hay partidos finalizados en este filtro' : 'No hay encuentros activos para hoy en esta competición'}
-            </p>
-            <p class="text-xs text-slate-500">Selecciona 'Todas' para ver el monitoreo global de las 7 ligas oficiales.</p>
-          </div>
-        `;
-        return;
-      }
-
-      filtrados.forEach(p => {
-        const tarjeta = crearTarjetaPartido(p);
-        contenedor.appendChild(tarjeta);
-      });
-    }
-
-    function crearTarjetaPartido(p) {
-      const div = document.createElement('div');
-      div.className = 'bg-slate-900/90 border border-slate-800/90 rounded-2xl p-4 space-y-3.5 shadow-md hover:border-slate-700/80 transition-all';
-
-      const infoTiempo = obtenerInfoMinuto(p);
-      const terminado = esPartidoTerminado(p);
-      const marcadorData = extraerGoles(p);
-
-      // 1. Escudos de equipos
-      const crestHome = p.homeTeam?.crest || p.escudo_local || p.crest_local;
-      const crestAway = p.awayTeam?.crest || p.escudo_visitante || p.crest_visitante;
-      const logoHomeHTML = renderizarEscudo(crestHome, p.local);
-      const logoAwayHTML = renderizarEscudo(crestAway, p.visitante);
-
-      // 2. Insignia en directo con efecto de pulso luminoso neón verde esmeralda
-      let badgeEstado = '';
-      if (terminado) {
-        badgeEstado = `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700/80">🏁 FINALIZADO</span>`;
-      } else if (infoTiempo.enJuego) {
-        badgeEstado = `
-          <span class="relative inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black bg-emerald-500/10 text-[#00f59b] border border-emerald-400/40 glow-tag-live shadow-lg">
-            <span class="relative flex h-2 w-2 mr-1.5">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-[#00f59b] animate-glow-pulse"></span>
-            </span>
-            ${infoTiempo.texto}
-          </span>
-        `;
-      } else {
-        badgeEstado = `<span class="px-2 py-0.5 rounded-md text-[10px] font-medium text-slate-400 bg-slate-800/80">⏳ ${infoTiempo.texto}</span>`;
-      }
-
-      // Marcador
-      let marcadorHTML = '';
-      if (marcadorData) {
-        marcadorHTML = `
-          <div class="px-2.5 py-0.5 rounded-lg bg-slate-950 font-mono font-black text-sm text-[#00f59b] border border-slate-800 shadow-inner">
-            ${marcadorData.gl} - ${marcadorData.gv}
-          </div>
-        `;
-      }
-
-      // Insignia de acierto
-      let insigniaAcierto = '';
-      if (terminado) {
-        const gano = verificarPronostico(p);
-        if (gano === true) {
-          insigniaAcierto = `<span class="px-2 py-0.5 rounded-md text-[10px] font-black bg-emerald-500/20 text-[#00f59b] border border-emerald-500/30">✅ ACERTADO</span>`;
-        } else if (gano === false) {
-          insigniaAcierto = `<span class="px-2 py-0.5 rounded-md text-[10px] font-black bg-rose-500/20 text-rose-400 border border-rose-500/30">❌ PERDIDO</span>`;
-        }
-      }
-
-      // 3. Barra de progreso temporal interactiva en directo (0' a 90'+)
-      let barraProgresoHTML = '';
-      if (infoTiempo.enJuego) {
-        barraProgresoHTML = `
-          <div class="space-y-1 pt-0.5 pb-0.5">
-            <div class="flex items-center justify-between text-[9px] font-mono text-slate-400">
-              <span class="flex items-center text-emerald-400 font-bold">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping mr-1"></span>
-                Cronómetro activo: ${infoTiempo.minutoNum}' min
-              </span>
-              <span>Progreso: ${infoTiempo.porcentaje}% / 90'</span>
-            </div>
-            <div class="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden p-[1px] border border-slate-800">
-              <div class="h-full bg-gradient-to-r from-emerald-500 via-[#00f59b] to-teal-300 rounded-full transition-all duration-500 glow-tag-live" style="width: ${Math.max(5, infoTiempo.porcentaje)}%"></div>
-            </div>
-          </div>
-        `;
-      }
-
-      // 4. Medidor de intensidad de color según +EV
-      const valorEV = parsearValorEV(p.ev);
-      const estiloEV = obtenerEstiloEV(valorEV);
-      const porcentajeMedidor = Math.min(100, Math.max(10, Math.round((valorEV / 30) * 100)));
-
-      // 5. Filtro de racha y dinámica
-      const rachaLocal = p.racha_local || p.homeTeam?.form?.split('') || generarRachaMock(p.local || 'Local');
-      const rachaVisita = p.racha_visitante || p.awayTeam?.form?.split('') || generarRachaMock(p.visitante || 'Visita');
-      const tendenciaLocal = calcularTendenciaRacha(rachaLocal);
-      const tendenciaVisita = calcularTendenciaRacha(rachaVisita);
-
-      div.innerHTML = `
-        <!-- Fila Superior: Competición y Estado -->
-        <div class="flex items-center justify-between">
-          <span class="text-[11px] font-bold text-slate-400 bg-slate-800/90 px-2 py-0.5 rounded-md">${p.liga || 'Liga Oficial'}</span>
-          <div class="flex items-center space-x-2">
-            <span class="text-[11px] font-mono text-slate-400">${p.hora || ''}</span>
-            ${badgeEstado}
-            ${marcadorHTML}
-            ${insigniaAcierto}
-          </div>
-        </div>
-
-        ${barraProgresoHTML}
-
-        <!-- Equipos y Escudos -->
-        <div class="flex items-center justify-between gap-2">
-          <div class="flex items-center space-x-2.5 min-w-0">
-            <div class="flex items-center -space-x-1.5">
-              ${logoHomeHTML}
-              ${logoAwayHTML}
-            </div>
-            <div class="text-sm font-extrabold text-white tracking-tight truncate">
-              ${p.local} <span class="text-slate-500 font-normal">vs</span> ${p.visitante}
-            </div>
-          </div>
-          <div class="text-right flex-shrink-0">
-            <span class="text-[9px] uppercase tracking-wider text-slate-500 block">Cuota Valor</span>
-            <span class="text-sm font-black font-mono text-[#00f59b]">@${p.cuota || '2.15'}</span>
-          </div>
-        </div>
-
-        <!-- Pronóstico y Medidor de Intensidad +EV -->
-        <div class="bg-slate-950/75 rounded-xl p-2.5 border border-slate-800/80 space-y-2">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-              <span class="text-xs">🎯</span>
-              <div>
-                <span class="text-[9px] uppercase font-bold text-slate-400 block">Pronóstico:</span>
-                <span class="text-xs font-extrabold text-[#00f59b]">${p.mercado || 'Victoria Local (1X2)'}</span>
-              </div>
-            </div>
-            <span class="text-[11px] font-mono px-2 py-0.5 rounded border transition-all ${estiloEV.badgeBg} ${estiloEV.glowClase}">
-              ${p.ev || '+11.8%'} Value
-            </span>
-          </div>
-
-          <!-- Barra Medidora de Intensidad +EV -->
-          <div class="space-y-1">
-            <div class="flex items-center justify-between text-[9px] font-mono">
-              <span class="text-slate-400 flex items-center">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1"></span>
-                Intensidad Alfa (+EV)
-              </span>
-              <span class="${estiloEV.textColor} font-bold">${estiloEV.intensidadLabel}</span>
-            </div>
-            <div class="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
-              <div class="h-full bg-gradient-to-r ${estiloEV.barColor} rounded-full" style="width: ${porcentajeMedidor}%"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Racha y Dinámica de Ambos Equipos -->
-        <div class="bg-slate-950/40 rounded-xl px-2.5 py-2 border border-slate-800/60 flex items-center justify-between text-[10px]">
-          <div class="flex items-center space-x-1.5">
-            <span class="text-[9px] uppercase font-bold text-slate-400">Racha:</span>
-            <div class="flex items-center space-x-1">
-              ${rachaLocal.slice(0, 5).map(renderizarBadgeRacha).join('')}
-            </div>
-            <span class="text-[9px] font-mono ${tendenciaLocal.color}">(${tendenciaLocal.icon})</span>
-          </div>
-
-          <span class="text-slate-600 text-xs font-mono">•</span>
-
-          <div class="flex items-center space-x-1.5">
-            <div class="flex items-center space-x-1">
-              ${rachaVisita.slice(0, 5).map(renderizarBadgeRacha).join('')}
-            </div>
-            <span class="text-[9px] font-mono ${tendenciaVisita.color}">(${tendenciaVisita.icon})</span>
-            <span class="text-[9px] uppercase font-bold text-slate-400">Visita</span>
-          </div>
-        </div>
-
-        <!-- Grilla de Estadísticas Clave -->
-        <div class="grid grid-cols-3 gap-2 text-center pt-0.5">
-          <div class="bg-slate-800/40 rounded-lg py-1.5 px-1 border border-slate-800/50">
-            <span class="text-[9px] text-slate-400 block">Prob. Modelo</span>
-            <span class="text-xs font-bold font-mono text-white">${p.prob_modelo || '52.0%'}</span>
-          </div>
-          <div class="bg-slate-800/40 rounded-lg py-1.5 px-1 border border-slate-800/50">
-            <span class="text-[9px] text-slate-400 block">Ventaja (+EV)</span>
-            <span class="text-xs font-bold font-mono ${estiloEV.textColor}">${p.ev || '+11.8%'}</span>
-          </div>
-          <div class="bg-slate-800/40 rounded-lg py-1.5 px-1 border border-slate-800/50">
-            <span class="text-[9px] text-slate-400 block">Stake Sugerido</span>
-            <span class="text-xs font-bold font-mono text-blue-400">${p.stake ? p.stake + ' / 10 U.' : '1 / 10 U.'}</span>
-          </div>
-        </div>
-      `;
-
-      return div;
-    }
-
-    function renderizarAlertas(contenedor) {
-      const alertas = datosGlobales.alertas || [];
-
-      if (alertas.length === 0) {
-        contenedor.innerHTML = `
-          <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-8 text-center space-y-2">
-            <span class="text-3xl">🔔</span>
-            <p class="text-sm font-semibold text-slate-300">No hay alertas emitidas en este ciclo</p>
-            <p class="text-xs text-slate-500">Las alertas enviadas a @apex_quant_alertas se guardarán automáticamente aquí con su resultado final.</p>
-          </div>
-        `;
-        return;
-      }
-
-      const alertasOrdenadas = [...alertas].reverse();
-
-      alertasOrdenadas.forEach(al => {
-        const div = document.createElement('div');
-        div.className = 'bg-slate-900/90 border border-slate-800/90 rounded-2xl p-4 space-y-3 shadow-md hover:border-slate-700/80 transition-all';
-
-        const pMatch = encontrarPartidoDeAlerta(al);
-        let badgeResultado = `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">Alerta Real</span>`;
-        let marcadorHTML = '';
-
-        if (pMatch) {
-          const gData = extraerGoles(pMatch);
-          if (gData) {
-            marcadorHTML = `
-              <div class="px-2 py-0.5 rounded-lg bg-slate-950 font-mono font-black text-xs text-[#00f59b] border border-slate-800">
-                ${gData.gl} - ${gData.gv}
-              </div>
-            `;
-          }
-
-          if (esPartidoTerminado(pMatch)) {
-            const mock = { ...pMatch, mercado: al.mercado || pMatch.mercado };
-            const gano = verificarPronostico(mock);
-            if (gano === true) {
-              badgeResultado = `<span class="px-2 py-0.5 rounded-md text-[10px] font-black bg-emerald-500/20 text-[#00f59b] border border-emerald-500/30">✅ ACERTADO</span>`;
-            } else if (gano === false) {
-              badgeResultado = `<span class="px-2 py-0.5 rounded-md text-[10px] font-black bg-rose-500/20 text-rose-400 border border-rose-500/30">❌ PERDIDO</span>`;
-            }
-          } else {
-            const tMin = obtenerInfoMinuto(pMatch);
-            if (tMin.enJuego) {
-              badgeResultado = `
-                <span class="relative inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-[#00f59b] border border-emerald-400/40 glow-tag-live">
-                  <span class="w-1.5 h-1.5 rounded-full bg-[#00f59b] animate-ping mr-1"></span>
-                  In-Play Live
-                </span>
-              `;
-            }
-          }
-        }
-
-        const evVal = parsearValorEV(al.ev);
-        const estiloEV = obtenerEstiloEV(evVal);
-
-        div.innerHTML = `
-          <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-blue-400 flex items-center">
-              <span class="w-1.5 h-1.5 rounded-full bg-blue-400 mr-1.5"></span>
-              Enviado a Telegram • ${al.hora || 'Madrid'}
-            </span>
-            <div class="flex items-center space-x-1.5">
-              ${marcadorHTML}
-              ${badgeResultado}
-            </div>
-          </div>
-
-          <div>
-            <h3 class="text-sm font-extrabold text-white">${al.partido}</h3>
-            <p class="text-xs font-semibold text-[#00f59b] mt-0.5">${al.mercado}</p>
-          </div>
-
-          <div class="flex items-center justify-between text-xs font-mono pt-1 border-t border-slate-800/80">
-            <span class="text-slate-400">Cuota: <strong class="text-white">${al.cuota || '@2.15'}</strong></span>
-            <span class="text-slate-400">Ventaja: <strong class="${estiloEV.textColor}">${al.ev || '+11.8%'}</strong></span>
-            <span class="text-slate-400">Stake: <strong class="text-blue-400">${al.stake ? al.stake + '/10' : '2/10'}</strong></span>
-          </div>
-        `;
-
-        contenedor.appendChild(div);
-      });
     }
 
     function mostrarErrorConexion() {
-      const contenedor = document.getElementById('listaContenido');
-      contenedor.innerHTML = `
-        <div class="bg-slate-900/60 border border-red-500/30 rounded-2xl p-8 text-center space-y-3">
-          <span class="text-3xl">⚠️</span>
-          <p class="text-xs font-semibold text-red-400">No se pudo cargar datos.json</p>
-          <p class="text-[10px] text-slate-500">Ejecuta el workflow en GitHub Actions para generar el archivo de partidos reales.</p>
-          <button onclick="cargarDatos()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700">Reintentar</button>
+      document.getElementById('contenedorTarjetas').innerHTML = `
+        <div class="bg-[#0c1322] border border-rose-500/20 rounded-2xl p-6 text-center space-y-3">
+          <div class="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mx-auto text-rose-400 text-xl font-bold">⚠️</div>
+          <h3 class="text-sm font-bold text-slate-200">No se pudo cargar datos.json</h3>
+          <p class="text-xs text-slate-400 max-w-sm mx-auto">Ejecuta el workflow en GitHub Actions para generar el archivo de partidos reales.</p>
+          <button onclick="cargarDatosJSON()" class="px-4 py-2 bg-[#0c1322] hover:bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white transition-all active:scale-95">Reintentar</button>
         </div>
       `;
     }
 
-    // Inicialización y refresco automático cada 15 segundos
+    function recargarDatosManual() {
+      const icon = document.getElementById('iconRecarga');
+      icon.classList.add('rotate-180');
+      cargarDatosJSON().finally(() => {
+        setTimeout(() => icon.classList.remove('rotate-180'), 500);
+      });
+    }
+
+    function esPartidoFinalizado(p) {
+      const est = (p.estado || '').toUpperCase();
+      return ['FINISHED', 'FINALIZADO', 'AWARDED'].includes(est);
+    }
+
+    function esPartidoEnJuego(minutosRestantes, p) {
+      if (esPartidoFinalizado(p)) return false;
+      const est = (p.estado || '').toUpperCase();
+      if (['IN_PLAY', 'PAUSED', 'LIVE', 'HT'].includes(est)) return true;
+      return (minutosRestantes < 0 && minutosRestantes >= -120);
+    }
+
+    function calcularMinutoEnJuego(minutosRestantes) {
+      const transcurridos = Math.abs(minutosRestantes);
+      if (transcurridos >= 45 && transcurridos <= 60) return "HT";
+      if (transcurridos > 90) return "90'+";
+      return transcurridos + "'";
+    }
+
+    function calcularAciertoPronostico(p) {
+      if (!esPartidoFinalizado(p)) return null;
+      if (p.goles_local === undefined || p.goles_local === null) return null;
+      if (p.goles_visitante === undefined || p.goles_visitante === null) return null;
+
+      const gLocal = parseInt(p.goles_local, 10);
+      const gVis = parseInt(p.goles_visitante, 10);
+      const mercado = (p.mercado || '').toLowerCase();
+      const tipo = (p.tipo_mercado || '').toUpperCase();
+
+      if (mercado.includes('1.5')) {
+        return (gLocal + gVis) > 1;
+      }
+      if (mercado.includes('2.5') || tipo === 'GOLES') {
+        return (gLocal + gVis) > 2;
+      }
+      if (mercado.includes('victoria') || tipo === '1X2') {
+        return gLocal > gVis;
+      }
+      return false;
+    }
+
+    function actualizarMetricas() {
+      document.getElementById('totalPartidosCount').textContent = globalPartidos.length;
+
+      let tgWins = 0, tgTotal = 0;
+      let noTgWins = 0, noTgTotal = 0;
+      let activosCount = 0;
+      let finalizadosCount = 0;
+
+      const ahoraMs = Date.now();
+
+      globalPartidos.forEach(p => {
+        let minRest = p.minutos_restantes;
+        if (p.timestamp_ms && p.timestamp_ms > 0) {
+          minRest = Math.round((p.timestamp_ms - ahoraMs) / 60000);
+        }
+
+        const fin = esPartidoFinalizado(p);
+        if (fin) {
+          finalizadosCount++;
+          const acierto = calcularAciertoPronostico(p);
+          if (acierto !== null) {
+            if (p.telegram_enviado) {
+              tgTotal++;
+              if (acierto) tgWins++;
+            } else {
+              noTgTotal++;
+              if (acierto) noTgWins++;
+            }
+          }
+        } else {
+          activosCount++;
+        }
+      });
+
+      // Contadores en pestañas
+      document.getElementById('badgeTabActivos').textContent = `(${activosCount})`;
+      document.getElementById('badgeTabFinalizados').textContent = `(${finalizadosCount})`;
+      document.getElementById('badgeTabAlertas').textContent = `(${globalAlertas.length})`;
+
+      // 1. Telegram
+      if (tgTotal > 0) {
+        const pct = Math.round((tgWins / tgTotal) * 100);
+        document.getElementById('efectividadTgPct').textContent = pct + '%';
+        document.getElementById('efectividadTgDetalle').textContent = `${tgWins}V - ${tgTotal - tgWins}D TG`;
+      } else {
+        document.getElementById('efectividadTgPct').textContent = '--%';
+        document.getElementById('efectividadTgDetalle').textContent = `0V - 0D TG`;
+      }
+
+      // 2. Sin Alerta
+      if (noTgTotal > 0) {
+        const pct = Math.round((noTgWins / noTgTotal) * 100);
+        document.getElementById('efectividadNoTgPct').textContent = pct + '%';
+        document.getElementById('efectividadNoTgDetalle').textContent = `${noTgWins}V - ${noTgTotal - noTgWins}D No TG`;
+      } else {
+        document.getElementById('efectividadNoTgPct').textContent = '--%';
+        document.getElementById('efectividadNoTgDetalle').textContent = `0V - 0D No TG`;
+      }
+
+      // 3. Global Total
+      const gWins = tgWins + noTgWins;
+      const gTotal = tgTotal + noTgTotal;
+      if (gTotal > 0) {
+        const pct = Math.round((gWins / gTotal) * 100);
+        document.getElementById('efectividadGlobalPct').textContent = pct + '%';
+        document.getElementById('efectividadGlobalDetalle').textContent = `${gWins}V - ${gTotal - gWins}D Total`;
+      } else {
+        document.getElementById('efectividadGlobalPct').textContent = '--%';
+        document.getElementById('efectividadGlobalDetalle').textContent = `0V - 0D Total`;
+      }
+    }
+
+    function cambiarTabPrincipal(tab) {
+      tabPrincipalActual = tab;
+
+      const btnActivos = document.getElementById('tabBtnActivos');
+      const btnFinalizados = document.getElementById('tabBtnFinalizados');
+      const btnAlertas = document.getElementById('tabBtnAlertas');
+      const titulo = document.getElementById('tituloSeccion');
+
+      [btnActivos, btnFinalizados, btnAlertas].forEach(b => {
+        b.className = "flex-1 py-2 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white flex items-center justify-center gap-1.5";
+      });
+
+      if (tab === 'activos') {
+        btnActivos.className = "flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-[#00f59b] text-[#070e1d] shadow-sm flex items-center justify-center gap-1.5";
+        titulo.textContent = "ENCUENTROS PROGRAMADOS Y EN VIVO";
+      } else if (tab === 'finalizados') {
+        btnFinalizados.className = "flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-[#00f59b] text-[#070e1d] shadow-sm flex items-center justify-center gap-1.5";
+        titulo.textContent = "HISTORIAL DE PARTIDOS FINALIZADOS";
+      } else {
+        btnAlertas.className = "flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-[#00f59b] text-[#070e1d] shadow-sm flex items-center justify-center gap-1.5";
+        titulo.textContent = "HISTORIAL DE ALERTAS TELEGRAM EMITIDAS";
+      }
+
+      renderTarjetas();
+    }
+
+    function filtrarLiga(ligaKey, btn) {
+      ligaFiltroActual = ligaKey;
+      document.querySelectorAll('.btn-liga').forEach(b => {
+        b.className = "btn-liga px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0c1322] border border-white/10 text-slate-300 hover:text-white whitespace-nowrap transition-all";
+      });
+      btn.className = "btn-liga px-3 py-1.5 rounded-lg text-xs font-bold bg-[#00f59b] text-[#070e1d] whitespace-nowrap transition-all shadow-sm";
+      renderTarjetas();
+    }
+
+    function renderEscudoHTML(url, nombre) {
+      if (url && url.length > 5) {
+        return `<img src="${url}" alt="${nombre}" class="w-5 h-5 object-contain flex-shrink-0" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'w-5 h-5 rounded-full bg-white/10 text-[9px] font-bold text-white flex items-center justify-center flex-shrink-0\\'>${(nombre||'').charAt(0)}</span>'"/>`;
+      }
+      return `<span class="w-5 h-5 rounded-full bg-white/10 text-[9px] font-bold text-white flex items-center justify-center flex-shrink-0">${(nombre||'').charAt(0)}</span>`;
+    }
+
+    function renderRachaHTML(rachaStr) {
+      if (!rachaStr) return '';
+      const items = rachaStr.split('-');
+      return items.map(letra => {
+        if (letra === 'W') return `<span class="w-3.5 h-3.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[8px] font-bold flex items-center justify-center border border-emerald-500/30">W</span>`;
+        if (letra === 'D') return `<span class="w-3.5 h-3.5 rounded-full bg-slate-500/20 text-slate-300 text-[8px] font-bold flex items-center justify-center border border-slate-500/30">D</span>`;
+        return `<span class="w-3.5 h-3.5 rounded-full bg-rose-500/20 text-rose-400 text-[8px] font-bold flex items-center justify-center border border-rose-500/30">L</span>`;
+      }).join('');
+    }
+
+    function renderTarjetas() {
+      const contenedor = document.getElementById('contenedorTarjetas');
+
+      if (tabPrincipalActual === 'alertas') {
+        renderAlertasTab(contenedor);
+        return;
+      }
+
+      const ahoraMs = Date.now();
+      let lista = globalPartidos.map(p => {
+        let minRest = p.minutos_restantes;
+        if (p.timestamp_ms && p.timestamp_ms > 0) {
+          minRest = Math.round((p.timestamp_ms - ahoraMs) / 60000);
+        }
+        return { ...p, minutosCalculados: minRest };
+      });
+
+      // Filtrar por pestaña
+      if (tabPrincipalActual === 'activos') {
+        lista = lista.filter(p => !esPartidoFinalizado(p));
+      } else {
+        lista = lista.filter(p => esPartidoFinalizado(p));
+      }
+
+      // Filtrar por liga
+      if (ligaFiltroActual !== 'all') {
+        lista = lista.filter(p => p.liga_key === ligaFiltroActual);
+      }
+
+      if (lista.length === 0) {
+        contenedor.innerHTML = `
+          <div class="bg-[#0c1322] border border-white/[0.06] rounded-2xl p-8 text-center text-slate-400 space-y-2">
+            <p class="text-sm font-semibold text-slate-300">No hay partidos en esta sección</p>
+            <p class="text-xs text-slate-500">${tabPrincipalActual === 'activos' ? 'Todos los encuentros han finalizado o están programados para más tarde.' : 'Aún no han concluido partidos en esta competición.'}</p>
+          </div>
+        `;
+        return;
+      }
+
+      contenedor.innerHTML = lista.map(p => {
+        const fin = esPartidoFinalizado(p);
+        const enJuego = esPartidoEnJuego(p.minutosCalculados, p);
+        const minRest = p.minutosCalculados;
+
+        // Estado y Badge
+        let badgeEstadoHTML = '';
+        let marcadorHTML = '';
+        let progresoBarraHTML = '';
+
+        if (fin) {
+          const acierto = calcularAciertoPronostico(p);
+          const badgeAcierto = acierto === true
+            ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center gap-1"><span>✅</span> ACERTADO</span>`
+            : (acierto === false ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40 flex items-center gap-1"><span>❌</span> PERDIDO</span>` : '');
+
+          badgeEstadoHTML = `
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-300 border border-white/10 flex items-center gap-1">
+                <span>🏁</span> FINALIZADO
+              </span>
+              ${p.marcador ? `<span class="px-2.5 py-0.5 rounded-md text-xs font-extrabold bg-[#070e1d] text-white border border-white/10 font-mono tracking-widest">${p.marcador}</span>` : ''}
+              ${badgeAcierto}
+            </div>
+          `;
+        } else if (enJuego) {
+          const minJuego = calcularMinutoEnJuego(minRest);
+          const minNumerico = Math.min(90, Math.max(0, Math.abs(minRest)));
+          const pctProgreso = Math.round((minNumerico / 90) * 100);
+
+          badgeEstadoHTML = `
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500 glow-dot"></span>
+                EN JUEGO (${minJuego})
+              </span>
+              ${p.marcador ? `<span class="px-2 py-0.5 rounded-md text-xs font-black bg-[#070e1d] text-[#00f59b] border border-[#00f59b]/30 font-mono tracking-wider">${p.marcador}</span>` : ''}
+            </div>
+          `;
+
+          progresoBarraHTML = `
+            <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden mt-1 mb-2">
+              <div class="h-full bg-gradient-to-r from-rose-500 via-[#00f59b] to-[#00f59b] transition-all duration-1000" style="width: ${pctProgreso}%"></div>
+            </div>
+          `;
+        } else {
+          // Programado
+          let tiempoMsg = `Inicia en ${minRest}m`;
+          if (minRest > 120) {
+            const horas = Math.floor(minRest / 60);
+            tiempoMsg = `Inicia en ${horas}h ${minRest % 60}m`;
+          } else if (minRest <= 0) {
+            tiempoMsg = `Inicia en breve`;
+          }
+
+          badgeEstadoHTML = `
+            <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[#38bdf8]/10 text-[#38bdf8] border border-[#38bdf8]/20 flex items-center gap-1 font-mono">
+              <span>⏳</span> ${tiempoMsg}
+            </span>
+          `;
+        }
+
+        // EV Meter
+        const evNum = parseFloat(p.ev_numero || (p.ev ? p.ev.replace(/[^0-9.]/g, '') : 0)) || 10;
+        let evColorBadge = 'bg-[#00f59b]/10 text-[#00f59b] border-[#00f59b]/30';
+        let evLabel = 'VALOR NORMAL';
+        let evBarWidth = Math.min(100, Math.round(evNum * 2.5));
+
+        if (evNum >= 25) {
+          evColorBadge = 'bg-amber-400/20 text-amber-300 border-amber-400/40';
+          evLabel = 'VALOR ÉLITE (+25%)';
+        } else if (evNum >= 15) {
+          evColorBadge = 'bg-[#00f59b]/20 text-[#00f59b] border-[#00f59b]/40';
+          evLabel = 'VALOR ALTO (+15%)';
+        }
+
+        // Racha Form Info
+        const formInfo = p.form_info || {};
+        const rachaLocalHTML = formInfo.racha_local ? renderRachaHTML(formInfo.racha_local) : '';
+        const rachaVisitanteHTML = formInfo.racha_visitante ? renderRachaHTML(formInfo.racha_visitante) : '';
+
+        return `
+          <div class="bg-[#0c1322] border border-white/[0.08] hover:border-[#00f59b]/30 rounded-2xl p-4 space-y-3 transition-all duration-200">
+            
+            <!-- Barra Superior: Liga, Horario Madrid y Estado -->
+            <div class="flex items-center justify-between gap-2 border-b border-white/[0.04] pb-2.5">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/5 text-slate-300 border border-white/10 uppercase tracking-wider flex-shrink-0">
+                  ${p.liga || 'Oficial'}
+                </span>
+                <span class="text-xs font-mono text-slate-400 font-medium whitespace-nowrap">
+                  ${p.hora || '--:--'}
+                </span>
+              </div>
+              <div class="flex-shrink-0">
+                ${badgeEstadoHTML}
+              </div>
+            </div>
+
+            ${progresoBarraHTML}
+
+            <!-- NOMBRES DE EQUIPOS Y CUOTA (Diseño Fluido y Nombres Completos) -->
+            <div class="flex items-start justify-between gap-3 pt-0.5">
+              <!-- Nombres de Equipos Multilínea con Escudos -->
+              <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-bold text-white leading-snug break-words">
+                  <div class="inline-flex items-center gap-1.5 flex-wrap">
+                    ${renderEscudoHTML(p.escudo_local, p.local)}
+                    <span class="text-white font-extrabold tracking-tight">${p.local}</span>
+                  </div>
+                  <span class="text-xs font-normal text-slate-400 uppercase tracking-wider px-0.5">vs</span>
+                  <div class="inline-flex items-center gap-1.5 flex-wrap">
+                    ${renderEscudoHTML(p.escudo_visitante, p.visitante)}
+                    <span class="text-white font-extrabold tracking-tight">${p.visitante}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Cuota de Valor Destacada -->
+              <div class="text-right flex-shrink-0 pl-1">
+                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">CUOTA VALOR</span>
+                <span class="text-base font-extrabold text-[#00f59b] font-mono leading-tight">@${p.cuota || '2.00'}</span>
+              </div>
+            </div>
+
+            <!-- Caja de Pronóstico Cuantitativo -->
+            <div class="bg-[#070e1d]/80 border border-white/[0.06] rounded-xl p-3 space-y-2.5">
+              <div class="flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                  <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">PRONÓSTICO:</span>
+                  <p class="text-xs font-extrabold text-white flex items-center gap-1.5 truncate">
+                    <span class="text-[#00f59b]">🎯</span>
+                    <span class="text-[#00f59b] font-bold">${p.mercado || 'Victoria Local (1X2)'}</span>
+                  </p>
+                </div>
+                <div class="px-2 py-0.5 rounded-md text-[10px] font-bold ${evColorBadge} border font-mono flex-shrink-0">
+                  ${p.ev || '+10.0% Value'}
+                </div>
+              </div>
+
+              <!-- Barra Medidor Alfa (+EV) -->
+              <div class="space-y-1">
+                <div class="flex justify-between text-[9px] font-mono text-slate-400">
+                  <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[#00f59b]"></span> Intensidad Alfa (+EV)</span>
+                  <span class="text-amber-300 font-bold">${evLabel}</span>
+                </div>
+                <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-[#00f59b] to-amber-400 rounded-full" style="width: ${evBarWidth}%"></div>
+                </div>
+              </div>
+
+              <!-- Filtro de Racha y Tendencia -->
+              ${(rachaLocalHTML || rachaVisitanteHTML) ? `
+                <div class="pt-1 border-t border-white/[0.04] flex items-center justify-between text-[9px]">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-slate-400 font-medium">RACHA:</span>
+                    <div class="flex items-center gap-0.5">${rachaLocalHTML}</div>
+                    <span class="text-slate-500">vs</span>
+                    <div class="flex items-center gap-0.5">${rachaVisitanteHTML}</div>
+                  </div>
+                  <span class="text-slate-400 font-semibold truncate max-w-[120px]">${formInfo.tendencia || ''}</span>
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Telemetría Predictiva Inferior -->
+            <div class="grid grid-cols-3 gap-2 pt-0.5">
+              <div class="bg-[#070e1d] rounded-lg p-2 text-center border border-white/[0.03]">
+                <span class="text-[9px] text-slate-400 font-medium block">Prob. Modelo</span>
+                <span class="text-xs font-extrabold text-slate-200 font-mono">${p.prob_modelo || '55%'}</span>
+              </div>
+              <div class="bg-[#070e1d] rounded-lg p-2 text-center border border-white/[0.03]">
+                <span class="text-[9px] text-slate-400 font-medium block">Ventaja (+EV)</span>
+                <span class="text-xs font-extrabold text-[#00f59b] font-mono">${p.ev || '+8.0%'}</span>
+              </div>
+              <div class="bg-[#070e1d] rounded-lg p-2 text-center border border-white/[0.03]">
+                <span class="text-[9px] text-slate-400 font-medium block">Stake Sugerido</span>
+                <span class="text-xs font-extrabold text-[#38bdf8] font-mono">${p.stake || 2} / 10 U.</span>
+              </div>
+            </div>
+
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderAlertasTab(contenedor) {
+      if (globalAlertas.length === 0) {
+        contenedor.innerHTML = `
+          <div class="bg-[#0c1322] border border-white/[0.06] rounded-2xl p-8 text-center text-slate-400 space-y-2">
+            <div class="w-10 h-10 rounded-full bg-[#38bdf8]/10 text-[#38bdf8] flex items-center justify-center mx-auto text-lg mb-2">🔔</div>
+            <p class="text-sm font-semibold text-slate-300">No hay alertas en el historial todavía</p>
+            <p class="text-xs text-slate-500">Las alertas enviadas al canal @apex_quant_alertas se acumulan y verifican aquí.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const lista = [...globalAlertas].reverse();
+
+      contenedor.innerHTML = lista.map(a => {
+        let badgeLiquidacion = '';
+        if (a.liquidada_telegram) {
+          badgeLiquidacion = a.acertado
+            ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">✅ ACERTADO</span>`
+            : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center gap-1">❌ PERDIDO</span>`;
+        } else {
+          badgeLiquidacion = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#38bdf8]/20 text-[#38bdf8] border border-[#38bdf8]/30">Alerta Real</span>`;
+        }
+
+        const tagHT = a.es_ht ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">In-Play HT</span>` : '';
+
+        return `
+          <div class="bg-[#0c1322] border border-[#38bdf8]/20 rounded-2xl p-4 space-y-2.5">
+            <div class="flex items-center justify-between border-b border-white/[0.04] pb-2">
+              <div class="flex items-center gap-1.5 text-xs text-[#38bdf8] font-semibold">
+                <span>Enviado a Telegram</span>
+                <span>•</span>
+                <span class="font-mono text-slate-300">${a.hora || ''}</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                ${tagHT}
+                ${a.resultado_final ? `<span class="px-2 py-0.5 rounded bg-black/40 text-xs font-mono font-bold text-white border border-white/10">${a.resultado_final}</span>` : ''}
+                ${badgeLiquidacion}
+              </div>
+            </div>
+
+            <!-- Nombres de equipos en alerta con wrap completo -->
+            <div class="text-sm font-extrabold text-white break-words">
+              ${a.partido} <span class="text-slate-400 font-normal">—</span> <span class="text-[#00f59b]">${a.mercado}</span>
+            </div>
+
+            <div class="flex items-center justify-between text-xs font-mono pt-1">
+              <div><span class="text-slate-400 text-[10px]">Cuota:</span> <span class="font-bold text-white">${a.cuota}</span></div>
+              <div><span class="text-slate-400 text-[10px]">Ventaja:</span> <span class="font-bold text-[#00f59b]">${a.ev}</span></div>
+              <div><span class="text-slate-400 text-[10px]">Stake:</span> <span class="font-bold text-[#38bdf8]">${a.stake}</span></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Inicialización y auto-recarga cada 15s
     document.addEventListener('DOMContentLoaded', () => {
-      cargarDatos();
+      cargarDatosJSON();
       setInterval(() => {
-        if (datosGlobales.partidos && datosGlobales.partidos.length > 0) {
-          actualizarConteoPartidos();
-          actualizarMetricasEfectividad();
-          renderizarContenido();
+        if (tabPrincipalActual === 'activos') {
+          actualizarMetricas();
+          renderTarjetas();
         }
       }, 15000);
     });
   </script>
-</body></html>
+</body>
+</html>
