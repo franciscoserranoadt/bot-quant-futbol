@@ -72,22 +72,19 @@ def calcular_ev_y_stake(cuota_casa, prob_modelo):
 
 def evaluar_mercados_partido(local, visitante):
     """
-    Analiza simultáneamente los dos mercados principales:
+    Analiza simultáneamente:
     1) Victoria Local (1X2)
     2) Goles: Más de 2.5 Goles (Over 2.5)
     Retorna la mejor oportunidad de valor cuantitativo (+EV).
     """
-    # 1. Mercado 1X2 (Resultado Final)
     cuota_1x2 = 2.15
     prob_1x2 = 0.52
     ev_1x2, stake_1x2 = calcular_ev_y_stake(cuota_1x2, prob_1x2)
     
-    # 2. Mercado de Goles Totales (Over 2.5 Goles)
     cuota_goles = 1.95
     prob_goles = 0.58
     ev_goles, stake_goles = calcular_ev_y_stake(cuota_goles, prob_goles)
     
-    # Priorizar la oportunidad con mayor ventaja cuantitativa (+EV)
     if ev_goles > ev_1x2 and ev_goles > 0:
         return {
             "mercado": "Más de 2.5 Goles (Over 2.5)",
@@ -117,14 +114,14 @@ def guardar_datos_json(partidos_procesados, alertas_enviadas, hora_madrid_str):
     }
     with open("datos.json", "w", encoding="utf-8") as f:
         json.dump(datos, f, ensure_ascii=False, indent=2)
-    print("📁 Archivo datos.json guardado con éxito (Horario Madrid y Multimercado 1X2 + Goles).")
+    print("📁 Archivo datos.json guardado con éxito (Marcadores en vivo y finalizados).")
 
 def ejecutar_ciclo():
     ahora_utc = datetime.now(timezone.utc)
     ahora_madrid = ahora_utc.astimezone(TZ_MADRID)
     hora_madrid_str = ahora_madrid.strftime('%H:%M Madrid')
     hoy_madrid_str = ahora_madrid.strftime('%Y-%m-%d')
-    print(f"[{hora_madrid_str}] Iniciando ciclo cuantitativo multilínea (1X2 + Goles)...")
+    print(f"[{hora_madrid_str}] Iniciando ciclo cuantitativo...")
 
     partidos_raw = obtener_partidos(dias_atras=1, dias_adelanto=2)
     partidos_para_web = []
@@ -133,7 +130,7 @@ def ejecutar_ciclo():
     for p in partidos_raw:
         comp_code = p.get("competition", {}).get("code", "")
         
-        # Filtro cerrado de 7 ligas oficiales
+        # Filtro cerrado de ligas oficiales
         if comp_code not in LEAGUES_MAP:
             continue
 
@@ -151,11 +148,25 @@ def ejecutar_ciclo():
             fecha_madrid_partido = inicio_madrid.strftime('%Y-%m-%d')
             minutos_restantes = round((inicio_utc - ahora_utc).total_seconds() / 60.0)
 
-        # Marcador final para verificación automática
+        # ======================================================================
+        # EXTRACCIÓN ROBUSTA DE MARCADOR (EN VIVO E IN-PLAY Y FINALIZADO)
+        # ======================================================================
         score_data = p.get("score", {})
         full_time = score_data.get("fullTime", {})
+        half_time = score_data.get("halfTime", {})
+        regular_time = score_data.get("regularTime", {})
+        
+        # Probar orden: fullTime -> regularTime -> halfTime
         goles_local = full_time.get("home")
         goles_visitante = full_time.get("away")
+
+        if goles_local is None and regular_time.get("home") is not None:
+            goles_local = regular_time.get("home")
+            goles_visitante = regular_time.get("away")
+
+        if goles_local is None and half_time.get("home") is not None:
+            goles_local = half_time.get("home")
+            goles_visitante = half_time.get("away")
         
         marcador_str = None
         if goles_local is not None and goles_visitante is not None:
@@ -165,8 +176,35 @@ def ejecutar_ciclo():
         nombre_local = p.get("homeTeam", {}).get("name", "Local")
         nombre_visitante = p.get("awayTeam", {}).get("name", "Visitante")
 
-        # Evaluación cuantitativa multilínea (1X2 y Goles)
+        # Evaluación cuantitativa multilínea
         analisis = evaluar_mercados_partido(nombre_local, nombre_visitante)
+
+        # Determinamos si dispara alerta Telegram (ventana T-45 a T-25m)
+        fue_enviado_telegram = False
+        if 25 <= minutos_restantes <= 50 and analisis["ev"] > 0:
+            fue_enviado_telegram = True
+            icono_mercado = "⚽" if analisis["tipo_mercado"] == "1X2" else "🥅"
+            alerta_msg = (
+                f"🎯 <b>ALERTA CUANTITATIVA (+EV) — [T-45m]</b>\n\n"
+                f"🏆 <b>Competición:</b> {comp_info['name']}\n"
+                f"⚽ <b>Partido:</b> {nombre_local} vs {nombre_visitante}\n"
+                f"⏰ <b>Inicio:</b> {hora_madrid_partido} (en {minutos_restantes} min)\n"
+                f"{icono_mercado} <b>Mercado:</b> {analisis['mercado']}\n"
+                f"💰 <b>Cuota de Valor:</b> @{analisis['cuota']}\n"
+                f"📈 <b>Ventaja Algorítmica (+EV):</b> +{analisis['ev']}%\n"
+                f"💡 <b>Stake Sugerido:</b> <b>{analisis['stake']}/10 unidades</b>\n\n"
+                f"⚡ <i>Apex Quant Engine • Multimercado</i>"
+            )
+            enviar_telegram(alerta_msg)
+            alertas_enviadas.append({
+                "partido": f"{nombre_local} vs {nombre_visitante}",
+                "mercado": analisis["mercado"],
+                "tipo_mercado": analisis["tipo_mercado"],
+                "cuota": f"@{analisis['cuota']}",
+                "ev": f"+{analisis['ev']}%",
+                "stake": f"{analisis['stake']}/10",
+                "hora": hora_madrid_str
+            })
 
         item = {
             "id": p.get("id"),
@@ -188,37 +226,13 @@ def ejecutar_ciclo():
             "prob_modelo": analisis["prob_modelo"],
             "ev": f"+{analisis['ev']}%",
             "stake": analisis["stake"],
-            "tiene_pronostico": True
+            "tiene_pronostico": True,
+            "telegram_enviado": fue_enviado_telegram
         }
         partidos_para_web.append(item)
 
-        # Disparo Just-in-Time en ventana T-45m a T-25m si hay valor (+EV > 5%)
-        if 25 <= minutos_restantes <= 50 and analisis["ev"] > 0:
-            icono_mercado = "⚽" if analisis["tipo_mercado"] == "1X2" else "🥅"
-            alerta_msg = (
-                f"🎯 <b>ALERTA CUANTITATIVA (+EV) — [T-45m]</b>\n\n"
-                f"🏆 <b>Competición:</b> {comp_info['name']}\n"
-                f"⚽ <b>Partido:</b> {item['local']} vs {item['visitante']}\n"
-                f"⏰ <b>Inicio:</b> {item['hora']} (en {minutos_restantes} min)\n"
-                f"{icono_mercado} <b>Mercado:</b> {item['mercado']}\n"
-                f"💰 <b>Cuota de Valor:</b> @{analisis['cuota']}\n"
-                f"📈 <b>Ventaja Algorítmica (+EV):</b> +{analisis['ev']}%\n"
-                f"💡 <b>Stake Sugerido:</b> <b>{analisis['stake']}/10 unidades</b>\n\n"
-                f"⚡ <i>Apex Quant Engine • Multimercado</i>"
-            )
-            enviar_telegram(alerta_msg)
-            alertas_enviadas.append({
-                "partido": f"{item['local']} vs {item['visitante']}",
-                "mercado": item['mercado'],
-                "tipo_mercado": item['tipo_mercado'],
-                "cuota": f"@{analisis['cuota']}",
-                "ev": f"+{analisis['ev']}%",
-                "stake": f"{analisis['stake']}/10",
-                "hora": hora_madrid_str
-            })
-
     guardar_datos_json(partidos_para_web, alertas_enviadas, hora_madrid_str)
-    print(f"🏁 Ciclo finalizado. Total partidos oficiales: {len(partidos_para_web)} | Alertas emitidas: {len(alertas_enviadas)}")
+    print(f"🏁 Ciclo finalizado. Total partidos oficiales: {len(partidos_para_web)} | Alertas: {len(alertas_enviadas)}")
 
 if __name__ == "__main__":
     ejecutar_ciclo()
