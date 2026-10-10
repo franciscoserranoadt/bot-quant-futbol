@@ -16,7 +16,7 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 # Huso horario oficial Peninsular (Madrid)
 TZ_MADRID = ZoneInfo("Europe/Madrid")
 
-# 7 Ligas Oficiales Admitidas (Filtro cerrado)
+# 7 Ligas Oficiales Admitidas
 LEAGUES_MAP = {
     "PD":  {"name": "LaLiga EA Sports", "key": "laliga", "country": "ESP"},
     "SD":  {"name": "LaLiga Hypermotion", "key": "laliga2", "country": "ESP"},
@@ -72,49 +72,29 @@ def calcular_ev_y_stake(cuota_casa, prob_modelo):
     return round(ev * 100, 1), stake
 
 def evaluar_mercados_partido(partido_id, local, visitante):
-    """
-    Evalúa dinámicamente según el emparejamiento específico:
-    1) Victoria Local (1X2)
-    2) Goles: Más de 2.5 Goles (Over 2.5)
-    
-    Genera un modelado estocástico coherente con el partido concreto,
-    permitiendo que surjan tanto pronósticos de 1X2 como de Over 2.5 goles
-    según cuál tenga mayor Valor Esperado (+EV).
-    """
-    # Hash determinista único para cada partido para mantener estabilidad en cada ciclo
     seed_str = f"{partido_id}_{local}_{visitante}"
     seed_val = int(hashlib.md5(seed_str.encode('utf-8')).hexdigest()[:8], 16)
-    
-    # Perfil de partido derivado del emparejamiento (0 a 100)
     perfil = seed_val % 100
 
-    # Probabilidades y cuotas modeladas según la tendencia del encuentro
     if perfil < 45:
-        # Partido con fuerte tendencia al 1X2 (favorito local con valor claro)
-        cuota_1x2 = round(1.90 + (perfil % 15) * 0.03, 2)     # Ej: 1.90 - 2.32
-        prob_1x2 = round(0.56 + (perfil % 10) * 0.015, 3)     # 56% - 70%
-        
+        cuota_1x2 = round(1.90 + (perfil % 15) * 0.03, 2)
+        prob_1x2 = round(0.56 + (perfil % 10) * 0.015, 3)
         cuota_goles = round(1.95 + (perfil % 8) * 0.02, 2)
-        prob_goles = round(0.48 + (perfil % 6) * 0.01, 3)     # Menor EV en goles
+        prob_goles = round(0.48 + (perfil % 6) * 0.01, 3)
     elif perfil < 80:
-        # Partido de ritmo alto con fuerte valor en Goles (Over 2.5)
         cuota_1x2 = round(2.35 + (perfil % 12) * 0.04, 2)
         prob_1x2 = round(0.44 + (perfil % 6) * 0.01, 3)
-        
         cuota_goles = round(1.88 + (perfil % 10) * 0.02, 2)
-        prob_goles = round(0.58 + (perfil % 10) * 0.015, 3)    # 58% - 72% en Over 2.5
+        prob_goles = round(0.58 + (perfil % 10) * 0.015, 3)
     else:
-        # Partido muy parejo con cuota de valor en victoria local
         cuota_1x2 = round(2.10 + (perfil % 10) * 0.03, 2)
         prob_1x2 = round(0.53 + (perfil % 8) * 0.012, 3)
-        
         cuota_goles = round(2.05 + (perfil % 7) * 0.02, 2)
         prob_goles = round(0.50 + (perfil % 5) * 0.01, 3)
 
     ev_1x2, stake_1x2 = calcular_ev_y_stake(cuota_1x2, prob_1x2)
     ev_goles, stake_goles = calcular_ev_y_stake(cuota_goles, prob_goles)
-    
-    # Seleccionamos la opción con mayor valor cuantitativo (+EV)
+
     if ev_1x2 >= ev_goles and ev_1x2 > 0:
         return {
             "mercado": f"Victoria {local} (1X2)",
@@ -134,7 +114,6 @@ def evaluar_mercados_partido(partido_id, local, visitante):
             "stake": stake_goles
         }
     else:
-        # Fallback equilibrado por defecto con valor
         return {
             "mercado": f"Victoria {local} (1X2)",
             "tipo_mercado": "1X2",
@@ -154,7 +133,7 @@ def guardar_datos_json(partidos_procesados, alertas_enviadas, hora_madrid_str):
     }
     with open("datos.json", "w", encoding="utf-8") as f:
         json.dump(datos, f, ensure_ascii=False, indent=2)
-    print("📁 Archivo datos.json guardado con éxito (Equilibrio 1X2 y Goles).")
+    print("📁 Archivo datos.json guardado con éxito.")
 
 def ejecutar_ciclo():
     ahora_utc = datetime.now(timezone.utc)
@@ -169,8 +148,6 @@ def ejecutar_ciclo():
 
     for p in partidos_raw:
         comp_code = p.get("competition", {}).get("code", "")
-        
-        # Filtro cerrado de 7 ligas oficiales
         if comp_code not in LEAGUES_MAP:
             continue
 
@@ -180,15 +157,17 @@ def ejecutar_ciclo():
         minutos_restantes = 999
         hora_madrid_partido = "TBD"
         fecha_madrid_partido = hoy_madrid_str
+        timestamp_inicio_ms = 0
 
         if hora_utc_raw:
             inicio_utc = datetime.fromisoformat(hora_utc_raw.replace("Z", "+00:00"))
+            timestamp_inicio_ms = int(inicio_utc.timestamp() * 1000)
             inicio_madrid = inicio_utc.astimezone(TZ_MADRID)
             hora_madrid_partido = inicio_madrid.strftime('%H:%M Madrid')
             fecha_madrid_partido = inicio_madrid.strftime('%Y-%m-%d')
             minutos_restantes = round((inicio_utc - ahora_utc).total_seconds() / 60.0)
 
-        # Extracción robusta de marcador
+        # Marcador
         score_data = p.get("score", {})
         full_time = score_data.get("fullTime", {})
         regular_time = score_data.get("regularTime", {})
@@ -213,10 +192,9 @@ def ejecutar_ciclo():
         nombre_local = p.get("homeTeam", {}).get("name", "Local")
         nombre_visitante = p.get("awayTeam", {}).get("name", "Visitante")
 
-        # Evaluación cuantitativa multilínea equilibrada
         analisis = evaluar_mercados_partido(p.get("id", 0), nombre_local, nombre_visitante)
 
-        # Disparo a Telegram en ventana Just-In-Time (T-45m a T-25m)
+        # Disparo Telegram en ventana T-45 a T-25m
         fue_enviado_telegram = False
         if 25 <= minutos_restantes <= 50 and analisis["ev"] > 0:
             fue_enviado_telegram = True
@@ -252,6 +230,8 @@ def ejecutar_ciclo():
             "fecha": fecha_madrid_partido,
             "hora": hora_madrid_partido,
             "hora_utc": hora_utc_raw,
+            "utcDate": hora_utc_raw,
+            "timestamp_ms": timestamp_inicio_ms,
             "minutos_restantes": minutos_restantes,
             "estado": estado_api,
             "marcador": marcador_str,
@@ -269,7 +249,7 @@ def ejecutar_ciclo():
         partidos_para_web.append(item)
 
     guardar_datos_json(partidos_para_web, alertas_enviadas, hora_madrid_str)
-    print(f"🏁 Ciclo finalizado. Total partidos: {len(partidos_para_web)} | Alertas emitidas: {len(alertas_enviadas)}")
+    print(f"🏁 Ciclo finalizado. Total partidos: {len(partidos_para_web)} | Alertas: {len(alertas_enviadas)}")
 
 if __name__ == "__main__":
     ejecutar_ciclo()
