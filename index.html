@@ -1,500 +1,621 @@
 <!DOCTYPE html>
-
-<html lang="es">
+<html lang="es" class="dark">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
-<title>Apex Quant • Analytics</title>
-<link href="manifest.json" rel="manifest"/>
-<meta content="#070e1d" name="theme-color"/>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/>
-<style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #070e1d; color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
-    .font-mono { font-family: 'JetBrains Mono', monospace; }
-    .glow-accent { box-shadow: 0 0 20px -3px rgba(0, 245, 155, 0.25); }
-    .glow-live { box-shadow: 0 0 15px -2px rgba(239, 68, 68, 0.4); }
-    @keyframes pulseLive { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-    .animate-live-dot { animation: pulseLive 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-  </style>
-</head>
-<body class="min-h-screen bg-[#070e1d] pb-24 text-slate-100 antialiased selection:bg-[#00f59b]/30">
-<!-- Header Persistente -->
-<header class="sticky top-0 z-40 border-b border-slate-800/80 bg-[#070e1d]/90 backdrop-blur-md px-4 py-3">
-<div class="mx-auto flex max-w-lg items-center justify-between">
-<div class="flex items-center gap-3">
-<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#00f59b]/20 to-[#00f59b]/5 border border-[#00f59b]/40 text-[#00f59b] font-extrabold text-sm tracking-tight shadow-sm">
-          AQ
-        </div>
-<div>
-<div class="flex items-center gap-2">
-<h1 class="text-base font-bold tracking-tight text-white">Apex Quant</h1>
-<span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-[#00f59b] border border-[#00f59b]/20">
-<span class="h-1.5 w-1.5 rounded-full bg-[#00f59b] animate-pulse"></span> 24/7 ONLINE
-            </span>
-</div>
-<p class="text-[11px] text-slate-400 font-medium">Motor Predictivo Just-In-Time (+EV)</p>
-</div>
-</div>
-<button class="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-700/80 bg-slate-800/60 text-slate-300 hover:text-white active:scale-95 transition-all" id="btn-refresh" onclick="recargarDatos(true)">
-<svg class="h-4 w-4" fill="none" id="refresh-icon" stroke="currentColor" viewbox="0 0 24 24">
-<path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-</svg>
-</button>
-</div>
-</header>
-<!-- Contenedor Principal -->
-<main class="mx-auto max-w-lg px-4 pt-4 space-y-4">
-<!-- Tarjeta Telegram Activo -->
-<div class="relative overflow-hidden rounded-2xl border border-sky-500/30 bg-gradient-to-r from-sky-950/40 via-slate-900/60 to-slate-900/40 p-3.5 shadow-lg">
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-3">
-<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/30">
-<svg class="h-5 w-5" fill="currentColor" viewbox="0 0 24 24">
-<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.77-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .37z"></path>
-</svg>
-</div>
-<div>
-<div class="flex items-center gap-1.5">
-<span class="text-xs font-bold text-slate-100">Alertas Telegram</span>
-<span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-</div>
-<p class="text-[11px] text-slate-400">Sonido en ventana T-45m en tu móvil</p>
-</div>
-</div>
-<span class="rounded-lg bg-sky-500/15 px-2.5 py-1 text-[10px] font-bold tracking-wider text-sky-400 border border-sky-500/25">
-          ACTIVO
-        </span>
-</div>
-</div>
-<!-- Métricas del Motor: Partidos, Filtro, Gestión -->
-<div class="grid grid-cols-3 gap-2.5">
-<div class="rounded-xl border border-slate-800 bg-slate-900/60 p-2.5 text-center shadow-sm">
-<span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">PARTIDOS</span>
-<div class="font-mono text-lg font-bold text-white mt-0.5" id="stat-partidos">--</div>
-<span class="text-[9px] text-slate-400">Monitoreo</span>
-</div>
-<div class="rounded-xl border border-slate-800 bg-slate-900/60 p-2.5 text-center shadow-sm">
-<span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">FILTRO EV</span>
-<div class="font-mono text-lg font-bold text-[#00f59b] mt-0.5">+5.0%</div>
-<span class="text-[9px] text-slate-400">Ventaja</span>
-</div>
-<div class="rounded-xl border border-slate-800 bg-slate-900/60 p-2.5 text-center shadow-sm">
-<span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">GESTIÓN</span>
-<div class="font-mono text-lg font-bold text-sky-400 mt-0.5">1/4</div>
-<span class="text-[9px] text-slate-400">Kelly</span>
-</div>
-</div>
-<!-- Triple Efectividad: Telegram, Sin Alerta, Global Total -->
-<div class="grid grid-cols-3 gap-2.5">
-<!-- Telegram -->
-<div class="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-2 text-center shadow-sm">
-<div class="flex items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
-<span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-<span>TELEGRAM</span>
-</div>
-<div class="font-mono text-base font-black text-emerald-400 mt-0.5" id="eff-tg-pct">--%</div>
-<span class="text-[9px] font-medium text-slate-400" id="eff-tg-count">0V - 0D TG</span>
-</div>
-<!-- Sin Alerta -->
-<div class="rounded-xl border border-slate-800 bg-slate-900/50 p-2 text-center shadow-sm">
-<span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">SIN ALERTA</span>
-<div class="font-mono text-base font-bold text-slate-300 mt-0.5" id="eff-notg-pct">--%</div>
-<span class="text-[9px] font-medium text-slate-400" id="eff-notg-count">0V - 0D No TG</span>
-</div>
-<!-- Global Total -->
-<div class="rounded-xl border border-teal-500/30 bg-teal-950/20 p-2 text-center shadow-sm">
-<span class="text-[10px] font-semibold uppercase tracking-wider text-teal-300">GLOBAL TOTAL</span>
-<div class="font-mono text-base font-black text-teal-300 mt-0.5" id="eff-total-pct">--%</div>
-<span class="text-[9px] font-medium text-slate-400" id="eff-total-count">0V - 0D Total</span>
-</div>
-</div>
-<!-- Pestañas de Vista: Partidos vs Alertas Emitidas -->
-<div class="flex rounded-xl border border-slate-800 bg-slate-900/80 p-1"><button class="flex-1 rounded-lg py-2 text-xs font-bold transition-all bg-[#00f59b] text-slate-950 shadow-sm" id="tab-btn-partidos" onclick="cambiarPestana('partidos')">En Juego / Hoy (<span id="en-juego-count">0</span>)</button><button class="flex-1 rounded-lg py-2 text-xs font-medium text-slate-400 hover:text-white transition-all" id="tab-btn-finalizados" onclick="cambiarPestana('finalizados')">Finalizados (<span id="finalizados-count">0</span>)</button><button class="flex-1 rounded-lg py-2 text-xs font-medium text-slate-400 hover:text-white transition-all" id="tab-btn-alertas" onclick="cambiarPestana('alertas')">Alertas (<span id="alertas-count">0</span>)</button></div>
-<!-- Sección de Filtros de Competiciones -->
-<div class="space-y-2" id="seccion-filtros">
-<div class="flex items-center justify-between px-1">
-<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">COMPETICIONES</span>
-<span class="text-[10px] font-medium text-slate-400" id="sync-time">15:33 Madrid sync</span>
-</div>
-<div class="flex gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
-<button class="shrink-0 rounded-lg bg-[#00f59b] px-3 py-1.5 font-bold text-slate-950 text-xs" id="btn-liga-all" onclick="filtrarLiga('all')">Todas</button>
-<button class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs" id="btn-liga-laliga" onclick="filtrarLiga('laliga')">LaLiga (ESP)</button>
-<button class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs" id="btn-liga-laliga2" onclick="filtrarLiga('laliga2')">LaLiga 2 (ESP)</button>
-<button class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs" id="btn-liga-premier" onclick="filtrarLiga('premier')">Premier (ENG)</button>
-<button class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs" id="btn-liga-bundesliga" onclick="filtrarLiga('bundesliga')">Bundesliga</button>
-<button class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs" id="btn-liga-seriea" onclick="filtrarLiga('seriea')">Serie A</button>
-<button class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs" id="btn-liga-ligue1" onclick="filtrarLiga('ligue1')">Ligue 1</button>
-<button class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs" id="btn-liga-champions" onclick="filtrarLiga('champions')">Champions</button>
-</div>
-</div>
-<!-- Cabecera de Lista -->
-<div class="flex items-center justify-between px-1 pt-1">
-<h2 class="text-xs font-bold uppercase tracking-wider text-slate-300" id="titulo-seccion">ENCUENTROS PROGRAMADOS</h2>
-<span class="flex items-center gap-1.5 text-[10px] text-emerald-400 font-medium">
-<span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span> Hora Peninsular (Madrid)
-      </span>
-</div>
-<!-- Contenedor Dinámico de Tarjetas -->
-<div class="space-y-3" id="lista-contenedor">
-<!-- Loader Inicial -->
-<div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
-<div class="mx-auto mb-3 h-6 w-6 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent"></div>
-<p class="text-xs font-semibold text-slate-300">Sincronizando archivo datos.json...</p>
-<p class="text-[11px] text-slate-400 mt-1">Calculando minutos reales de juego en directo</p>
-</div>
-</div>
-</main>
-<script>
-    let datosGlobales = { partidos: [], alertas: [] };
-    let pestanaActiva = 'partidos';
-    let filtroLigaActivo = 'all';
-
-    // Carga de datos
-    async function recargarDatos(mostrarSpin = false) {
-      const icon = document.getElementById('refresh-icon');
-      if (mostrarSpin && icon) icon.classList.add('animate-spin');
-
-      try {
-        const timestamp = new Date().getTime();
-        const res = await fetch('datos.json?v=' + timestamp);
-        if (!res.ok) throw new Error('No se pudo cargar datos.json');
-        datosGlobales = await res.json();
-        
-        actualizarMetricas();
-        renderizarVista();
-      } catch (e) {
-        console.warn('Lectura datos.json:', e);
-        document.getElementById('sync-time').innerText = 'Local sync';
-      } finally {
-        if (mostrarSpin && icon) {
-          setTimeout(() => icon.classList.remove('animate-spin'), 600);
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Apex Quant | Motor Predictivo (+EV)</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#070e1d">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          },
+          colors: {
+            surface: {
+              DEFAULT: '#0c1322',
+              dim: '#0c1322',
+              container: '#141b2b',
+              highest: '#20283c'
+            },
+            accent: {
+              DEFAULT: '#00f59b',
+              glow: 'rgba(0, 245, 155, 0.15)'
+            }
+          }
         }
       }
     }
+  </script>
+  <style>
+    body {
+      background-color: #070e1d;
+      color: #e2e8f0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .badge-pulse {
+      animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: .75; transform: scale(0.97); }
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="min-h-screen pb-16 flex justify-center">
+  <div class="w-full max-w-md px-4 py-4 space-y-4">
 
-    // Calcula minutos transcurridos o restantes contra reloj del cliente
-    function calcularEstadoEnVivo(p) {
-      const ahora = Date.now();
-      let inicioMs = 0;
+    <!-- HEADER SUPERIOR -->
+    <header class="flex items-center justify-between py-2 border-b border-slate-800/80">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center font-extrabold text-slate-950 text-sm tracking-wider shadow-lg shadow-emerald-500/20">
+          AQ
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-base font-bold text-white tracking-tight">Apex Quant</h1>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-ping"></span>
+              24/7 ONLINE
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400">Motor Predictivo Just-In-Time (+EV)</p>
+        </div>
+      </div>
+      <button id="btnRecargar" onclick="cargarDatos()" class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-emerald-400 active:scale-95 transition-all" title="Sincronizar ahora">
+        <svg id="svgReload" class="w-4 h-4 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+      </button>
+    </header>
 
-      if (p.timestamp_ms && p.timestamp_ms > 0) {
-        inicioMs = p.timestamp_ms;
-      } else if (p.utcDate) {
-        inicioMs = new Date(p.utcDate).getTime();
-      } else if (p.hora_utc) {
-        inicioMs = new Date(p.hora_utc).getTime();
+    <!-- BANNER CANAL TELEGRAM -->
+    <div class="rounded-2xl p-3.5 bg-gradient-to-r from-blue-950/40 via-slate-900 to-slate-900 border border-blue-500/30 flex items-center justify-between shadow-sm">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center border border-blue-500/30">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .37z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center space-x-1.5">
+            <span class="text-xs font-semibold text-white">Alertas Telegram</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          </div>
+          <p class="text-[10px] text-slate-400">Sonido en ventana T-45m en tu móvil</p>
+        </div>
+      </div>
+      <span class="px-2.5 py-1 text-[11px] font-bold text-blue-400 bg-blue-500/10 rounded-lg border border-blue-500/30">ACTIVO</span>
+    </div>
+
+    <!-- TARJETAS DE MONITOR Y PARÁMETROS -->
+    <div class="grid grid-cols-3 gap-2.5">
+      <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 text-center">
+        <p class="text-[10px] font-semibold uppercase text-slate-400 tracking-wider">Partidos</p>
+        <p id="statPartidos" class="text-base font-bold text-white mt-0.5">--</p>
+        <p class="text-[9px] text-slate-500">Monitoreo</p>
+      </div>
+      <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 text-center">
+        <p class="text-[10px] font-semibold uppercase text-slate-400 tracking-wider">Filtro EV</p>
+        <p class="text-base font-bold text-emerald-400 mt-0.5 font-mono">+5.0%</p>
+        <p class="text-[9px] text-slate-500">Ventaja</p>
+      </div>
+      <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 text-center">
+        <p class="text-[10px] font-semibold uppercase text-slate-400 tracking-wider">Gestión</p>
+        <p class="text-base font-bold text-cyan-400 mt-0.5 font-mono">1/4</p>
+        <p class="text-[9px] text-slate-500">Kelly</p>
+      </div>
+    </div>
+
+    <!-- TARJETAS DE TRIPLE EFECTIVIDAD -->
+    <div class="grid grid-cols-3 gap-2">
+      <!-- 1. Telegram -->
+      <div class="p-2.5 rounded-xl bg-slate-900/90 border border-emerald-500/30 text-center">
+        <div class="flex items-center justify-center space-x-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          <p class="text-[9px] font-bold uppercase text-emerald-400 tracking-wider">Telegram</p>
+        </div>
+        <p id="statEffTelegram" class="text-sm font-extrabold text-emerald-400 font-mono mt-0.5">--%</p>
+        <p id="statCountsTelegram" class="text-[8px] text-slate-400 font-mono">0V - 0D TG</p>
+      </div>
+      <!-- 2. Sin Alerta -->
+      <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-center">
+        <p class="text-[9px] font-bold uppercase text-slate-400 tracking-wider">Sin Alerta</p>
+        <p id="statEffNoTelegram" class="text-sm font-extrabold text-slate-300 font-mono mt-0.5">--%</p>
+        <p id="statCountsNoTelegram" class="text-[8px] text-slate-400 font-mono">0V - 0D No TG</p>
+      </div>
+      <!-- 3. Global Total -->
+      <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-center">
+        <p class="text-[9px] font-bold uppercase text-cyan-400 tracking-wider">Global Total</p>
+        <p id="statEffGlobal" class="text-sm font-extrabold text-cyan-400 font-mono mt-0.5">--%</p>
+        <p id="statCountsGlobal" class="text-[8px] text-slate-400 font-mono">0V - 0D Total</p>
+      </div>
+    </div>
+
+    <!-- SELECTOR DE PESTAÑAS PRINCIPALES: EN JUEGO/HOY | FINALIZADOS | ALERTAS -->
+    <div class="p-1 rounded-xl bg-slate-900 border border-slate-800 grid grid-cols-3 gap-1">
+      <button id="tabActivos" onclick="cambiarPestana('activos')" class="py-2 text-xs font-bold rounded-lg transition-all bg-emerald-400 text-slate-950 shadow">
+        En Juego / Hoy (<span id="countActivos">0</span>)
+      </button>
+      <button id="tabFinalizados" onclick="cambiarPestana('finalizados')" class="py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all">
+        Finalizados (<span id="countFinalizados">0</span>)
+      </button>
+      <button id="tabAlertas" onclick="cambiarPestana('alertas')" class="py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all">
+        Alertas (<span id="countAlertas">0</span>)
+      </button>
+    </div>
+
+    <!-- FILTROS DE LIGAS -->
+    <div id="seccionFiltrosLigas" class="space-y-2">
+      <div class="flex items-center justify-between text-xs px-1">
+        <span class="font-bold text-slate-400 uppercase tracking-wider text-[10px]">Competiciones</span>
+        <span id="labelHoraSync" class="text-slate-500 font-mono text-[10px]">Sincronizando...</span>
+      </div>
+      <div class="flex space-x-2 overflow-x-auto no-scrollbar py-0.5">
+        <button class="liga-btn active px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-400 text-slate-950 whitespace-nowrap shadow" onclick="filtrarLiga('all')">Todas</button>
+        <button class="liga-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-300 hover:text-white whitespace-nowrap" onclick="filtrarLiga('laliga')">LaLiga (ESP)</button>
+        <button class="liga-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-300 hover:text-white whitespace-nowrap" onclick="filtrarLiga('laliga2')">LaLiga 2 (ESP)</button>
+        <button class="liga-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-300 hover:text-white whitespace-nowrap" onclick="filtrarLiga('premier')">Premier (ENG)</button>
+        <button class="liga-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-300 hover:text-white whitespace-nowrap" onclick="filtrarLiga('bundesliga')">Bundesliga</button>
+        <button class="liga-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-300 hover:text-white whitespace-nowrap" onclick="filtrarLiga('seriea')">Serie A (ITA)</button>
+        <button class="liga-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-300 hover:text-white whitespace-nowrap" onclick="filtrarLiga('ligue1')">Ligue 1 (FRA)</button>
+        <button class="liga-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-300 hover:text-white whitespace-nowrap" onclick="filtrarLiga('champions')">Champions</button>
+      </div>
+    </div>
+
+    <!-- TÍTULO DE SECCIÓN -->
+    <div class="flex items-center justify-between px-1 pt-1">
+      <h2 id="tituloSeccion" class="text-xs font-extrabold uppercase text-slate-300 tracking-wider">
+        Encuentros Programados y en Vivo
+      </h2>
+      <span class="text-[10px] text-emerald-400 flex items-center">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1"></span>
+        Hora Peninsular (Madrid)
+      </span>
+    </div>
+
+    <!-- CONTENEDOR DINÁMICO DE TARJETAS -->
+    <div id="contenedorPartidos" class="space-y-3">
+      <div class="text-center py-12 bg-slate-900/50 rounded-2xl border border-slate-800/80 p-6 space-y-3">
+        <div class="inline-block animate-spin w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full"></div>
+        <p class="text-sm font-semibold text-slate-300">Sincronizando archivo datos.json...</p>
+        <p class="text-xs text-slate-500">Calculando minutos reales de juego en directo</p>
+      </div>
+    </div>
+
+    <!-- CONTENEDOR DE ALERTAS EMITIDAS -->
+    <div id="contenedorAlertas" class="hidden space-y-3"></div>
+
+  </div>
+
+  <script>
+    let globalPartidos = [];
+    let globalAlertas = [];
+    let ligaActiva = 'all';
+    let pestanaActiva = 'activos'; // 'activos', 'finalizados', 'alertas'
+
+    // Actualiza los contadores en las pestañas en base a la lista completa
+    function actualizarContadoresPestanas() {
+      let cActivos = 0;
+      let cFinalizados = 0;
+
+      globalPartidos.forEach(p => {
+        if (esPartidoFinalizado(p)) {
+          cFinalizados++;
+        } else {
+          cActivos++;
+        }
+      });
+
+      const elActivos = document.getElementById('countActivos');
+      const elFinalizados = document.getElementById('countFinalizados');
+      const elAlertas = document.getElementById('countAlertas');
+      const elPartidos = document.getElementById('statPartidos');
+
+      if (elActivos) elActivos.textContent = cActivos;
+      if (elFinalizados) elFinalizados.textContent = cFinalizados;
+      if (elAlertas) elAlertas.textContent = globalAlertas.length;
+      if (elPartidos) elPartidos.textContent = globalPartidos.length;
+    }
+
+    // Cambiar de pestaña
+    function cambiarPestana(tab) {
+      pestanaActiva = tab;
+      
+      const btnActivos = document.getElementById('tabActivos');
+      const btnFinalizados = document.getElementById('tabFinalizados');
+      const btnAlertas = document.getElementById('tabAlertas');
+      const contenedorPartidos = document.getElementById('contenedorPartidos');
+      const contenedorAlertas = document.getElementById('contenedorAlertas');
+      const seccionFiltrosLigas = document.getElementById('seccionFiltrosLigas');
+      const tituloSeccion = document.getElementById('tituloSeccion');
+
+      // Reseteo estilos
+      [btnActivos, btnFinalizados, btnAlertas].forEach(b => {
+        if (b) b.className = "py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all";
+      });
+
+      if (tab === 'activos') {
+        if (btnActivos) btnActivos.className = "py-2 text-xs font-bold rounded-lg transition-all bg-emerald-400 text-slate-950 shadow";
+        if (contenedorPartidos) contenedorPartidos.classList.remove('hidden');
+        if (contenedorAlertas) contenedorAlertas.classList.add('hidden');
+        if (seccionFiltrosLigas) seccionFiltrosLigas.classList.remove('hidden');
+        if (tituloSeccion) tituloSeccion.textContent = "Encuentros Programados y en Vivo";
+        renderizarPartidos();
+      } else if (tab === 'finalizados') {
+        if (btnFinalizados) btnFinalizados.className = "py-2 text-xs font-bold rounded-lg transition-all bg-emerald-400 text-slate-950 shadow";
+        if (contenedorPartidos) contenedorPartidos.classList.remove('hidden');
+        if (contenedorAlertas) contenedorAlertas.classList.add('hidden');
+        if (seccionFiltrosLigas) seccionFiltrosLigas.classList.remove('hidden');
+        if (tituloSeccion) tituloSeccion.textContent = "Partidos Finalizados y Verificación";
+        renderizarPartidos();
+      } else if (tab === 'alertas') {
+        if (btnAlertas) btnAlertas.className = "py-2 text-xs font-bold rounded-lg transition-all bg-emerald-400 text-slate-950 shadow";
+        if (contenedorPartidos) contenedorPartidos.classList.add('hidden');
+        if (contenedorAlertas) contenedorAlertas.classList.remove('hidden');
+        if (seccionFiltrosLigas) seccionFiltrosLigas.classList.add('hidden');
+        if (tituloSeccion) tituloSeccion.textContent = "Historial de Alertas Telegram Emitidas";
+        renderizarAlertas();
+      }
+    }
+
+    // Filtrar por liga
+    function filtrarLiga(key) {
+      ligaActiva = key;
+      document.querySelectorAll('.liga-btn').forEach(btn => {
+        btn.className = "liga-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-300 hover:text-white whitespace-nowrap";
+      });
+      if (event && event.target) {
+        event.target.className = "liga-btn active px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-400 text-slate-950 whitespace-nowrap shadow";
+      }
+      renderizarPartidos();
+    }
+
+    // Comprobar de forma exhaustiva si un partido ha concluido
+    function esPartidoFinalizado(p) {
+      const st = String(p.estado || '').toUpperCase().trim();
+      if (['FINISHED', 'FT', 'FINALIZADO', 'TERMINADO', 'AWARDED'].includes(st)) return true;
+
+      // Si tiene marcador y empezó hace más de 115 minutos
+      if (p.marcador) {
+        if (p.timestamp_ms) {
+          const transcurridos = (Date.now() - p.timestamp_ms) / 60000;
+          if (transcurridos > 115) return true;
+        } else if (p.minutos_restantes !== undefined && p.minutos_restantes !== null) {
+          if (p.minutos_restantes < -115) return true;
+        }
+      }
+      return false;
+    }
+
+    // Calcular estado y minutos dinámicos
+    function calcularEstadoYMinuto(p) {
+      if (esPartidoFinalizado(p)) {
+        return { tipo: 'FINALIZADO', texto: 'FINALIZADO', colorBadge: 'bg-slate-800 text-slate-300 border-slate-700' };
+      }
+
+      // Si tiene timestamp_ms o fecha computable
+      let diffMin = null;
+      if (p.timestamp_ms) {
+        diffMin = Math.round((p.timestamp_ms - Date.now()) / 60000);
+      } else if (p.minutos_restantes !== undefined && p.minutos_restantes !== null) {
+        diffMin = p.minutos_restantes;
+      }
+
+      if (diffMin !== null) {
+        if (diffMin > 0) {
+          const horas = Math.floor(diffMin / 60);
+          const mins = diffMin % 60;
+          const texto = horas > 0 ? `Inicia en ${horas}h ${mins}m` : `Inicia en ${mins}m`;
+          return { tipo: 'SCHEDULED', texto: texto, colorBadge: 'bg-slate-900 text-amber-400 border-amber-500/30' };
+        } else {
+          const minJuego = Math.abs(diffMin);
+          if (minJuego <= 45) {
+            return { tipo: 'IN_PLAY', texto: `EN JUEGO (${minJuego}')`, colorBadge: 'bg-rose-500/20 text-rose-400 border-rose-500/40 badge-pulse' };
+          } else if (minJuego <= 60) {
+            return { tipo: 'IN_PLAY', texto: 'DESCANSO (HT)', colorBadge: 'bg-amber-500/20 text-amber-400 border-amber-500/40' };
+          } else if (minJuego <= 105) {
+            const minSegundo = minJuego - 15;
+            return { tipo: 'IN_PLAY', texto: `EN JUEGO (${minSegundo}')`, colorBadge: 'bg-rose-500/20 text-rose-400 border-rose-500/40 badge-pulse' };
+          } else {
+            return { tipo: 'FINALIZADO', texto: 'FINALIZADO', colorBadge: 'bg-slate-800 text-slate-300 border-slate-700' };
+          }
+        }
       }
 
       const st = String(p.estado || '').toUpperCase();
-      const estaFinalizado = (st === 'FINISHED' || st === 'FINALIZADO' || st === 'FT');
-
-      if (estaFinalizado) {
-        return { tipo: 'FINALIZADO', texto: 'FINALIZADO', badgeClass: 'bg-slate-800 text-slate-300 border-slate-700' };
+      if (['IN_PLAY', 'PAUSED', 'LIVE'].includes(st)) {
+        return { tipo: 'IN_PLAY', texto: 'EN JUEGO', colorBadge: 'bg-rose-500/20 text-rose-400 border-rose-500/40 badge-pulse' };
       }
-
-      // Si tenemos timestamp válido de inicio
-      if (inicioMs > 0) {
-        const diffMinutos = Math.floor((ahora - inicioMs) / 60000);
-
-        if (diffMinutos >= 0) {
-          // El partido ya arrancó
-          if (diffMinutos > 130) {
-            // Pasaron más de 2 horas y 10 min -> Tratamos como finalizado si la API tardó en cambiar estado
-            return { tipo: 'FINALIZADO', texto: 'FINALIZADO', badgeClass: 'bg-slate-800 text-slate-300 border-slate-700' };
-          } else if (diffMinutos >= 45 && diffMinutos <= 60) {
-            return { tipo: 'EN_JUEGO', texto: `DESCANSO (HT)`, badgeClass: 'bg-amber-950/80 text-amber-300 border-amber-500/40 glow-live', minuto: 'HT' };
-          } else {
-            // Minuto real estimado de juego
-            let minJuego = diffMinutos;
-            if (diffMinutos > 60) minJuego = diffMinutos - 15; // descontar 15m descanso
-            if (minJuego > 95) minJuego = "90+";
-            return { tipo: 'EN_JUEGO', texto: `EN JUEGO (${minJuego}')`, badgeClass: 'bg-red-950/80 text-red-300 border-red-500/50 glow-live', minuto: `${minJuego}'` };
-          }
-        } else {
-          // Partido aún no empezó: diffMinutos es negativo
-          const faltanMin = Math.abs(diffMinutos);
-          const horas = Math.floor(faltanMin / 60);
-          const mins = faltanMin % 60;
-          let txt = faltanMin < 60 ? `Inicia en ${faltanMin}m` : `Inicia en ${horas}h ${mins}m`;
-          if (faltanMin <= 45) {
-            return { tipo: 'PREVIA', texto: txt, badgeClass: 'bg-amber-950/40 text-amber-300 border-amber-500/30' };
-          }
-          return { tipo: 'PROGRAMADO', texto: txt, badgeClass: 'bg-slate-800/80 text-slate-400 border-slate-700' };
-        }
-      }
-
-      // Fallback si no hay timestamp_ms
-      if (st.includes('PLAY') || st.includes('LIVE') || st.includes('JUEGO')) {
-        return { tipo: 'EN_JUEGO', texto: `EN JUEGO`, badgeClass: 'bg-red-950/80 text-red-300 border-red-500/50 glow-live', minuto: 'LIVE' };
-      }
-      return { tipo: 'PROGRAMADO', texto: p.hora || 'Hoy', badgeClass: 'bg-slate-800/80 text-slate-400 border-slate-700' };
+      return { tipo: 'SCHEDULED', texto: 'Inicia en breve', colorBadge: 'bg-slate-900 text-amber-400 border-amber-500/30' };
     }
 
-    // Verificación exacta de pronóstico acertado / perdido
-    function verificarAcierto(partido) {
-      let gLoc = partido.goles_local;
-      let gVis = partido.goles_visitante;
+    // Verificar acierto en base a goles reales
+    function verificarAcierto(p) {
+      let gLoc = p.goles_local;
+      let gVis = p.goles_visitante;
 
-      if ((gLoc === null || gLoc === undefined) && partido.marcador) {
-        const partes = String(partido.marcador).split('-');
-        if (partes.length === 2) {
-          gLoc = parseInt(partes[0].trim());
-          gVis = parseInt(partes[1].trim());
+      if ((gLoc === null || gLoc === undefined) && p.marcador && p.marcador.includes('-')) {
+        const partes = p.marcador.split('-').map(s => parseInt(s.trim()));
+        if (!isNaN(partes[0]) && !isNaN(partes[1])) {
+          gLoc = partes[0];
+          gVis = partes[1];
         }
       }
 
-      if (gLoc === null || gLoc === undefined || isNaN(gLoc) || isNaN(gVis)) {
-        return null;
+      if (gLoc === null || gLoc === undefined || isNaN(gLoc)) return null;
+
+      const tipoMercado = p.tipo_mercado || '';
+      const textoMercado = (p.mercado || '').toLowerCase();
+
+      // Over 2.5 Goles
+      if (tipoMercado === 'GOLES' || textoMercado.includes('2.5') || textoMercado.includes('over')) {
+        return (gLoc + gVis) > 2.5;
       }
 
-      const totalGoles = gLoc + gVis;
-      const mercadoStr = String(partido.mercado || '').toLowerCase();
-      const tipoMercado = String(partido.tipo_mercado || '').toUpperCase();
-
-      if (tipoMercado === 'GOLES' || mercadoStr.includes('más de 2.5') || mercadoStr.includes('over 2.5')) {
-        return totalGoles >= 3;
-      } else {
-        // Mercado 1X2 (Victoria Local)
+      // Victoria Local (1X2)
+      if (tipoMercado === '1X2' || textoMercado.includes('victoria') || textoMercado.includes('1x2')) {
         return gLoc > gVis;
       }
+
+      return null;
     }
 
-    // Métricas globales y triple efectividad
-    function actualizarMetricas() {
-      const partidos = datosGlobales.partidos || [];
-      const alertas = datosGlobales.alertas || [];
-
-      document.getElementById('stat-partidos').innerText = partidos.length;
-      document.getElementById('alertas-count').innerText = alertas.length;
-      if (datosGlobales.ultima_actualizacion) {
-        document.getElementById('sync-time').innerText = datosGlobales.ultima_actualizacion + ' sync';
-      }
-
+    // Actualizar métricas superiores de Efectividad Triple
+    function actualizarMetricasEfectividad() {
       let tgV = 0, tgD = 0;
       let noTgV = 0, noTgD = 0;
 
-      partidos.forEach(p => {
-        const estadoObj = calcularEstadoEnVivo(p);
-        if (estadoObj.tipo === 'FINALIZADO') {
-          const acertado = verificarAcierto(p);
-          if (acertado !== null) {
-            const esTelegram = p.telegram_enviado === true;
-            if (esTelegram) {
-              if (acertado) tgV++; else tgD++;
-            } else {
-              if (acertado) noTgV++; else noTgD++;
-            }
-          }
+      globalPartidos.forEach(p => {
+        if (!esPartidoFinalizado(p)) return;
+        const acierto = verificarAcierto(p);
+        if (acierto === null) return;
+
+        const esTg = (p.telegram_enviado === true) || (p.es_alerta === true);
+
+        if (esTg) {
+          if (acierto) tgV++; else tgD++;
+        } else {
+          if (acierto) noTgV++; else noTgD++;
         }
       });
 
       // 1. Telegram
       const totalTg = tgV + tgD;
-      const pctTg = totalTg > 0 ? Math.round((tgV / totalTg) * 100) + '%' : '--%';
-      document.getElementById('eff-tg-pct').innerText = pctTg;
-      document.getElementById('eff-tg-count').innerText = `${tgV}V - ${tgD}D TG`;
+      const pctTg = totalTg > 0 ? Math.round((tgV / totalTg) * 100) : null;
+      document.getElementById('statEffTelegram').textContent = pctTg !== null ? `${pctTg}%` : '--%';
+      document.getElementById('statCountsTelegram').textContent = `${tgV}V - ${tgD}D TG`;
 
       // 2. Sin Alerta
       const totalNoTg = noTgV + noTgD;
-      const pctNoTg = totalNoTg > 0 ? Math.round((noTgV / totalNoTg) * 100) + '%' : '--%';
-      document.getElementById('eff-notg-pct').innerText = pctNoTg;
-      document.getElementById('eff-notg-count').innerText = `${noTgV} - ${noTgD} No TG`;
+      const pctNoTg = totalNoTg > 0 ? Math.round((noTgV / totalNoTg) * 100) : null;
+      document.getElementById('statEffNoTelegram').textContent = pctNoTg !== null ? `${pctNoTg}%` : '--%';
+      document.getElementById('statCountsNoTelegram').textContent = `${noTgV}V - ${noTgD}D No TG`;
 
       // 3. Global Total
       const totV = tgV + noTgV;
       const totD = tgD + noTgD;
-      const totGlobal = totV + totD;
-      const pctTot = totGlobal > 0 ? Math.round((totV / totGlobal) * 100) + '%' : '--%';
-      document.getElementById('eff-total-pct').innerText = pctTot;
-      document.getElementById('eff-total-count').innerText = `${totV}V - ${totD}D Total`;
+      const totalGlobal = totV + totD;
+      const pctGlobal = totalGlobal > 0 ? Math.round((totV / totalGlobal) * 100) : null;
+      document.getElementById('statEffGlobal').textContent = pctGlobal !== null ? `${pctGlobal}%` : '--%';
+      document.getElementById('statCountsGlobal').textContent = `${totV}V - ${totD}D Total`;
     }
 
-    // Renderizar tarjetas
-    function renderizarVista() {
-      const contenedor = document.getElementById('lista-contenedor');
+    // Renderizar tarjetas de partidos
+    function renderizarPartidos() {
+      const contenedor = document.getElementById('contenedorPartidos');
+      if (!contenedor) return;
       contenedor.innerHTML = '';
 
-      if (pestanaActiva === 'alertas') {
-        const alertas = datosGlobales.alertas || [];
-        document.getElementById('titulo-seccion').innerText = 'HISTORIAL DE ALERTAS ENVIADAS A TELEGRAM';
-        document.getElementById('seccion-filtros').style.display = 'none';
+      // Actualizar contadores siempre
+      actualizarContadoresPestanas();
 
-        if (alertas.length === 0) {
-          contenedor.innerHTML = `
-            <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
-              <p class="text-sm font-semibold text-slate-300">No se han emitido alertas en este ciclo</p>
-              <p class="text-xs text-slate-400 mt-1">El bot disparará sonido a Telegram en cuanto un partido entre en ventana T-45m con +EV > 5%.</p>
-            </div>`;
-          return;
-        }
+      const partidosFiltrados = globalPartidos.filter(p => {
+        const finalizado = esPartidoFinalizado(p);
+        
+        // Pestaña Activos: NO finalizados
+        if (pestanaActiva === 'activos' && finalizado) return false;
+        
+        // Pestaña Finalizados: SÍ finalizados
+        if (pestanaActiva === 'finalizados' && !finalizado) return false;
 
-        alertas.forEach(a => {
-          contenedor.innerHTML += `
-            <div class="rounded-2xl border border-emerald-500/30 bg-slate-900/80 p-4 shadow-md space-y-2">
-              <div class="flex items-center justify-between text-xs">
-                <span class="font-bold text-white">${a.partido}</span>
-                <span class="text-slate-400 font-mono text-[11px]">${a.hora || ''}</span>
-              </div>
-              <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-800">
-                <span class="text-emerald-400 font-bold">${a.mercado}</span>
-                <span class="text-[#00f59b] font-mono font-bold">${a.cuota}</span>
-              </div>
-              <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1">
-                <span>Ventaja: <strong class="text-[#00f59b]">${a.ev}</strong></span>
-                <span>Stake Sugerido: <strong class="text-white">${a.stake}</strong></span>
-              </div>
-            </div>`;
-        });
-        return;
-      }
+        // Filtro de competición
+        if (ligaActiva !== 'all' && p.liga_key !== ligaActiva) return false;
 
-      // Vista Partidos
-      document.getElementById('titulo-seccion').innerText = 'ENCUENTROS PROGRAMADOS';
-      document.getElementById('seccion-filtros').style.display = 'block';
-
-      let lista = (datosGlobales.partidos || []).filter(p => {
-        if (filtroLigaActivo === 'all') return true;
-        return p.liga_key === filtroLigaActivo;
+        return true;
       });
 
-      if (lista.length === 0) {
+      if (partidosFiltrados.length === 0) {
+        let msg = "No hay encuentros disponibles.";
+        if (pestanaActiva === 'activos') {
+          msg = "No hay partidos programados o en juego en este momento.";
+        } else if (pestanaActiva === 'finalizados') {
+          msg = "No hay partidos finalizados registrados en esta jornada.";
+        }
         contenedor.innerHTML = `
-          <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
-            <p class="text-sm font-semibold text-slate-300">Sin partidos para esta competición</p>
-            <p class="text-xs text-slate-400 mt-1">Selecciona otra liga arriba para ver los pronósticos disponibles.</p>
-          </div>`;
+          <div class="text-center py-10 bg-slate-900/60 rounded-2xl border border-slate-800 p-6 space-y-2">
+            <p class="text-sm font-semibold text-slate-300">${msg}</p>
+            <p class="text-xs text-slate-500">Los partidos se actualizarán automáticamente en cada ciclo.</p>
+          </div>
+        `;
         return;
       }
 
-      lista.forEach(p => {
-        const estadoObj = calcularEstadoEnVivo(p);
-        const estaFinalizado = estadoObj.tipo === 'FINALIZADO';
-        const estaEnJuego = estadoObj.tipo === 'EN_JUEGO';
+      partidosFiltrados.forEach(p => {
+        const estadoInfo = calcularEstadoYMinuto(p);
+        const finalizado = esPartidoFinalizado(p);
+        const acierto = finalizado ? verificarAcierto(p) : null;
 
-        let badgeResultadoHtml = '';
-        if (estaFinalizado) {
-          const acertado = verificarAcierto(p);
-          if (acertado === true) {
-            badgeResultadoHtml = `<span class="rounded-md bg-emerald-950/80 px-2 py-0.5 text-[11px] font-bold text-emerald-400 border border-emerald-500/40">✅ ACERTADO</span>`;
-          } else if (acertado === false) {
-            badgeResultadoHtml = `<span class="rounded-md bg-rose-950/80 px-2 py-0.5 text-[11px] font-bold text-rose-400 border border-rose-500/40">❌ PERDIDO</span>`;
-          }
-        }
+        const card = document.createElement('div');
+        const bordeClase = estadoInfo.tipo === 'IN_PLAY' 
+          ? 'border-rose-500/40 shadow-lg shadow-rose-950/20' 
+          : 'border-slate-800 hover:border-slate-700';
 
-        // Marcador visible si existe
-        let marcadorHtml = '';
-        if (p.marcador) {
-          marcadorHtml = `<span class="font-mono text-xs font-black tracking-widest px-2 py-0.5 rounded bg-slate-950/80 border border-slate-700/80 text-white">${p.marcador}</span>`;
-        }
+        card.className = `p-4 rounded-2xl bg-slate-900/90 border ${bordeClase} space-y-3 transition-all`;
 
-        const borderCard = estaEnJuego ? 'border-red-500/40 bg-gradient-to-b from-slate-900/90 to-red-950/20' : 'border-slate-800/90 bg-slate-900/60';
-
-        contenedor.innerHTML += `
-          <div class="rounded-2xl border ${borderCard} p-4 shadow-sm space-y-3 transition-all">
-            <!-- Barra superior: Liga, Hora Madrid, Estado Dinámico -->
-            <div class="flex items-center justify-between text-xs">
-              <span class="rounded-md bg-slate-800/90 px-2.5 py-1 text-[11px] font-bold text-slate-300 border border-slate-700/60">
-                ${p.liga}
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300">${p.liga || 'Competición'}</span>
+              <span class="text-[11px] font-semibold text-slate-400 font-mono">${p.hora || ''}</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${estadoInfo.colorBadge}">
+                ${estadoInfo.texto}
               </span>
-              <div class="flex items-center gap-1.5">
-                <span class="text-slate-400 text-[11px] font-medium">${p.hora || ''}</span>
-                <span class="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold border ${estadoObj.badgeClass}">
-                  ${estaEnJuego ? '<span class="h-1.5 w-1.5 rounded-full bg-red-400 animate-live-dot"></span>' : ''}
-                  ${estadoObj.texto}
+              ${p.marcador ? `
+                <span class="px-2.5 py-0.5 rounded-lg text-xs font-black font-mono bg-slate-950 border border-slate-700 text-emerald-400 tracking-wider">
+                  ${p.marcador}
                 </span>
-                ${marcadorHtml}
-                ${badgeResultadoHtml}
-              </div>
+              ` : ''}
+              ${acierto !== null ? `
+                <span class="px-2 py-0.5 rounded text-[10px] font-extrabold font-mono ${acierto ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}">
+                  ${acierto ? '✅ ACERTADO' : '❌ PERDIDO'}
+                </span>
+              ` : ''}
             </div>
+          </div>
 
-            <!-- Nombres de equipos y Cuota Valor -->
-            <div class="flex items-baseline justify-between pt-1">
-              <h3 class="text-sm font-bold text-white tracking-tight">
-                ${p.local} <span class="text-slate-400 font-normal text-xs">vs</span> ${p.visitante}
-              </h3>
-              <div class="text-right shrink-0 ml-2">
-                <span class="text-[9px] font-semibold uppercase text-slate-400 tracking-wider block">CUOTA VALOR</span>
-                <span class="font-mono text-base font-black text-[#00f59b]">@${p.cuota}</span>
-              </div>
+          <!-- Nombres de equipos y cuota -->
+          <div class="flex items-center justify-between pt-1">
+            <h3 class="text-sm font-extrabold text-white tracking-tight">
+              ${p.local} <span class="text-slate-500 font-normal text-xs">vs</span> ${p.visitante}
+            </h3>
+            <div class="text-right">
+              <span class="text-[9px] uppercase font-bold text-slate-500 block leading-none">Cuota Valor</span>
+              <span class="text-xs font-black font-mono text-emerald-400">@${p.cuota || '2.00'}</span>
             </div>
+          </div>
 
-            <!-- Caja Destacada: Pronóstico Cuantitativo -->
-            <div class="rounded-xl border border-slate-800/80 bg-slate-950/60 p-2.5 flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="text-xs">🎯</span>
-                <div>
-                  <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">PRONÓSTICO:</span>
-                  <span class="text-xs font-bold text-white tracking-tight">${p.mercado}</span>
-                </div>
-              </div>
-              <span class="font-mono text-xs font-bold text-[#00f59b] bg-emerald-950/40 border border-emerald-500/20 px-2 py-0.5 rounded-lg">
-                ${p.ev} Value
+          <!-- Pronóstico Clave -->
+          <div class="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="w-2 h-2 rounded-full ${p.tipo_mercado === '1X2' ? 'bg-blue-400' : 'bg-emerald-400'}"></span>
+              <span class="text-[11px] font-bold text-slate-200">
+                ${p.mercado || 'Victoria Local (1X2)'}
               </span>
             </div>
+            <span class="text-[10px] font-extrabold text-emerald-400 font-mono">${p.ev || '+10.0%'} Value</span>
+          </div>
 
-            <!-- Desglose de Probabilidad, Ventaja y Stake -->
-            <div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-800/60 text-center">
-              <div class="rounded-lg bg-slate-950/40 py-1.5">
-                <span class="text-[9px] font-semibold uppercase text-slate-400 block">PROB. MODELO</span>
-                <span class="font-mono text-xs font-bold text-slate-200">${p.prob_modelo}</span>
-              </div>
-              <div class="rounded-lg bg-slate-950/40 py-1.5">
-                <span class="text-[9px] font-semibold uppercase text-slate-400 block">VENTAJA (+EV)</span>
-                <span class="font-mono text-xs font-bold text-emerald-400">${p.ev}</span>
-              </div>
-              <div class="rounded-lg bg-slate-950/40 py-1.5">
-                <span class="text-[9px] font-semibold uppercase text-slate-400 block">STAKE SUGERIDO</span>
-                <span class="font-mono text-xs font-bold text-sky-400">${p.stake} / 10 U.</span>
-              </div>
+          <!-- Métricas del algoritmo -->
+          <div class="grid grid-cols-3 gap-2 text-center pt-1 border-t border-slate-800/60">
+            <div class="p-1.5 rounded-lg bg-slate-950/40">
+              <span class="text-[9px] text-slate-500 font-semibold uppercase block">Prob. Modelo</span>
+              <span class="text-xs font-bold text-slate-200 font-mono">${p.prob_modelo || '55%'}</span>
             </div>
-          </div>`;
+            <div class="p-1.5 rounded-lg bg-slate-950/40">
+              <span class="text-[9px] text-slate-500 font-semibold uppercase block">Ventaja (+EV)</span>
+              <span class="text-xs font-bold text-emerald-400 font-mono">${p.ev || '+10.0%'}</span>
+            </div>
+            <div class="p-1.5 rounded-lg bg-slate-950/40">
+              <span class="text-[9px] text-slate-500 font-semibold uppercase block">Stake Sugerido</span>
+              <span class="text-xs font-bold text-cyan-400 font-mono">${p.stake || 2} / 10 U.</span>
+            </div>
+          </div>
+        `;
+
+        contenedor.appendChild(card);
       });
     }
 
-    // Navegación de pestañas
-    function cambiarPestana(p) {
-      pestanaActiva = p;
-      const btnP = document.getElementById('tab-btn-partidos');
-      const btnA = document.getElementById('tab-btn-alertas');
+    // Renderizar historial de alertas
+    function renderizarAlertas() {
+      const contenedor = document.getElementById('contenedorAlertas');
+      if (!contenedor) return;
+      contenedor.innerHTML = '';
 
-      if (p === 'partidos') {
-        btnP.className = 'flex-1 rounded-lg py-2 text-xs font-bold transition-all bg-[#00f59b] text-slate-950 shadow-sm';
-        btnA.className = 'flex-1 rounded-lg py-2 text-xs font-medium text-slate-400 hover:text-white transition-all';
-      } else {
-        btnA.className = 'flex-1 rounded-lg py-2 text-xs font-bold transition-all bg-[#00f59b] text-slate-950 shadow-sm';
-        btnP.className = 'flex-1 rounded-lg py-2 text-xs font-medium text-slate-400 hover:text-white transition-all';
+      if (globalAlertas.length === 0) {
+        contenedor.innerHTML = `
+          <div class="text-center py-12 bg-slate-900/60 rounded-2xl border border-slate-800 p-6 space-y-2">
+            <p class="text-sm font-semibold text-slate-300">No se han emitido alertas en este ciclo.</p>
+            <p class="text-xs text-slate-500">Las alertas se activan en la ventana T-45m a T-25m antes del inicio.</p>
+          </div>
+        `;
+        return;
       }
-      renderizarVista();
-    }
 
-    // Filtros de ligas
-    function filtrarLiga(key) {
-      filtroLigaActivo = key;
-      const botones = ['all', 'laliga', 'laliga2', 'premier', 'bundesliga', 'seriea', 'ligue1', 'champions'];
-      botones.forEach(k => {
-        const b = document.getElementById('btn-liga-' + k);
-        if (b) {
-          if (k === key) {
-            b.className = 'shrink-0 rounded-lg bg-[#00f59b] px-3 py-1.5 font-bold text-slate-950 text-xs shadow-sm';
-          } else {
-            b.className = 'shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs';
-          }
-        }
+      globalAlertas.forEach(a => {
+        const card = document.createElement('div');
+        card.className = "p-3.5 rounded-2xl bg-slate-900 border border-blue-500/30 space-y-2";
+        card.innerHTML = `
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-blue-400 font-bold font-mono">Enviado a Telegram • ${a.hora || ''}</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-blue-500/20 text-blue-300">Alerta Real</span>
+          </div>
+          <p class="text-sm font-bold text-white">${a.partido} — <span class="text-emerald-400">${a.mercado}</span></p>
+          <div class="flex items-center justify-between text-xs font-mono text-slate-400 pt-1">
+            <span>Cuota: <strong class="text-white">${a.cuota}</strong></span>
+            <span>Ventaja: <strong class="text-emerald-400">${a.ev}</strong></span>
+            <span>Stake: <strong class="text-cyan-400">${a.stake}</strong></span>
+          </div>
+        `;
+        contenedor.appendChild(card);
       });
-      renderizarVista();
     }
 
-    // Ejecutar al arrancar
+    // Cargar datos desde datos.json
+    async function cargarDatos() {
+      const svgReload = document.getElementById('svgReload');
+      if (svgReload) svgReload.classList.add('rotate-180');
+
+      try {
+        const url = 'datos.json?t=' + Date.now();
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("No se pudo cargar datos.json");
+
+        const data = await res.json();
+        globalPartidos = data.partidos || [];
+        globalAlertas = data.alertas || [];
+
+        if (data.ultima_actualizacion) {
+          const elSync = document.getElementById('labelHoraSync');
+          if (elSync) elSync.textContent = data.ultima_actualizacion + ' sync';
+        }
+
+        // Actualizar contadores de inmediato
+        actualizarContadoresPestanas();
+        actualizarMetricasEfectividad();
+
+        if (pestanaActiva === 'alertas') {
+          renderizarAlertas();
+        } else {
+          renderizarPartidos();
+        }
+
+      } catch (err) {
+        console.warn("Aviso:", err.message);
+        const elSync = document.getElementById('labelHoraSync');
+        if (elSync) elSync.textContent = 'Error sync';
+      } finally {
+        if (svgReload) {
+          setTimeout(() => svgReload.classList.remove('rotate-180'), 500);
+        }
+      }
+    }
+
+    // Inicialización y refresco automático
     window.addEventListener('DOMContentLoaded', () => {
-      recargarDatos();
-      // Recálculo dinámico en el cliente cada 30 segundos
+      cargarDatos();
+      setInterval(cargarDatos, 30000);
       setInterval(() => {
-        actualizarMetricas();
-        if (pestanaActiva === 'partidos') renderizarVista();
-      }, 30000);
-      // Auto-fetch al servidor cada 60 segundos
-      setInterval(() => recargarDatos(false), 60000);
+        if (pestanaActiva === 'activos' || pestanaActiva === 'finalizados') {
+          renderizarPartidos();
+        }
+      }, 15000);
     });
   </script>
 </body>
