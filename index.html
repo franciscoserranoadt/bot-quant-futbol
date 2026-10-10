@@ -1,14 +1,15 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Apex Quant • Analytics</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#070e1d">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Apex Quant • Analytics</title>
+<link href="manifest.json" rel="manifest"/>
+<meta content="#070e1d" name="theme-color"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #070e1d; color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
     .font-mono { font-family: 'JetBrains Mono', monospace; }
     .glow-accent { box-shadow: 0 0 20px -3px rgba(0, 245, 155, 0.25); }
@@ -18,151 +19,133 @@
   </style>
 </head>
 <body class="min-h-screen bg-[#070e1d] pb-24 text-slate-100 antialiased selection:bg-[#00f59b]/30">
-
-  <!-- Header Persistente -->
-  <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-[#070e1d]/90 backdrop-blur-md px-4 py-3">
-    <div class="mx-auto flex max-w-lg items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#00f59b]/20 to-[#00f59b]/5 border border-[#00f59b]/40 text-[#00f59b] font-extrabold text-sm tracking-tight shadow-sm">
+<!-- Header Persistente -->
+<header class="sticky top-0 z-40 border-b border-slate-800/80 bg-[#070e1d]/90 backdrop-blur-md px-4 py-3">
+<div class="mx-auto flex max-w-lg items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#00f59b]/20 to-[#00f59b]/5 border border-[#00f59b]/40 text-[#00f59b] font-extrabold text-sm tracking-tight shadow-sm">
           AQ
         </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-base font-bold tracking-tight text-white">Apex Quant</h1>
-            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-[#00f59b] border border-[#00f59b]/20">
-              <span class="h-1.5 w-1.5 rounded-full bg-[#00f59b] animate-pulse"></span> 24/7 ONLINE
+<div>
+<div class="flex items-center gap-2">
+<h1 class="text-base font-bold tracking-tight text-white">Apex Quant</h1>
+<span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-[#00f59b] border border-[#00f59b]/20">
+<span class="h-1.5 w-1.5 rounded-full bg-[#00f59b] animate-pulse"></span> 24/7 ONLINE
             </span>
-          </div>
-          <p class="text-[11px] text-slate-400 font-medium">Motor Predictivo Just-In-Time (+EV)</p>
-        </div>
-      </div>
-      <button onclick="recargarDatos(true)" id="btn-refresh" class="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-700/80 bg-slate-800/60 text-slate-300 hover:text-white active:scale-95 transition-all">
-        <svg id="refresh-icon" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-      </button>
-    </div>
-  </header>
-
-  <!-- Contenedor Principal -->
-  <main class="mx-auto max-w-lg px-4 pt-4 space-y-4">
-
-    <!-- Tarjeta Telegram Activo -->
-    <div class="relative overflow-hidden rounded-2xl border border-sky-500/30 bg-gradient-to-r from-sky-950/40 via-slate-900/60 to-slate-900/40 p-3.5 shadow-lg">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/30">
-            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.77-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .37z"/>
-            </svg>
-          </div>
-          <div>
-            <div class="flex items-center gap-1.5">
-              <span class="text-xs font-bold text-slate-100">Alertas Telegram</span>
-              <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-            </div>
-            <p class="text-[11px] text-slate-400">Sonido en ventana T-45m en tu móvil</p>
-          </div>
-        </div>
-        <span class="rounded-lg bg-sky-500/15 px-2.5 py-1 text-[10px] font-bold tracking-wider text-sky-400 border border-sky-500/25">
+</div>
+<p class="text-[11px] text-slate-400 font-medium">Motor Predictivo Just-In-Time (+EV)</p>
+</div>
+</div>
+<button class="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-700/80 bg-slate-800/60 text-slate-300 hover:text-white active:scale-95 transition-all" id="btn-refresh" onclick="recargarDatos(true)">
+<svg class="h-4 w-4" fill="none" id="refresh-icon" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</header>
+<!-- Contenedor Principal -->
+<main class="mx-auto max-w-lg px-4 pt-4 space-y-4">
+<!-- Tarjeta Telegram Activo -->
+<div class="relative overflow-hidden rounded-2xl border border-sky-500/30 bg-gradient-to-r from-sky-950/40 via-slate-900/60 to-slate-900/40 p-3.5 shadow-lg">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/30">
+<svg class="h-5 w-5" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.77-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .37z"></path>
+</svg>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="text-xs font-bold text-slate-100">Alertas Telegram</span>
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+</div>
+<p class="text-[11px] text-slate-400">Sonido en ventana T-45m en tu móvil</p>
+</div>
+</div>
+<span class="rounded-lg bg-sky-500/15 px-2.5 py-1 text-[10px] font-bold tracking-wider text-sky-400 border border-sky-500/25">
           ACTIVO
         </span>
-      </div>
-    </div>
-
-    <!-- Métricas del Motor: Partidos, Filtro, Gestión -->
-    <div class="grid grid-cols-3 gap-2.5">
-      <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-2.5 text-center shadow-sm">
-        <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">PARTIDOS</span>
-        <div id="stat-partidos" class="font-mono text-lg font-bold text-white mt-0.5">--</div>
-        <span class="text-[9px] text-slate-400">Monitoreo</span>
-      </div>
-      <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-2.5 text-center shadow-sm">
-        <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">FILTRO EV</span>
-        <div class="font-mono text-lg font-bold text-[#00f59b] mt-0.5">+5.0%</div>
-        <span class="text-[9px] text-slate-400">Ventaja</span>
-      </div>
-      <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-2.5 text-center shadow-sm">
-        <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">GESTIÓN</span>
-        <div class="font-mono text-lg font-bold text-sky-400 mt-0.5">1/4</div>
-        <span class="text-[9px] text-slate-400">Kelly</span>
-      </div>
-    </div>
-
-    <!-- Triple Efectividad: Telegram, Sin Alerta, Global Total -->
-    <div class="grid grid-cols-3 gap-2.5">
-      <!-- Telegram -->
-      <div class="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-2 text-center shadow-sm">
-        <div class="flex items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
-          <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-          <span>TELEGRAM</span>
-        </div>
-        <div id="eff-tg-pct" class="font-mono text-base font-black text-emerald-400 mt-0.5">--%</div>
-        <span id="eff-tg-count" class="text-[9px] font-medium text-slate-400">0V - 0D TG</span>
-      </div>
-      <!-- Sin Alerta -->
-      <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-2 text-center shadow-sm">
-        <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">SIN ALERTA</span>
-        <div id="eff-notg-pct" class="font-mono text-base font-bold text-slate-300 mt-0.5">--%</div>
-        <span id="eff-notg-count" class="text-[9px] font-medium text-slate-400">0V - 0D No TG</span>
-      </div>
-      <!-- Global Total -->
-      <div class="rounded-xl border border-teal-500/30 bg-teal-950/20 p-2 text-center shadow-sm">
-        <span class="text-[10px] font-semibold uppercase tracking-wider text-teal-300">GLOBAL TOTAL</span>
-        <div id="eff-total-pct" class="font-mono text-base font-black text-teal-300 mt-0.5">--%</div>
-        <span id="eff-total-count" class="text-[9px] font-medium text-slate-400">0V - 0D Total</span>
-      </div>
-    </div>
-
-    <!-- Pestañas de Vista: Partidos vs Alertas Emitidas -->
-    <div class="flex rounded-xl border border-slate-800 bg-slate-900/80 p-1">
-      <button id="tab-btn-partidos" onclick="cambiarPestana('partidos')" class="flex-1 rounded-lg py-2 text-xs font-bold transition-all bg-[#00f59b] text-slate-950 shadow-sm">
-        Partidos del Día
-      </button>
-      <button id="tab-btn-alertas" onclick="cambiarPestana('alertas')" class="flex-1 rounded-lg py-2 text-xs font-medium text-slate-400 hover:text-white transition-all">
-        Alertas Emitidas (<span id="alertas-count">0</span>)
-      </button>
-    </div>
-
-    <!-- Sección de Filtros de Competiciones -->
-    <div id="seccion-filtros" class="space-y-2">
-      <div class="flex items-center justify-between px-1">
-        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">COMPETICIONES</span>
-        <span id="sync-time" class="text-[10px] font-medium text-slate-400">15:33 Madrid sync</span>
-      </div>
-      <div class="flex gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
-        <button onclick="filtrarLiga('all')" id="btn-liga-all" class="shrink-0 rounded-lg bg-[#00f59b] px-3 py-1.5 font-bold text-slate-950 text-xs">Todas</button>
-        <button onclick="filtrarLiga('laliga')" id="btn-liga-laliga" class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs">LaLiga (ESP)</button>
-        <button onclick="filtrarLiga('laliga2')" id="btn-liga-laliga2" class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs">LaLiga 2 (ESP)</button>
-        <button onclick="filtrarLiga('premier')" id="btn-liga-premier" class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs">Premier (ENG)</button>
-        <button onclick="filtrarLiga('bundesliga')" id="btn-liga-bundesliga" class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs">Bundesliga</button>
-        <button onclick="filtrarLiga('seriea')" id="btn-liga-seriea" class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs">Serie A</button>
-        <button onclick="filtrarLiga('ligue1')" id="btn-liga-ligue1" class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs">Ligue 1</button>
-        <button onclick="filtrarLiga('champions')" id="btn-liga-champions" class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs">Champions</button>
-      </div>
-    </div>
-
-    <!-- Cabecera de Lista -->
-    <div class="flex items-center justify-between px-1 pt-1">
-      <h2 id="titulo-seccion" class="text-xs font-bold uppercase tracking-wider text-slate-300">ENCUENTROS PROGRAMADOS</h2>
-      <span class="flex items-center gap-1.5 text-[10px] text-emerald-400 font-medium">
-        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span> Hora Peninsular (Madrid)
+</div>
+</div>
+<!-- Métricas del Motor: Partidos, Filtro, Gestión -->
+<div class="grid grid-cols-3 gap-2.5">
+<div class="rounded-xl border border-slate-800 bg-slate-900/60 p-2.5 text-center shadow-sm">
+<span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">PARTIDOS</span>
+<div class="font-mono text-lg font-bold text-white mt-0.5" id="stat-partidos">--</div>
+<span class="text-[9px] text-slate-400">Monitoreo</span>
+</div>
+<div class="rounded-xl border border-slate-800 bg-slate-900/60 p-2.5 text-center shadow-sm">
+<span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">FILTRO EV</span>
+<div class="font-mono text-lg font-bold text-[#00f59b] mt-0.5">+5.0%</div>
+<span class="text-[9px] text-slate-400">Ventaja</span>
+</div>
+<div class="rounded-xl border border-slate-800 bg-slate-900/60 p-2.5 text-center shadow-sm">
+<span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">GESTIÓN</span>
+<div class="font-mono text-lg font-bold text-sky-400 mt-0.5">1/4</div>
+<span class="text-[9px] text-slate-400">Kelly</span>
+</div>
+</div>
+<!-- Triple Efectividad: Telegram, Sin Alerta, Global Total -->
+<div class="grid grid-cols-3 gap-2.5">
+<!-- Telegram -->
+<div class="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-2 text-center shadow-sm">
+<div class="flex items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+<span>TELEGRAM</span>
+</div>
+<div class="font-mono text-base font-black text-emerald-400 mt-0.5" id="eff-tg-pct">--%</div>
+<span class="text-[9px] font-medium text-slate-400" id="eff-tg-count">0V - 0D TG</span>
+</div>
+<!-- Sin Alerta -->
+<div class="rounded-xl border border-slate-800 bg-slate-900/50 p-2 text-center shadow-sm">
+<span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">SIN ALERTA</span>
+<div class="font-mono text-base font-bold text-slate-300 mt-0.5" id="eff-notg-pct">--%</div>
+<span class="text-[9px] font-medium text-slate-400" id="eff-notg-count">0V - 0D No TG</span>
+</div>
+<!-- Global Total -->
+<div class="rounded-xl border border-teal-500/30 bg-teal-950/20 p-2 text-center shadow-sm">
+<span class="text-[10px] font-semibold uppercase tracking-wider text-teal-300">GLOBAL TOTAL</span>
+<div class="font-mono text-base font-black text-teal-300 mt-0.5" id="eff-total-pct">--%</div>
+<span class="text-[9px] font-medium text-slate-400" id="eff-total-count">0V - 0D Total</span>
+</div>
+</div>
+<!-- Pestañas de Vista: Partidos vs Alertas Emitidas -->
+<div class="flex rounded-xl border border-slate-800 bg-slate-900/80 p-1"><button class="flex-1 rounded-lg py-2 text-xs font-bold transition-all bg-[#00f59b] text-slate-950 shadow-sm" id="tab-btn-partidos" onclick="cambiarPestana('partidos')">En Juego / Hoy (<span id="en-juego-count">0</span>)</button><button class="flex-1 rounded-lg py-2 text-xs font-medium text-slate-400 hover:text-white transition-all" id="tab-btn-finalizados" onclick="cambiarPestana('finalizados')">Finalizados (<span id="finalizados-count">0</span>)</button><button class="flex-1 rounded-lg py-2 text-xs font-medium text-slate-400 hover:text-white transition-all" id="tab-btn-alertas" onclick="cambiarPestana('alertas')">Alertas (<span id="alertas-count">0</span>)</button></div>
+<!-- Sección de Filtros de Competiciones -->
+<div class="space-y-2" id="seccion-filtros">
+<div class="flex items-center justify-between px-1">
+<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">COMPETICIONES</span>
+<span class="text-[10px] font-medium text-slate-400" id="sync-time">15:33 Madrid sync</span>
+</div>
+<div class="flex gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
+<button class="shrink-0 rounded-lg bg-[#00f59b] px-3 py-1.5 font-bold text-slate-950 text-xs" id="btn-liga-all" onclick="filtrarLiga('all')">Todas</button>
+<button class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs" id="btn-liga-laliga" onclick="filtrarLiga('laliga')">LaLiga (ESP)</button>
+<button class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs" id="btn-liga-laliga2" onclick="filtrarLiga('laliga2')">LaLiga 2 (ESP)</button>
+<button class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs" id="btn-liga-premier" onclick="filtrarLiga('premier')">Premier (ENG)</button>
+<button class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs" id="btn-liga-bundesliga" onclick="filtrarLiga('bundesliga')">Bundesliga</button>
+<button class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs" id="btn-liga-seriea" onclick="filtrarLiga('seriea')">Serie A</button>
+<button class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs" id="btn-liga-ligue1" onclick="filtrarLiga('ligue1')">Ligue 1</button>
+<button class="shrink-0 rounded-lg bg-slate-800/80 px-3 py-1.5 font-medium text-slate-300 text-xs" id="btn-liga-champions" onclick="filtrarLiga('champions')">Champions</button>
+</div>
+</div>
+<!-- Cabecera de Lista -->
+<div class="flex items-center justify-between px-1 pt-1">
+<h2 class="text-xs font-bold uppercase tracking-wider text-slate-300" id="titulo-seccion">ENCUENTROS PROGRAMADOS</h2>
+<span class="flex items-center gap-1.5 text-[10px] text-emerald-400 font-medium">
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span> Hora Peninsular (Madrid)
       </span>
-    </div>
-
-    <!-- Contenedor Dinámico de Tarjetas -->
-    <div id="lista-contenedor" class="space-y-3">
-      <!-- Loader Inicial -->
-      <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
-        <div class="mx-auto mb-3 h-6 w-6 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent"></div>
-        <p class="text-xs font-semibold text-slate-300">Sincronizando archivo datos.json...</p>
-        <p class="text-[11px] text-slate-400 mt-1">Calculando minutos reales de juego en directo</p>
-      </div>
-    </div>
-
-  </main>
-
-  <script>
+</div>
+<!-- Contenedor Dinámico de Tarjetas -->
+<div class="space-y-3" id="lista-contenedor">
+<!-- Loader Inicial -->
+<div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
+<div class="mx-auto mb-3 h-6 w-6 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent"></div>
+<p class="text-xs font-semibold text-slate-300">Sincronizando archivo datos.json...</p>
+<p class="text-[11px] text-slate-400 mt-1">Calculando minutos reales de juego en directo</p>
+</div>
+</div>
+</main>
+<script>
     let datosGlobales = { partidos: [], alertas: [] };
     let pestanaActiva = 'partidos';
     let filtroLigaActivo = 'all';
