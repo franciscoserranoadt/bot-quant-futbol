@@ -41,20 +41,27 @@ def enviar_telegram(mensaje):
         print(f"Error Telegram: {e}")
         return False
 
-def obtener_partidos(dias_atras=1, dias_adelanto=2):
-    """Consulta Football-Data.org (gratis, 0 créditos de cuotas)."""
+def obtener_partidos(dias_atras=2, dias_adelanto=4):
+    """
+    Consulta Football-Data.org con ventana amplia:
+    Abarca desde 2 días atrás (para retener finalizados recientes)
+    hasta 4 días por delante (para mostrar siempre los próximos encuentros de la jornada).
+    """
     hoy_utc = datetime.now(timezone.utc)
     date_from = (hoy_utc - timedelta(days=dias_atras)).strftime("%Y-%m-%d")
     date_to = (hoy_utc + timedelta(days=dias_adelanto)).strftime("%Y-%m-%d")
     
     url = f"https://api.football-data.org/v4/matches?dateFrom={date_from}&dateTo={date_to}"
     headers = {"X-Auth-Token": FOOTBALL_DATA_TOKEN}
+    print(f"📡 [Football-Data.org] Consultando ventana: {date_from} hasta {date_to}")
     try:
-        res = requests.get(url, headers=headers, timeout=10)
+        res = requests.get(url, headers=headers, timeout=12)
         if res.status_code != 200:
             print(f"❌ Error en API Football-Data ({res.status_code}): {res.text}")
             return []
-        return res.json().get("matches", [])
+        matches = res.json().get("matches", [])
+        print(f"   Total partidos globales devueltos: {len(matches)}")
+        return matches
     except Exception as e:
         print(f"❌ Excepción consultando partidos: {e}")
         return []
@@ -72,27 +79,20 @@ def calcular_ev_y_stake(cuota_casa, prob_modelo):
     return round(ev * 100, 1), stake
 
 def calcular_factor_racha(partido_id, local, visitante):
-    """
-    Filtro de Racha y Tendencia de Equipos (Form Factor):
-    Modela la inercia reciente de los equipos mediante análisis determinista (0 gasto de APIs).
-    Genera un modificador de probabilidad y una etiqueta de racha informativa.
-    """
+    """Filtro de Racha y Tendencia de Equipos (Form Factor)."""
     seed_str = f"FORM_{partido_id}_{local}_{visitante}"
     seed_val = int(hashlib.md5(seed_str.encode('utf-8')).hexdigest()[:8], 16)
     
-    # 5 últimos partidos (W=Win, D=Draw, L=Loss)
     patrones_local = ["W-W-W-D-W", "W-D-W-W-L", "W-W-D-L-W", "D-W-D-W-W", "W-L-W-D-D", "L-W-D-W-L"]
     patrones_visitante = ["D-L-W-L-D", "L-D-L-W-L", "W-L-D-L-W", "D-D-L-W-L", "L-L-D-W-L", "W-D-L-L-W"]
     
     racha_local = patrones_local[seed_val % len(patrones_local)]
     racha_visitante = patrones_visitante[(seed_val // 7) % len(patrones_visitante)]
     
-    # Cálculo del impulso de racha
     puntos_local = racha_local.count('W') * 3 + racha_local.count('D') * 1
     puntos_visitante = racha_visitante.count('W') * 3 + racha_visitante.count('D') * 1
     diferencia_forma = (puntos_local - puntos_visitante)
     
-    # Ajuste de probabilidad probabilística entre -4% y +6%
     ajuste_prob = round(diferencia_forma * 0.008, 3)
     
     etiqueta = f"Local: {racha_local} ({puntos_local} pts) vs Vis: {racha_visitante} ({puntos_visitante} pts)"
@@ -112,10 +112,7 @@ def calcular_factor_racha(partido_id, local, visitante):
     }
 
 def evaluar_mercados_prepartido(partido_id, local, visitante):
-    """
-    CONFIGURACIÓN ORIGINAL DE ALTO IMPACTO (+EV anterior: +20% a +50%):
-    Genera los márgenes visuales amplios que activan las insignias doradas 'VALOR ÉLITE'.
-    """
+    """CONFIGURACIÓN ORIGINAL DE ALTO IMPACTO (+EV anterior: +20% a +50%)."""
     seed_str = f"{partido_id}_{local}_{visitante}"
     seed_val = int(hashlib.md5(seed_str.encode('utf-8')).hexdigest()[:8], 16)
     perfil = seed_val % 100
@@ -266,13 +263,12 @@ def ejecutar_ciclo():
     ahora_madrid = ahora_utc.astimezone(TZ_MADRID)
     hora_madrid_str = ahora_madrid.strftime('%H:%M Madrid')
     hoy_madrid_str = ahora_madrid.strftime('%Y-%m-%d')
-    print(f"[{hora_madrid_str}] Iniciando ciclo cuantitativo (+EV original amplio)...")
+    print(f"[{hora_madrid_str}] Iniciando ciclo cuantitativo (+EV original amplio y ventana multidía)...")
 
     alertas_acumuladas = cargar_alertas_previas()
-    partidos_raw = obtener_partidos(dias_atras=1, dias_adelanto=2)
+    partidos_raw = obtener_partidos(dias_atras=2, dias_adelanto=4)
     partidos_para_web = []
 
-    # Diccionario rápido de marcadores finalizados de partidos recientes para liquidar
     partidos_estado_map = {}
 
     for p in partidos_raw:
@@ -296,13 +292,11 @@ def ejecutar_ciclo():
             fecha_madrid_partido = inicio_madrid.strftime('%Y-%m-%d')
             minutos_restantes = round((inicio_utc - ahora_utc).total_seconds() / 60.0)
 
-        # Extracción de escudos oficiales
         home_team_data = p.get("homeTeam", {})
         away_team_data = p.get("awayTeam", {})
         escudo_local = home_team_data.get("crest", "")
         escudo_visitante = away_team_data.get("crest", "")
 
-        # Extracción de marcadores
         score_data = p.get("score", {})
         full_time = score_data.get("fullTime", {})
         regular_time = score_data.get("regularTime", {})
@@ -335,7 +329,6 @@ def ejecutar_ciclo():
             "marcador": marcador_str
         }
 
-        # Comprobación de estado DESCANSO (HT) Y EMPATE
         es_en_descanso = False
         es_empate_descanso = False
         minutos_desde_inicio = -minutos_restantes if minutos_restantes < 0 else 0
@@ -454,9 +447,7 @@ def ejecutar_ciclo():
         }
         partidos_para_web.append(item)
 
-    # ==============================================================================
     # 3. LIQUIDACIÓN AUTOMÁTICA EN TELEGRAM DE ALERTAS FINALIZADAS
-    # ==============================================================================
     for alerta in alertas_acumuladas:
         p_nombre = alerta.get("partido")
         if not alerta.get("liquidada_telegram") and p_nombre in partidos_estado_map:
@@ -493,7 +484,6 @@ def ejecutar_ciclo():
                 alerta["acertado"] = acertado
                 print(f"📢 Alerta liquidada y comunicada en Telegram: {p_nombre} -> {'ACERTADO' if acertado else 'PERDIDO'}")
 
-    # Conservar hasta 50 alertas históricas acumuladas
     alertas_acumuladas = alertas_acumuladas[-50:]
 
     guardar_datos_json(partidos_para_web, alertas_acumuladas, hora_madrid_str)
