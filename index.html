@@ -5,7 +5,7 @@
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
 <title>Apex Quant Analytics</title>
 <link href="./manifest.json" rel="manifest"/>
-<meta content="#0c1322" name="theme-color"/>
+<meta content="#0c1322" id="themeColorMeta" name="theme-color"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -35,12 +35,39 @@
     }
   </script>
 <style>
-    body { background-color: #070e1d; color: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+    :root {
+      --bg-main: #070e1d;
+      --bg-header: rgba(12, 19, 34, 0.9);
+      --bg-card: #141b2b;
+      --bg-nested: #070e1d;
+    }
+    body.oled-mode {
+      --bg-main: #000000;
+      --bg-header: rgba(0, 0, 0, 0.95);
+      --bg-card: #0a0a0a;
+      --bg-nested: #000000;
+      background-color: #000000 !important;
+    }
+    body.oled-mode .bg-\[\#070e1d\] { background-color: #000000 !important; }
+    body.oled-mode .bg-\[\#0c1322\] { background-color: #050505 !important; }
+    body.oled-mode .bg-\[\#141b2b\] { background-color: #0d0d0d !important; }
+    body.oled-mode .border-slate-800\/80,
+    body.oled-mode .border-slate-800\/90,
+    body.oled-mode .border-slate-800 { border-color: #1f1f1f !important; }
+
+    body { background-color: var(--bg-main); color: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
     .pulse-glow { animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     @keyframes pulseGlow { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.08); } }
   </style>
 </head>
-<body class="min-h-screen bg-[#070e1d] pb-24 text-slate-100 antialiased selection:bg-[#00f59b] selection:text-black">
+<body class="min-h-screen bg-[#070e1d] pb-24 text-slate-100 antialiased selection:bg-[#00f59b] selection:text-black transition-colors duration-200">
+<!-- Toast de Notificación / Feedback Copiado -->
+<div class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] pointer-events-none opacity-0 transition-opacity duration-300" id="toastFeedback">
+<div class="px-4 py-2 rounded-xl bg-[#00f59b] text-black font-extrabold text-xs shadow-2xl shadow-[#00f59b]/30 flex items-center gap-2">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
+<span id="toastMsg">¡Pronóstico copiado al portapapeles!</span>
+</div>
+</div>
 <!-- Header Superior -->
 <header class="sticky top-0 z-50 bg-[#0c1322]/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-3.5 flex items-center justify-between">
 <div class="flex items-center gap-3">
@@ -59,9 +86,16 @@
 <p class="text-[11px] text-slate-400 font-medium">Motor Predictivo Just-In-Time (+EV)</p>
 </div>
 </div>
+<div class="flex items-center gap-2">
+<!-- Botón Modo Contraste Nocturno OLED (#000000) -->
+<button class="px-2.5 py-2 rounded-xl bg-[#141b2b] text-slate-300 hover:text-white border border-slate-800 active:scale-95 transition-all flex items-center gap-1.5" id="btnOledToggle" onclick="toggleOledMode()" title="Alternar modo OLED Pure Black">
+<span class="w-2 h-2 rounded-full bg-slate-500" id="oledDotIndicator"></span>
+<span class="text-[10px] font-extrabold tracking-wider font-mono uppercase" id="oledTextLabel">OLED</span>
+</button>
 <button class="p-2.5 rounded-xl bg-[#141b2b] text-slate-300 hover:text-white border border-slate-800 active:scale-95 transition-all" id="btnRecargar" onclick="recargarDatos(true)">
 <svg class="w-5 h-5" fill="none" id="iconSync" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
 </button>
+</div>
 </header>
 <main class="max-w-2xl mx-auto px-4 pt-4 space-y-4">
 <!-- Tarjeta Interactiva Canal Telegram Oficial -->
@@ -101,6 +135,65 @@
 <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block mb-1">GESTIÓN</span>
 <div class="text-xl font-extrabold text-[#38bdf8] font-mono">1/4</div>
 <span class="text-[10px] text-slate-500">Kelly</span>
+</div>
+</div>
+<!-- 1. DESGLOSE FINANCIERO Y CURVA DE EQUITY (YIELD & ROI) -->
+<div class="bg-[#141b2b] border border-[#00f59b]/25 rounded-2xl p-3.5 space-y-3 relative overflow-hidden shadow-lg shadow-black/20">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-[#00f59b]/15 border border-[#00f59b]/30 flex items-center justify-center text-[#00f59b]">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path></svg>
+</div>
+<div>
+<h3 class="text-xs font-bold text-white tracking-wide flex items-center gap-1.5">
+          Rendimiento Semanal
+          <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-[#00f59b]/20 text-[#00f59b] font-bold uppercase">EV Model</span>
+</h3>
+<p class="text-[10px] text-slate-400 font-medium">Curva de Equity &amp; Balance de Unidades</p>
+</div>
+</div>
+<div class="text-right">
+<span class="text-[9px] uppercase tracking-wider text-slate-400 font-mono block">Balance Neto</span>
+<span class="text-sm font-extrabold text-[#00f59b] font-mono" id="statBalanceNeto">+0.00 U.</span>
+</div>
+</div>
+<!-- Métricas Financieras Clave -->
+<div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-800/70">
+<div class="bg-[#070e1d] rounded-lg p-2 text-center border border-slate-800/60">
+<span class="text-[9px] uppercase tracking-wider text-slate-400 block font-mono">Yield / ROI</span>
+<span class="text-xs font-extrabold text-[#00f59b] font-mono" id="statYield">+0.0%</span>
+</div>
+<div class="bg-[#070e1d] rounded-lg p-2 text-center border border-slate-800/60">
+<span class="text-[9px] uppercase tracking-wider text-slate-400 block font-mono">Unidades Ganadas</span>
+<span class="text-xs font-extrabold text-white font-mono" id="statUnidades">+0.0 U.</span>
+</div>
+<div class="bg-[#070e1d] rounded-lg p-2 text-center border border-slate-800/60">
+<span class="text-[9px] uppercase tracking-wider text-slate-400 block font-mono">Stake Apostado</span>
+<span class="text-xs font-extrabold text-[#38bdf8] font-mono" id="statStakeTotal">0.0 U.</span>
+</div>
+</div>
+<!-- Visualización SVG de Curva de Equity Semanal -->
+<div class="pt-1">
+<div class="flex items-center justify-between text-[10px] text-slate-400 font-mono pb-1">
+<span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#00f59b] pulse-glow"></span> Curva de Crecimiento Bankroll</span>
+<span class="text-slate-500" id="statEquityStatus">0 picks evaluados</span>
+</div>
+<div class="relative w-full h-16 bg-[#070e1d] rounded-xl border border-slate-800/80 overflow-hidden flex items-end px-2 pt-2 pb-1.5">
+<svg class="w-full h-full overflow-visible" id="svgEquityCurve" preserveaspectratio="none" viewbox="0 0 300 60">
+<defs>
+<lineargradient id="equityGrad" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#00f59b" stop-opacity="0.35"></stop>
+<stop offset="100%" stop-color="#00f59b" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<!-- Grilla de fondo -->
+<line stroke="#1e293b" stroke-dasharray="3 3" stroke-width="0.7" x1="0" x2="300" y1="30" y2="30"></line>
+<!-- Área y línea inyectadas dinámicamente -->
+<path d="M0 45 L300 45 L300 60 L0 60 Z" fill="url(#equityGrad)" id="pathEquityArea"></path>
+<path d="M0 45 L300 45" fill="none" id="pathEquityLine" stroke="#00f59b" stroke-linecap="round" stroke-width="2.2"></path>
+<circle class="pulse-glow" cx="300" cy="45" fill="#00f59b" id="pointEquityLast" r="3"></circle>
+</svg>
+</div>
 </div>
 </div>
 <!-- Indicador de Ventana Semanal -->
@@ -147,6 +240,10 @@
 <span class="font-mono text-slate-500" id="syncHora">Sincronizando...</span>
 </div>
 <div class="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
+<!-- 2. BOTÓN DE FILTRO RÁPIDO 'EN VIVO 🔴' (LIVE SWITCH) -->
+<button class="px-3.5 py-1.5 rounded-lg font-bold bg-[#141b2b] text-rose-400 border border-rose-500/40 hover:border-rose-400 whitespace-nowrap flex items-center gap-1.5 transition-all" id="flt-live" onclick="filtrarLiga('live')">
+<span class="w-2 h-2 rounded-full bg-rose-500 pulse-glow"></span> 🔴 EN VIVO
+</button>
 <button class="px-3.5 py-1.5 rounded-lg font-bold bg-[#00f59b] text-black border border-[#00f59b] whitespace-nowrap" id="flt-all" onclick="filtrarLiga('all')">Todas</button>
 <button class="px-3.5 py-1.5 rounded-lg font-bold bg-[#141b2b] text-slate-300 border border-slate-800 hover:border-slate-700 whitespace-nowrap" id="flt-laliga" onclick="filtrarLiga('laliga')">LaLiga (ESP)</button>
 <button class="px-3.5 py-1.5 rounded-lg font-bold bg-[#141b2b] text-slate-300 border border-slate-800 hover:border-slate-700 whitespace-nowrap" id="flt-laliga2" onclick="filtrarLiga('laliga2')">LaLiga 2 (ESP)</button>
@@ -175,6 +272,127 @@
     let ALERTAS_GLOBAL = [];
     let PESTANA_ACTUAL = 'activos';
     let FILTRO_LIGA = 'all';
+
+    // 5. MODO CONTRASTE NOCTURNO OLED (AMOLED PURE BLACK #000000)
+    function alternarOledUI(activo) {
+      const dot = document.getElementById('oledDotIndicator');
+      const lbl = document.getElementById('oledTextLabel');
+      const themeMeta = document.getElementById('themeColorMeta');
+      if (activo) {
+        document.body.classList.add('oled-mode');
+        if (dot) dot.className = 'w-2 h-2 rounded-full bg-[#00f59b] pulse-glow';
+        if (lbl) lbl.innerText = 'OLED ON';
+        if (themeMeta) themeMeta.setAttribute('content', '#000000');
+      } else {
+        document.body.classList.remove('oled-mode');
+        if (dot) dot.className = 'w-2 h-2 rounded-full bg-slate-500';
+        if (lbl) lbl.innerText = 'OLED';
+        if (themeMeta) themeMeta.setAttribute('content', '#0c1322');
+      }
+    }
+
+    function toggleOledMode() {
+      const esOled = document.body.classList.contains('oled-mode');
+      const nuevoEstado = !esOled;
+      alternarOledUI(nuevoEstado);
+      localStorage.setItem('aq_oled_mode', nuevoEstado ? 'true' : 'false');
+    }
+
+    function cargarPreferenciaOled() {
+      const guardado = localStorage.getItem('aq_oled_mode');
+      if (guardado === 'true') {
+        alternarOledUI(true);
+      }
+    }
+
+    // 4. MICRO-INTERACCIÓN DE COMPARTIR PRONÓSTICO (SHARE BET CARD)
+    function compartirPronostico(partidoStr, mercadoStr, cuotaStr, evStr, stakeStr) {
+      const texto = `⚡ APEX QUANT VALUE PICK ⚡\n⚽ ${partidoStr}\n🎯 Pronóstico: ${mercadoStr}\n📈 Cuota: @${cuotaStr}\n💎 Ventaja: ${evStr}\n📊 Stake Sugerido: ${stakeStr || '2/10 U.'}\n🔗 Canal Oficial: https://t.me/apex_quant_alertas`;
+      
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(() => {
+          mostrarToast('¡Pronóstico copiado al portapapeles!');
+        }).catch(() => {
+          fallbackCopyText(texto);
+        });
+      } else {
+        fallbackCopyText(texto);
+      }
+    }
+
+    function fallbackCopyText(text) {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        mostrarToast('¡Pronóstico copiado al portapapeles!');
+      } catch (err) {
+        mostrarToast('Error al copiar pronóstico');
+      }
+      document.body.removeChild(textArea);
+    }
+
+    function mostrarToast(msg) {
+      const toast = document.getElementById('toastFeedback');
+      const toastMsg = document.getElementById('toastMsg');
+      if (toast && toastMsg) {
+        toastMsg.innerText = msg;
+        toast.classList.remove('opacity-0');
+        toast.classList.add('opacity-100');
+        setTimeout(() => {
+          toast.classList.remove('opacity-100');
+          toast.classList.add('opacity-0');
+        }, 2200);
+      }
+    }
+
+    // 3. DIFERENCIACIÓN CROMÁTICA E INSIGNIAS TÁCTICAS POR MERCADO
+    function obtenerInsigniaMercado(mercadoStr, esEnJuego = false) {
+      const mLower = (mercadoStr || '').toLowerCase();
+      
+      // In-play HT Empate o Mercado Urgente en vivo
+      if (esEnJuego && (mLower.includes('empate') || mLower.includes('ht') || mLower.includes('descanso'))) {
+        return {
+          clase: 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-amber-500/10',
+          icono: '🟠',
+          etiqueta: 'LIVE HT / EMPATE',
+          textoColor: 'text-amber-300'
+        };
+      }
+      
+      // 1X2 Ganador
+      if (mLower.includes('gana') || mLower.includes('victoria') || mLower.includes('1x2') || mLower.includes('directa')) {
+        return {
+          clase: 'bg-purple-600/20 text-purple-300 border-purple-500/50 shadow-purple-500/10',
+          icono: '🟣',
+          etiqueta: '1X2 GANADOR',
+          textoColor: 'text-purple-300'
+        };
+      }
+
+      // Over Goles (Over 1.5 / 2.5 / +2.5 / Total)
+      if (mLower.includes('over') || mLower.includes('más de') || mLower.includes('+') || mLower.includes('goles') || mLower.includes('2.5') || mLower.includes('1.5')) {
+        return {
+          clase: 'bg-[#00f59b]/20 text-[#00f59b] border-[#00f59b]/50 shadow-[#00f59b]/10',
+          icono: '🟢',
+          etiqueta: 'OVER GOLES',
+          textoColor: 'text-[#00f59b]'
+        };
+      }
+
+      // Default táctico cuantitativo
+      return {
+        clase: 'bg-sky-500/20 text-[#38bdf8] border-[#38bdf8]/50 shadow-sky-500/10',
+        icono: '🎯',
+        etiqueta: 'MODELO QUANT',
+        textoColor: 'text-sky-300'
+      };
+    }
 
     // Obtener marca de inicio de semana (Lunes 00:00:00 hora local)
     function obtenerInicioSemanaActual() {
@@ -249,13 +467,22 @@
 
     function filtrarLiga(liga) {
       FILTRO_LIGA = liga;
-      ['all', 'laliga', 'laliga2', 'premier', 'bundesliga', 'seriea', 'ligue1', 'champions'].forEach(l => {
+      const ids = ['live', 'all', 'laliga', 'laliga2', 'premier', 'bundesliga', 'seriea', 'ligue1', 'champions'];
+      ids.forEach(l => {
         const btn = document.getElementById('flt-' + l);
         if (btn) {
-          if (l === liga) {
-            btn.className = 'px-3.5 py-1.5 rounded-lg font-bold bg-[#00f59b] text-black border border-[#00f59b] whitespace-nowrap';
+          if (l === 'live') {
+            if (liga === 'live') {
+              btn.className = 'px-3.5 py-1.5 rounded-lg font-bold bg-rose-600 text-white border border-rose-400 shadow-md whitespace-nowrap flex items-center gap-1.5 transition-all';
+            } else {
+              btn.className = 'px-3.5 py-1.5 rounded-lg font-bold bg-[#141b2b] text-rose-400 border border-rose-500/40 hover:border-rose-400 whitespace-nowrap flex items-center gap-1.5 transition-all';
+            }
           } else {
-            btn.className = 'px-3.5 py-1.5 rounded-lg font-bold bg-[#141b2b] text-slate-300 border border-slate-800 hover:border-slate-700 whitespace-nowrap';
+            if (l === liga) {
+              btn.className = 'px-3.5 py-1.5 rounded-lg font-bold bg-[#00f59b] text-black border border-[#00f59b] whitespace-nowrap';
+            } else {
+              btn.className = 'px-3.5 py-1.5 rounded-lg font-bold bg-[#141b2b] text-slate-300 border border-slate-800 hover:border-slate-700 whitespace-nowrap';
+            }
           }
         }
       });
@@ -349,6 +576,55 @@
       return null;
     }
 
+    // 1. DESGLOSE FINANCIERO Y RENDERIZADO DE CURVA DE EQUITY
+    function actualizarCurvaEquity(equityPuntos) {
+      const pathArea = document.getElementById('pathEquityArea');
+      const pathLine = document.getElementById('pathEquityLine');
+      const pointLast = document.getElementById('pointEquityLast');
+      if (!pathArea || !pathLine) return;
+
+      const total = equityPuntos.length;
+      if (total === 0) {
+        pathArea.setAttribute('d', 'M0 45 L300 45 L300 60 L0 60 Z');
+        pathLine.setAttribute('d', 'M0 45 L300 45');
+        if (pointLast) {
+          pointLast.setAttribute('cx', '300');
+          pointLast.setAttribute('cy', '45');
+        }
+        return;
+      }
+
+      // Normalizar puntos al viewport SVG (300 de ancho x 60 de alto)
+      // Con márgenes de altura [10..50]
+      const valores = equityPuntos.map(p => p.balance);
+      const minVal = Math.min(0, ...valores);
+      const maxVal = Math.max(1, ...valores);
+      const rango = (maxVal - minVal) === 0 ? 1 : (maxVal - minVal);
+
+      const coords = equityPuntos.map((item, idx) => {
+        const x = total === 1 ? 150 : Math.round((idx / (total - 1)) * 300);
+        // Invertir Y (y=10 valor max, y=52 valor min)
+        const yNorm = (item.balance - minVal) / rango;
+        const y = Math.round(50 - (yNorm * 38));
+        return { x, y };
+      });
+
+      let lineD = `M ${coords[0].x} ${coords[0].y}`;
+      for (let i = 1; i < coords.length; i++) {
+        lineD += ` L ${coords[i].x} ${coords[i].y}`;
+      }
+
+      const lastCoord = coords[coords.length - 1];
+      const areaD = `${lineD} L ${lastCoord.x} 60 L ${coords[0].x} 60 Z`;
+
+      pathLine.setAttribute('d', lineD);
+      pathArea.setAttribute('d', areaD);
+      if (pointLast) {
+        pointLast.setAttribute('cx', lastCoord.x);
+        pointLast.setAttribute('cy', lastCoord.y);
+      }
+    }
+
     function actualizarMetricas() {
       // Filtrar por semana actual con reinicio cada lunes
       const partidosSemana = PARTIDOS_GLOBAL.filter(p => perteneceASemanaActual(p));
@@ -360,15 +636,36 @@
       document.getElementById('badgeFinalizados').innerText = `(${PARTIDOS_GLOBAL.filter(esPartidoFinalizado).length})`;
       document.getElementById('badgeAlertas').innerText = `(${ALERTAS_GLOBAL.length})`;
 
-      // Cálculos de Efectividad Semana Actual
+      // Cálculos de Efectividad y Financieros
       let tgV = 0, tgD = 0;
       let noTgV = 0, noTgD = 0;
       let globV = 0, globD = 0;
 
-      finalizados.forEach(p => {
+      let totalStakeApostado = 0;
+      let balanceUnidades = 0;
+      let equityHistory = [{ balance: 0, pick: 0 }];
+
+      finalizados.forEach((p, idx) => {
         const ok = verificarPronostico(p);
+        const cuota = parseFloat(p.cuota || 2.0);
+        const stake = parseFloat(p.stake || 2.0);
+
         if (ok !== null) {
-          if (ok) globV++; else globD++;
+          totalStakeApostado += stake;
+          if (ok) {
+            globV++;
+            const gananciaNeta = stake * (cuota - 1);
+            balanceUnidades += gananciaNeta;
+          } else {
+            globD++;
+            balanceUnidades -= stake;
+          }
+
+          equityHistory.push({
+            balance: parseFloat(balanceUnidades.toFixed(2)),
+            pick: idx + 1
+          });
+
           if (p.telegram_enviado) {
             if (ok) tgV++; else tgD++;
           } else {
@@ -394,6 +691,29 @@
       const gPct = gTot > 0 ? Math.round((globV / gTot) * 100) + '%' : '--%';
       document.getElementById('statEfectividadGlobal').innerText = gPct;
       document.getElementById('statSubGlobal').innerText = `${globV}V - ${globD}D Total`;
+
+      // Métricas Financieras (Yield / ROI / Unidades)
+      const balStr = (balanceUnidades >= 0 ? '+' : '') + balanceUnidades.toFixed(2) + ' U.';
+      document.getElementById('statBalanceNeto').innerText = balStr;
+      document.getElementById('statUnidades').innerText = balStr;
+      document.getElementById('statStakeTotal').innerText = totalStakeApostado.toFixed(1) + ' U.';
+
+      if (totalStakeApostado > 0) {
+        const roi = (balanceUnidades / totalStakeApostado) * 100;
+        const roiFormatted = (roi >= 0 ? '+' : '') + roi.toFixed(1) + '%';
+        const yieldEl = document.getElementById('statYield');
+        yieldEl.innerText = roiFormatted;
+        if (roi >= 0) {
+          yieldEl.className = 'text-xs font-extrabold text-[#00f59b] font-mono';
+        } else {
+          yieldEl.className = 'text-xs font-extrabold text-rose-400 font-mono';
+        }
+      } else {
+        document.getElementById('statYield').innerText = '+0.0%';
+      }
+
+      document.getElementById('statEquityStatus').innerText = `${gTot} picks evaluados`;
+      actualizarCurvaEquity(equityHistory);
     }
 
     function renderizarVista() {
@@ -461,8 +781,15 @@
             nombreVisitante = partes[1];
           }
 
+          const insignia = obtenerInsigniaMercado(a.mercado || fusion.mercado, esEnJuego);
+          const partidoTextoParaCompartir = `${nombreLocal || ''} vs ${nombreVisitante || a.partido || ''}`;
+          const cuotaTexto = a.cuota || fusion.cuota || '2.00';
+          const mercadoTexto = a.mercado || fusion.mercado || 'Valor Quant';
+          const evTexto = a.ev || fusion.ev || '+20.0%';
+          const stakeTexto = a.stake || fusion.stake || '2/10 U.';
+
           const card = document.createElement('div');
-          card.className = 'rounded-2xl bg-[#141b2b] border border-slate-800/90 p-4 space-y-3 hover:border-slate-700 transition-all shadow-md';
+          card.className = 'rounded-2xl bg-[#141b2b] border border-slate-800/90 p-4 space-y-3 hover:border-slate-700 transition-all shadow-md relative';
           card.innerHTML = `
             <div class="flex items-center justify-between text-xs">
               <div class="flex items-center gap-2">
@@ -492,27 +819,36 @@
               </div>
               <div class="text-right shrink-0">
                 <span class="text-[10px] font-bold uppercase text-slate-400 block tracking-wider">CUOTA</span>
-                <span class="text-base font-extrabold text-[#00f59b] font-mono">@${a.cuota || fusion.cuota || '2.00'}</span>
+                <span class="text-base font-extrabold text-[#00f59b] font-mono">@${cuotaTexto}</span>
               </div>
             </div>
 
-            <!-- Caja de Mercado Pronosticado -->
-            <div class="p-2.5 rounded-xl bg-[#070e1d] border border-slate-800 flex items-center justify-between">
-              <div>
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">PRONÓSTICO OFICIAL:</span>
-                <span class="text-xs font-bold text-white flex items-center gap-1">
-                  <span class="text-[#f43f5e]">🎯</span> ${a.mercado || fusion.mercado}
+            <!-- Caja de Mercado Pronosticado con Insignia Cromática -->
+            <div class="p-2.5 rounded-xl bg-[#070e1d] border border-slate-800 flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="px-2 py-0.5 rounded text-[9px] font-extrabold tracking-wide border uppercase shrink-0 ${insignia.clase}">
+                  ${insignia.icono} ${insignia.etiqueta}
                 </span>
+                <div class="min-w-0">
+                  <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">PRONÓSTICO:</span>
+                  <span class="text-xs font-bold text-white truncate block">
+                    ${mercadoTexto}
+                  </span>
+                </div>
               </div>
-              <span class="px-2 py-0.5 rounded text-[11px] font-extrabold bg-[#fbbf24]/10 text-[#fbbf24] border border-[#fbbf24]/30 font-mono">
-                ${a.ev || fusion.ev || '+20.0%'}
+              <span class="px-2 py-0.5 rounded text-[11px] font-extrabold bg-[#fbbf24]/10 text-[#fbbf24] border border-[#fbbf24]/30 font-mono shrink-0">
+                ${evTexto}
               </span>
             </div>
 
             <div class="flex items-center justify-between text-xs text-slate-400 pt-1 border-t border-slate-800/60 font-mono">
-              <span>Cuota: <strong class="text-white">${a.cuota || fusion.cuota || '2.00'}</strong></span>
-              <span>Ventaja: <strong class="text-[#00f59b]">${a.ev || fusion.ev || '+20.0%'}</strong></span>
-              <span>Stake: <strong class="text-[#38bdf8]">${a.stake || fusion.stake || '2/10'}</strong></span>
+              <span>Cuota: <strong class="text-white">${cuotaTexto}</strong></span>
+              <span>Ventaja: <strong class="text-[#00f59b]">${evTexto}</strong></span>
+              <!-- 4. Micro-interacción Botón Compartir -->
+              <button onclick="compartirPronostico('${partidoTextoParaCompartir.replace(/'/g, "\\'")}', '${mercadoTexto.replace(/'/g, "\\'")}', '${cuotaTexto}', '${evTexto}', '${stakeTexto}')" class="px-2 py-1 rounded-md bg-[#070e1d] hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 active:scale-95 transition-all flex items-center gap-1 font-sans text-[11px] font-semibold" title="Compartir pronóstico">
+                <svg class="w-3.5 h-3.5 text-[#38bdf8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                <span>Compartir</span>
+              </button>
             </div>`;
           contenedor.appendChild(card);
         });
@@ -525,7 +861,14 @@
         return !esPartidoFinalizado(p);
       });
 
-      if (FILTRO_LIGA !== 'all') {
+      // 2. Filtro Rápido 'EN VIVO 🔴' o por Liga específica
+      if (FILTRO_LIGA === 'live') {
+        lista = lista.filter(p => {
+          const mins = calcularMinutosRestantes(p);
+          const esFin = esPartidoFinalizado(p);
+          return !esFin && (p.estado === 'IN_PLAY' || p.estado === 'PAUSED' || p.estado === 'HT' || mins <= 0);
+        });
+      } else if (FILTRO_LIGA !== 'all') {
         lista = lista.filter(p => p.liga_key === FILTRO_LIGA);
       }
 
@@ -596,6 +939,14 @@
         const evNum = parseFloat(p.ev_numero || p.ev || 20);
         const evWidth = Math.min(100, Math.max(15, (evNum / 50) * 100));
 
+        // 3. Insignia Cromática por Mercado
+        const insignia = obtenerInsigniaMercado(p.mercado, esEnJuego);
+        const partidoTextoParaCompartir = `${p.local || ''} vs ${p.visitante || ''}`;
+        const cuotaTexto = p.cuota || '2.15';
+        const mercadoTexto = p.mercado || 'Ganador';
+        const evTexto = p.ev || '+25.0%';
+        const stakeTexto = (p.stake || 2) + '/10 U.';
+
         const card = document.createElement('div');
         card.className = 'rounded-2xl bg-[#141b2b] border border-slate-800/90 p-4 space-y-3.5 hover:border-slate-700 transition-all shadow-md';
         card.innerHTML = `
@@ -625,21 +976,26 @@
             </div>
             <div class="text-right shrink-0">
               <span class="text-[10px] font-bold uppercase text-slate-400 block tracking-wider">CUOTA VALOR</span>
-              <span class="text-base font-extrabold text-[#00f59b] font-mono">@${p.cuota || '2.15'}</span>
+              <span class="text-base font-extrabold text-[#00f59b] font-mono">@${cuotaTexto}</span>
             </div>
           </div>
 
-          <!-- Pronóstico +EV Box -->
+          <!-- Pronóstico +EV Box con Diferenciación Cromática -->
           <div class="p-3 rounded-xl bg-[#070e1d] border border-slate-800 space-y-2">
-            <div class="flex items-center justify-between">
-              <div>
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">PRONÓSTICO:</span>
-                <span class="text-xs font-bold text-white flex items-center gap-1">
-                  <span class="text-[#f43f5e]">🎯</span> ${p.mercado}
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="px-2 py-0.5 rounded text-[9px] font-extrabold tracking-wide border uppercase shrink-0 ${insignia.clase}">
+                  ${insignia.icono} ${insignia.etiqueta}
                 </span>
+                <div class="min-w-0">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">PRONÓSTICO:</span>
+                  <span class="text-xs font-bold text-white truncate block">
+                    ${mercadoTexto}
+                  </span>
+                </div>
               </div>
-              <span class="px-2 py-0.5 rounded text-[11px] font-extrabold bg-[#fbbf24]/10 text-[#fbbf24] border border-[#fbbf24]/30 font-mono">
-                ${p.ev || '+25.0%'}
+              <span class="px-2 py-0.5 rounded text-[11px] font-extrabold bg-[#fbbf24]/10 text-[#fbbf24] border border-[#fbbf24]/30 font-mono shrink-0">
+                ${evTexto}
               </span>
             </div>
 
@@ -662,20 +1018,24 @@
             </div>` : ''}
           </div>
 
-          <!-- Métricas Inferiores -->
-          <div class="grid grid-cols-3 gap-2 text-center text-xs pt-1">
+          <!-- Métricas Inferiores y Micro-Interacción Compartir -->
+          <div class="grid grid-cols-4 gap-2 text-center text-xs pt-1">
             <div class="bg-[#070e1d] p-2 rounded-lg border border-slate-800/60">
-              <span class="text-[10px] text-slate-400 block mb-0.5">Prob. Modelo</span>
+              <span class="text-[9px] text-slate-400 block mb-0.5 font-mono">Prob. Modelo</span>
               <strong class="text-white font-mono text-xs">${p.prob_modelo || '55.0%'}</strong>
             </div>
             <div class="bg-[#070e1d] p-2 rounded-lg border border-slate-800/60">
-              <span class="text-[10px] text-slate-400 block mb-0.5">Ventaja (+EV)</span>
-              <strong class="text-[#00f59b] font-mono text-xs">${p.ev || '+25.0%'}</strong>
+              <span class="text-[9px] text-slate-400 block mb-0.5 font-mono">Ventaja</span>
+              <strong class="text-[#00f59b] font-mono text-xs">${evTexto}</strong>
             </div>
             <div class="bg-[#070e1d] p-2 rounded-lg border border-slate-800/60">
-              <span class="text-[10px] text-slate-400 block mb-0.5">Stake Sugerido</span>
-              <strong class="text-[#38bdf8] font-mono text-xs">${p.stake || 2} / 10 U.</strong>
+              <span class="text-[9px] text-slate-400 block mb-0.5 font-mono">Stake Sug.</span>
+              <strong class="text-[#38bdf8] font-mono text-xs">${p.stake || 2}/10 U.</strong>
             </div>
+            <button onclick="compartirPronostico('${partidoTextoParaCompartir.replace(/'/g, "\\'")}', '${mercadoTexto.replace(/'/g, "\\'")}', '${cuotaTexto}', '${evTexto}', '${stakeTexto}')" class="bg-[#070e1d] p-2 rounded-lg border border-slate-800/60 hover:border-slate-600 active:scale-95 transition-all flex flex-col items-center justify-center text-slate-300 hover:text-white group">
+              <svg class="w-3.5 h-3.5 text-[#38bdf8] group-hover:scale-110 transition-transform mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+              <span class="text-[9px] font-bold text-slate-400 group-hover:text-white">Compartir</span>
+            </button>
           </div>`;
 
         contenedor.appendChild(card);
@@ -684,6 +1044,7 @@
 
     // Inicialización y Actualización en Tiempo Real
     document.addEventListener('DOMContentLoaded', () => {
+      cargarPreferenciaOled();
       recargarDatos();
 
       // Reloj de refresco dinámico cada 15s para minutos in-play y cuentas atrás
