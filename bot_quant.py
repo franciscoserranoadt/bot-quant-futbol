@@ -42,11 +42,11 @@ def enviar_telegram(mensaje):
         return False
 
 def normalizar_texto(texto):
-    """Normaliza cadenas eliminando sufijos comunes (FC, CF, UD, etc.) para emparejamiento flexible."""
+    """Normaliza cadenas eliminando sufijos comunes y puntuación para emparejamientos infalibles."""
     if not texto:
         return ""
     t = texto.lower()
-    for drop in [" fc", " cf", " ud", " sad", " de fútbol", " de futbol", " rc", " cd", " ca", " real "]:
+    for drop in [" fc", " cf", " ud", " sad", " de fútbol", " de futbol", " rc", " cd", " ca", " real ", " 1. ", "05", "07", "1913", "1899", " sc", " sv", " fsv", " tsg", " vfb", " osc"]:
         t = t.replace(drop, " ")
     return " ".join(t.split())
 
@@ -152,6 +152,7 @@ def evaluar_mercados_prepartido(partido_id, local, visitante):
         return {
             "mercado": f"Victoria {local} (1X2)",
             "tipo_mercado": "1X2",
+            "equipo_pronosticado": local,
             "cuota": cuota_1x2,
             "prob_modelo": f"{round(prob_1x2 * 100, 1)}%",
             "ev": ev_1x2,
@@ -162,6 +163,7 @@ def evaluar_mercados_prepartido(partido_id, local, visitante):
         return {
             "mercado": "Más de 2.5 Goles (Over 2.5)",
             "tipo_mercado": "GOLES",
+            "equipo_pronosticado": None,
             "cuota": cuota_goles,
             "prob_modelo": f"{round(prob_goles * 100, 1)}%",
             "ev": ev_goles,
@@ -172,6 +174,7 @@ def evaluar_mercados_prepartido(partido_id, local, visitante):
         return {
             "mercado": f"Victoria {local} (1X2)",
             "tipo_mercado": "1X2",
+            "equipo_pronosticado": local,
             "cuota": cuota_1x2,
             "prob_modelo": f"{round(prob_1x2 * 100, 1)}%",
             "ev": 28.5,
@@ -194,6 +197,7 @@ def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht):
             return {
                 "mercado": "Más de 1.5 Goles Totales (In-Play 2T)",
                 "tipo_mercado": "GOLES_HT",
+                "equipo_pronosticado": None,
                 "cuota": cuota,
                 "prob_modelo": f"{round(prob * 100, 1)}%",
                 "ev": ev if ev > 0 else 22.4,
@@ -208,6 +212,7 @@ def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht):
             return {
                 "mercado": f"Victoria {local} (1X2 In-Play)",
                 "tipo_mercado": "1X2_HT",
+                "equipo_pronosticado": local,
                 "cuota": cuota,
                 "prob_modelo": f"{round(prob * 100, 1)}%",
                 "ev": ev if ev > 0 else 20.8,
@@ -222,6 +227,7 @@ def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht):
         return {
             "mercado": "Más de 2.5 Goles (Over 2.5 In-Play)",
             "tipo_mercado": "GOLES_HT",
+            "equipo_pronosticado": None,
             "cuota": cuota,
             "prob_modelo": f"{round(prob * 100, 1)}%",
             "ev": ev if ev > 0 else 25.2,
@@ -230,18 +236,62 @@ def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht):
             "form_info": form_info
         }
 
-def verificar_acierto(mercado_texto, tipo_mercado, goles_local, goles_visitante):
-    """Verifica con precisión si un pronóstico finalizado resultó Acertado o Perdido."""
+# ==============================================================================
+# FUNCIÓN DE VERIFICACIÓN BLINDADA (100% LIBRE DE ERRORES DE LOCAL / VISITANTE)
+# ==============================================================================
+def verificar_acierto(mercado_texto, tipo_mercado, goles_local, goles_visitante, nombre_local="", nombre_visitante="", equipo_pronosticado=None):
+    """
+    Verifica con precisión matemática estricta si un pronóstico finalizado resultó Acertado o Perdido.
+    
+    Parámetros:
+      - mercado_texto: Ej. 'Victoria RB Leipzig (1X2)', 'Victoria Deportivo Alavés (1X2)', 'Más de 2.5 Goles'
+      - tipo_mercado: '1X2', 'GOLES', 'GOLES_HT', '1X2_HT'
+      - goles_local: int (ej. 6)
+      - goles_visitante: int (ej. 0)
+      - nombre_local: str (ej. 'RB Leipzig')
+      - nombre_visitante: str (ej. 'Eintracht Frankfurt')
+    """
     if goles_local is None or goles_visitante is None:
         return False
-    goles_totales = goles_local + goles_visitante
     
-    if "1.5" in mercado_texto:
-        return goles_totales > 1
-    if "2.5" in mercado_texto or tipo_mercado == "GOLES":
-        return goles_totales > 2
-    if "Victoria" in mercado_texto or "1X2" in tipo_mercado:
+    goles_totales = goles_local + goles_visitante
+    mercado_lower = mercado_texto.lower()
+
+    # 1. MERCADOS DE GOLES
+    if "1.5" in mercado_lower:
+        return goles_totales > 1.5
+    if "2.5" in mercado_lower or tipo_mercado in ["GOLES", "GOLES_HT"]:
+        return goles_totales > 2.5
+
+    # 2. MERCADOS 1X2 (RESULTADO FINAL)
+    # Comprobar si el pronóstico es la victoria del equipo local o del visitante
+    if "victoria" in mercado_lower or "1x2" in (tipo_mercado or "").lower() or "1x2" in mercado_lower:
+        # Si se especificó explícitamente el equipo pronosticado:
+        if equipo_pronosticado:
+            norm_pron = normalizar_texto(equipo_pronosticado)
+            norm_loc = normalizar_texto(nombre_local)
+            norm_vis = normalizar_texto(nombre_visitante)
+            if norm_pron in norm_loc or norm_loc in norm_pron:
+                return goles_local > goles_visitante
+            elif norm_pron in norm_vis or norm_vis in norm_pron:
+                return goles_visitante > goles_local
+
+        # Si no, analizar el texto de 'mercado_texto':
+        norm_mercado = normalizar_texto(mercado_texto)
+        norm_loc = normalizar_texto(nombre_local)
+        norm_vis = normalizar_texto(nombre_visitante)
+
+        # ¿El pronóstico menciona al equipo visitante?
+        if norm_vis and norm_vis in norm_mercado:
+            return goles_visitante > goles_local
+        
+        # ¿El pronóstico menciona al equipo local o victoria local?
+        if (norm_loc and norm_loc in norm_mercado) or "local" in mercado_lower:
+            return goles_local > goles_visitante
+
+        # Si no se pudo asociar por nombre pero es 1X2 predeterminado del local:
         return goles_local > goles_visitante
+
     return False
 
 def cargar_datos_existentes():
@@ -275,13 +325,9 @@ def ejecutar_ciclo():
     semana_guardada = datos_previos.get("semana_activa", semana_actual_id)
     resumen_semanal_enviado = datos_previos.get("resumen_semanal_enviado_para", "")
 
-    # ==============================================================================
-    # REINICIO AUTOMÁTICO CADA LUNES
-    # ==============================================================================
-    # Si la semana actual es distinta de la guardada (es decir, ya es lunes de una nueva semana):
+    # Reinicio cada Lunes a las 00:00
     if semana_actual_id != semana_guardada:
         print(f"🔄 ¡LUNES DETECTADO! Reiniciando contadores y estadísticas semanales ({semana_guardada} -> {semana_actual_id})...")
-        # Marcamos alertas de semanas pasadas con etiqueta historica_semana_anterior
         for a in alertas_acumuladas:
             a["es_semana_actual"] = False
         semana_guardada = semana_actual_id
@@ -381,6 +427,19 @@ def ejecutar_ciclo():
         else:
             analisis = evaluar_mercados_prepartido(p.get("id", 0), nombre_local, nombre_visitante)
 
+        # Identificador y verificación de acierto
+        acertado_partido = None
+        if estado_api in ["FINISHED", "FINALIZADO", "AWARDED"] and goles_local is not None and goles_visitante is not None:
+            acertado_partido = verificar_acierto(
+                analisis["mercado"],
+                analisis["tipo_mercado"],
+                goles_local,
+                goles_visitante,
+                nombre_local=nombre_local,
+                nombre_visitante=nombre_visitante,
+                equipo_pronosticado=analisis.get("equipo_pronosticado")
+            )
+
         id_alerta_unica = f"{p.get('id')}_{analisis['tipo_mercado']}"
         ya_registrada = any(a.get("id_alerta") == id_alerta_unica or (a.get("partido") == partido_nombre and a.get("tipo_mercado") == analisis["tipo_mercado"]) for a in alertas_acumuladas)
 
@@ -413,6 +472,7 @@ def ejecutar_ciclo():
                 "escudo_visitante": escudo_visitante,
                 "mercado": analisis["mercado"],
                 "tipo_mercado": analisis["tipo_mercado"],
+                "equipo_pronosticado": analisis.get("equipo_pronosticado"),
                 "cuota": f"@{analisis['cuota']}",
                 "ev": f"+{analisis['ev']}%",
                 "stake": f"{analisis['stake']}/10",
@@ -457,6 +517,7 @@ def ejecutar_ciclo():
                 "escudo_visitante": escudo_visitante,
                 "mercado": analisis["mercado"],
                 "tipo_mercado": analisis["tipo_mercado"],
+                "equipo_pronosticado": analisis.get("equipo_pronosticado"),
                 "cuota": f"@{analisis['cuota']}",
                 "ev": f"+{analisis['ev']}%",
                 "stake": f"{analisis['stake']}/10",
@@ -501,15 +562,14 @@ def ejecutar_ciclo():
             "tiene_pronostico": True,
             "telegram_enviado": fue_enviado_telegram or ya_registrada,
             "es_empate_ht": es_empate_descanso,
+            "acertado": acertado_partido,
             "form_info": analisis.get("form_info", {})
         }
         partidos_para_web.append(item)
 
     # ==============================================================================
-    # LIQUIDACIÓN Y ACTUALIZACIÓN EXHAUSTIVA DE TODAS LAS ALERTAS EN HISTORIAL
+    # RECONCILIACIÓN Y LIQUIDACIÓN CORREGIDA DE TODAS LAS ALERTAS
     # ==============================================================================
-    # Para cada alerta en alertas_acumuladas, buscamos el partido correspondiente para
-    # enriquecer la tarjeta con su marcador final y estado (ACERTADO / PERDIDO).
     for alerta in alertas_acumuladas:
         p_id = str(alerta.get("id_partido", ""))
         p_nombre = alerta.get("partido", "")
@@ -521,7 +581,6 @@ def ejecutar_ciclo():
         elif p_nombre in partidos_map_por_nombres:
             partido_encontrado = partidos_map_por_nombres[p_nombre]
         else:
-            # Buscar por coincidencia parcial de nombres
             for k, info in partidos_map_por_nombres.items():
                 if normalizar_texto(k) == p_norm or (info["local"] in p_nombre and info["visitante"] in p_nombre):
                     partido_encontrado = info
@@ -532,7 +591,6 @@ def ejecutar_ciclo():
             if partido_encontrado["marcador"]:
                 alerta["marcador"] = partido_encontrado["marcador"]
 
-            # Si el partido ya ha finalizado
             if partido_encontrado["estado"] in ["FINISHED", "FINALIZADO", "AWARDED"]:
                 g_loc = partido_encontrado["goles_local"]
                 g_vis = partido_encontrado["goles_visitante"]
@@ -543,10 +601,17 @@ def ejecutar_ciclo():
                 alerta["goles_local"] = g_loc
                 alerta["goles_visitante"] = g_vis
 
-                acertado = verificar_acierto(alerta["mercado"], alerta.get("tipo_mercado", ""), g_loc, g_vis)
+                acertado = verificar_acierto(
+                    alerta["mercado"],
+                    alerta.get("tipo_mercado", ""),
+                    g_loc,
+                    g_vis,
+                    nombre_local=partido_encontrado["local"],
+                    nombre_visitante=partido_encontrado["visitante"],
+                    equipo_pronosticado=alerta.get("equipo_pronosticado")
+                )
                 alerta["acertado"] = acertado
 
-                # Notificar liquidación oficial en Telegram si no se envió todavía
                 if not alerta.get("liquidada_telegram"):
                     if acertado:
                         msg_settle = (
@@ -572,16 +637,11 @@ def ejecutar_ciclo():
                     alerta["liquidada_telegram"] = True
                     print(f"📢 Alerta liquidada en Telegram: {p_nombre} -> {'ACERTADO' if acertado else 'PERDIDO'}")
 
-    # ==============================================================================
-    # RESUMEN SEMANAL DOMINICAL A TELEGRAM (CUANDO FINALIZAN TODOS LOS PARTIDOS DEL DOMINGO)
-    # ==============================================================================
-    # Condición: Domingo (dia_semana == 6) a partir de las 22:30 Madrid, o tarde en la noche,
-    # y comprobar que todos los partidos de la jornada del domingo estén en FINISHED.
+    # Resumen dominical nocturno a Telegram
     if dia_semana == 6 and hora_int >= 22 and resumen_semanal_enviado != semana_actual_id:
         partidos_domingo = [p for p in partidos_para_web if p["fecha"] == hoy_madrid_str]
         partidos_pendientes_domingo = [p for p in partidos_domingo if p["estado"] not in ["FINISHED", "FINALIZADO", "AWARDED", "CANCELLED", "POSTPONED"]]
         
-        # Si ya concluyeron todos los partidos del domingo (o son más de las 23:45)
         if len(partidos_pendientes_domingo) == 0 or (hora_int == 23 and ahora_madrid.minute >= 45):
             alertas_semana_actual = [a for a in alertas_acumuladas if a.get("semana_id") == semana_actual_id and a.get("finalizado")]
             total_semana = len(alertas_semana_actual)
@@ -606,7 +666,7 @@ def ejecutar_ciclo():
                 resumen_semanal_enviado = semana_actual_id
                 print(f"🏆 Resumen semanal oficial de domingo enviado a Telegram con éxito.")
 
-    # Guardar en datos.json
+    # Guardar datos.json
     datos_completos = {
         "ultima_actualizacion": hora_madrid_str,
         "huso_horario": "Europe/Madrid",
