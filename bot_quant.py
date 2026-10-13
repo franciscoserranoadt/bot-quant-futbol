@@ -32,8 +32,7 @@ LEAGUES_MAP = {
 
 def enviar_telegram(mensaje, url_accion=None, texto_boton="📱 Abrir en Web App"):
     """
-    Envía la alerta enriquecida en HTML al canal oficial.
-    Soporta teclado inline (InlineKeyboardMarkup) para acceso directo interactivo a la PWA.
+    Envía la alerta en formato HTML al canal oficial.
     """
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         return False
@@ -41,7 +40,8 @@ def enviar_telegram(mensaje, url_accion=None, texto_boton="📱 Abrir en Web App
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
         "text": mensaje,
-        "parse_mode": "HTML"
+        "parse_mode": "HTML",
+        "disable_web_page_preview": True
     }
 
     destino_web = url_accion or APP_URL
@@ -78,7 +78,7 @@ def obtener_partidos(dias_atras=3, dias_adelanto=4):
     """
     Consulta Football-Data.org:
     1) Endpoint de ventana general de partidos (?dateFrom=...&dateTo=...)
-    2) Endpoint directo /v4/matches?status=IN_PLAY,PAUSED para asegurar la captura de partidos en juego con sus goles reales actualizados al segundo
+    2) Endpoint directo /v4/matches?status=IN_PLAY,PAUSED para asegurar la captura de partidos en juego
     """
     hoy_utc = datetime.now(timezone.utc)
     date_from = (hoy_utc - timedelta(days=dias_atras)).strftime("%Y-%m-%d")
@@ -87,7 +87,6 @@ def obtener_partidos(dias_atras=3, dias_adelanto=4):
     headers = {"X-Auth-Token": FOOTBALL_DATA_TOKEN}
     matches_dict = {}
 
-    # Consulta 1: Ventana de calendario
     url_window = f"https://api.football-data.org/v4/matches?dateFrom={date_from}&dateTo={date_to}"
     print(f"📡 [Football-Data.org] Consultando ventana: {date_from} hasta {date_to}")
 
@@ -107,7 +106,6 @@ def obtener_partidos(dias_atras=3, dias_adelanto=4):
             print(f"⚠️ Reintento ventana {intento+1}: {e}")
             time.sleep(1.5)
 
-    # Consulta 2: Petición complementaria de partidos en vivo para actualizar marcadores sin retrasos de caché de la API
     url_live = "https://api.football-data.org/v4/matches?status=IN_PLAY,PAUSED"
     try:
         res_live = requests.get(url_live, headers=headers, timeout=10)
@@ -200,50 +198,37 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None):
     ev_1x2, stake_1x2 = calcular_ev_y_stake(cuota_1x2, prob_1x2)
     ev_goles, stake_goles = calcular_ev_y_stake(cuota_goles, prob_goles)
 
-    clv_factor = 1.05 + ((perfil % 5) * 0.01)
-
     if ev_1x2 >= ev_goles and ev_1x2 > 0:
-        cuota_cierre_est = round(cuota_1x2 / clv_factor, 2)
-        clv_pct = round(((cuota_1x2 / cuota_cierre_est) - 1.0) * 100, 1)
         return {
             "mercado": f"Victoria {local} (1X2)",
             "tipo_mercado": "1X2",
             "categoria_visual": "1x2",
             "equipo_pronosticado": local,
             "cuota": cuota_1x2,
-            "cuota_cierre": cuota_cierre_est,
-            "clv_ventaja": f"+{clv_pct}%",
             "prob_modelo": f"{round(prob_1x2 * 100, 1)}%",
             "ev": ev_1x2,
             "stake": stake_1x2,
             "form_info": form_info
         }
     elif ev_goles > 0:
-        cuota_cierre_est = round(cuota_goles / clv_factor, 2)
-        clv_pct = round(((cuota_goles / cuota_cierre_est) - 1.0) * 100, 1)
         return {
             "mercado": "Más de 2.5 Goles (Over 2.5)",
             "tipo_mercado": "GOLES",
             "categoria_visual": "goles",
             "equipo_pronosticado": None,
             "cuota": cuota_goles,
-            "cuota_cierre": cuota_cierre_est,
-            "clv_ventaja": f"+{clv_pct}%",
             "prob_modelo": f"{round(prob_goles * 100, 1)}%",
             "ev": ev_goles,
             "stake": stake_goles,
             "form_info": form_info
         }
     else:
-        cuota_cierre_est = round(cuota_1x2 / 1.06, 2)
         return {
             "mercado": f"Victoria {local} (1X2)",
             "tipo_mercado": "1X2",
             "categoria_visual": "1x2",
             "equipo_pronosticado": local,
             "cuota": cuota_1x2,
-            "cuota_cierre": cuota_cierre_est,
-            "clv_ventaja": "+5.8%",
             "prob_modelo": f"{round(prob_1x2 * 100, 1)}%",
             "ev": 28.5,
             "stake": 3,
@@ -268,8 +253,6 @@ def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht, comp
                 "categoria_visual": "inplay_ht",
                 "equipo_pronosticado": None,
                 "cuota": cuota,
-                "cuota_cierre": round(cuota * 0.94, 2),
-                "clv_ventaja": "+6.2%",
                 "prob_modelo": f"{round(prob * 100, 1)}%",
                 "ev": ev if ev > 0 else 22.4,
                 "stake": stake if stake > 0 else 3,
@@ -286,8 +269,6 @@ def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht, comp
                 "categoria_visual": "inplay_ht",
                 "equipo_pronosticado": local,
                 "cuota": cuota,
-                "cuota_cierre": round(cuota * 0.93, 2),
-                "clv_ventaja": "+7.5%",
                 "prob_modelo": f"{round(prob * 100, 1)}%",
                 "ev": ev if ev > 0 else 20.8,
                 "stake": stake if stake > 0 else 2,
@@ -304,8 +285,6 @@ def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht, comp
             "categoria_visual": "inplay_ht",
             "equipo_pronosticado": None,
             "cuota": cuota,
-            "cuota_cierre": round(cuota * 0.93, 2),
-            "clv_ventaja": "+7.0%",
             "prob_modelo": f"{round(prob * 100, 1)}%",
             "ev": ev if ev > 0 else 25.2,
             "stake": stake if stake > 0 else 3,
@@ -441,7 +420,7 @@ def ejecutar_ciclo():
     hoy_madrid_str = ahora_madrid.strftime('%Y-%m-%d')
     semana_actual_id = obtener_identificador_semana(ahora_madrid)
     mes_actual_id = ahora_madrid.strftime('%Y-%m')
-    dia_semana = ahora_madrid.weekday() # 0 = Lunes, 6 = Domingo
+    dia_semana = ahora_madrid.weekday()
     hora_int = ahora_madrid.hour
 
     print(f"[{hora_madrid_str}] Iniciando ciclo Apex Quant Pro (Semana {semana_actual_id}, Día {dia_semana})...")
@@ -451,7 +430,6 @@ def ejecutar_ciclo():
     semana_guardada = datos_previos.get("semana_activa", semana_actual_id)
     resumen_semanal_enviado = datos_previos.get("resumen_semanal_enviado_para", "")
 
-    # Reinicio cada Lunes a las 00:00 (guardando histórico de semana previa)
     if semana_actual_id != semana_guardada:
         print(f"🔄 ¡LUNES DETECTADO! Reiniciando contadores semanales ({semana_guardada} -> {semana_actual_id})...")
         archivar_historico_mensual([a for a in alertas_acumuladas if not a.get("es_semana_actual", True)], mes_actual_id)
@@ -499,34 +477,25 @@ def ejecutar_ciclo():
         half_time = score_data.get("halfTime", {})
         extra_time = score_data.get("extraTime", {})
         
-        # ======================================================================
-        # CASCADA OFICIAL Y EXHAUSTIVA DE GOLES (EN VIVO Y FINALIZADO)
-        # ======================================================================
         goles_local = full_time.get("home")
         goles_visitante = full_time.get("away")
 
-        # 1. Si fullTime es None (típico durante partidos en vivo), consultar regularTime
         if (goles_local is None or goles_visitante is None) and regular_time.get("home") is not None and regular_time.get("away") is not None:
             goles_local = regular_time.get("home")
             goles_visitante = regular_time.get("away")
 
-        # 2. Si hay prórroga (extraTime)
         if (goles_local is None or goles_visitante is None) and extra_time.get("home") is not None and extra_time.get("away") is not None:
             goles_local = extra_time.get("home")
             goles_visitante = extra_time.get("away")
 
-        # 3. Si sigue siendo None, consultar halfTime (primer tiempo concluido o en descanso)
         if (goles_local is None or goles_visitante is None) and half_time.get("home") is not None and half_time.get("away") is not None:
             goles_local = half_time.get("home")
             goles_visitante = half_time.get("away")
 
         estado_api = p.get("status", "SCHEDULED")
-
-        # Determinación precisa de si el partido ya ha finalizado
-        es_finalizado = estado_api in ["FINISHED", "FINALIZADO", "AWARDED"]
         minutos_desde_inicio = -minutos_restantes if minutos_restantes < 0 else 0
+        es_finalizado = estado_api in ["FINISHED", "FINALIZADO", "AWARDED"]
         
-        # Determinación de partido en juego
         es_en_juego = False
         if not es_finalizado:
             if estado_api in ["IN_PLAY", "PAUSED", "HT", "LIVE"]:
@@ -534,7 +503,6 @@ def ejecutar_ciclo():
             elif 0 <= minutos_desde_inicio <= 125 and estado_api not in ["CANCELLED", "POSTPONED", "TIMED"]:
                 es_en_juego = True
 
-        # Marcador garantizado: Si está en juego y la API no ha anotado goles, son 0 - 0
         if es_en_juego and (goles_local is None or goles_visitante is None):
             goles_local = 0
             goles_visitante = 0
@@ -543,7 +511,6 @@ def ejecutar_ciclo():
         if goles_local is not None and goles_visitante is not None:
             marcador_str = f"{goles_local} - {goles_visitante}"
 
-        # Estado normalizado y minuto acotado (1' a 90'+ o Descanso)
         estado_normalizado = estado_api
         minuto_en_juego_str = None
 
@@ -610,24 +577,25 @@ def ejecutar_ciclo():
 
         fue_enviado_telegram = False
 
-        # 1. DISPARO AL CANAL TELEGRAM: Alerta Descanso Empate (In-Play) con Botón Interactivo PWA
+        # ==============================================================================
+        # 1. DISPARO AL CANAL TELEGRAM: ALERTA DESCANSO EN EMPATE (HT)
+        # ==============================================================================
         if es_empate_descanso and analisis["ev"] > 0 and not ya_registrada:
             fue_enviado_telegram = True
             alerta_msg = (
-                f"⏸️ <b>ALERTA EN VIVO — DESCANSO EN EMPATE (HT)</b>\n\n"
+                f"🎯 <b>ALERTA CUANTITATIVA (+EV) — [DESCANSO HT]</b>\n\n"
                 f"🏆 <b>Competición:</b> {comp_info['name']}\n"
                 f"⚽ <b>Partido:</b> {partido_nombre}\n"
-                f"🔢 <b>Marcador HT:</b> <b>{marcador_str or '0 - 0'}</b> (Descanso)\n"
-                f"📊 <b>Mercado 2T:</b> {analisis['mercado']}\n"
-                f"💰 <b>Cuota de Valor:</b> @{analisis['cuota']} <i>(Cierre est: @{analisis.get('cuota_cierre', analisis['cuota'])})</i>\n"
+                f"🔢 <b>Marcador HT:</b> {marcador_str or '0 - 0'}\n"
+                f"🥅 <b>Mercado:</b> {analisis['mercado']}\n"
+                f"💰 <b>Cuota de Valor:</b> @{analisis['cuota']}\n"
                 f"📈 <b>Ventaja Algorítmica (+EV):</b> +{analisis['ev']}%\n"
-                f"💎 <b>Ventaja CLV Estimada:</b> {analisis.get('clv_ventaja', '+6.0%')}\n"
-                f"💡 <b>Stake Sugerido:</b> <b>{analisis['stake']}/10 unidades</b>\n"
-                f"📈 <b>Tendencia:</b> {analisis['form_info']['tendencia']}\n"
-                f"ℹ️ <i>{analisis.get('contexto', 'Análisis In-Play al Descanso')}</i>\n\n"
-                f"⚡ <i>Apex Quant Engine • Live HT Scanner</i>"
+                f"💡 <b>Stake Sugerido:</b> {analisis['stake']}/10 unidades\n"
+                f"📊 <b>Filtro de Racha:</b> {analisis['form_info']['resumen']}\n"
+                f"📈 <b>Dinámica:</b> {analisis['form_info']['tendencia']}\n\n"
+                f"⚡ <i>Apex Quant Engine • Multimercado</i>"
             )
-            enviar_telegram(alerta_msg, url_accion=APP_URL, texto_boton="📱 Ver en Vivo en la App Web")
+            enviar_telegram(alerta_msg, url_accion=APP_URL, texto_boton="📱 Abrir en Web App")
             alertas_acumuladas.append({
                 "id_partido": str(p.get("id")),
                 "id_alerta": id_alerta_unica,
@@ -641,8 +609,6 @@ def ejecutar_ciclo():
                 "categoria_visual": analisis.get("categoria_visual", "inplay_ht"),
                 "equipo_pronosticado": analisis.get("equipo_pronosticado"),
                 "cuota": f"@{analisis['cuota']}",
-                "cuota_cierre": f"@{analisis.get('cuota_cierre', analisis['cuota'])}",
-                "clv_ventaja": analisis.get("clv_ventaja", "+6.0%"),
                 "ev": f"+{analisis['ev']}%",
                 "stake": f"{analisis['stake']}/10",
                 "hora": hora_madrid_partido,
@@ -658,7 +624,9 @@ def ejecutar_ciclo():
                 "liquidada_telegram": False
             })
 
-        # 2. DISPARO AL CANAL TELEGRAM: Pre-partido tradicional (T-45m a T-25m) con Racha y Botón
+        # ==============================================================================
+        # 2. DISPARO AL CANAL TELEGRAM: FORMATO EXACTO OFICIAL DE LA FOTO (T-45m)
+        # ==============================================================================
         elif 25 <= minutos_restantes <= 50 and analisis["ev"] > 0 and not ya_registrada:
             fue_enviado_telegram = True
             icono_mercado = "⚽" if analisis["tipo_mercado"] == "1X2" else "🥅"
@@ -668,15 +636,14 @@ def ejecutar_ciclo():
                 f"⚽ <b>Partido:</b> {partido_nombre}\n"
                 f"⏰ <b>Inicio:</b> {hora_madrid_partido} (en {minutos_restantes} min)\n"
                 f"{icono_mercado} <b>Mercado:</b> {analisis['mercado']}\n"
-                f"💰 <b>Cuota de Valor:</b> @{analisis['cuota']} <i>(Cierre est: @{analisis.get('cuota_cierre', analisis['cuota'])})</i>\n"
+                f"💰 <b>Cuota de Valor:</b> @{analisis['cuota']}\n"
                 f"📈 <b>Ventaja Algorítmica (+EV):</b> +{analisis['ev']}%\n"
-                f"💎 <b>Ventaja CLV (Beat the line):</b> {analisis.get('clv_ventaja', '+5.5%')}\n"
-                f"💡 <b>Stake Sugerido:</b> <b>{analisis['stake']}/10 unidades</b>\n"
+                f"💡 <b>Stake Sugerido:</b> {analisis['stake']}/10 unidades\n"
                 f"📊 <b>Filtro de Racha:</b> {analisis['form_info']['resumen']}\n"
                 f"📈 <b>Dinámica:</b> {analisis['form_info']['tendencia']}\n\n"
                 f"⚡ <i>Apex Quant Engine • Multimercado</i>"
             )
-            enviar_telegram(alerta_msg, url_accion=APP_URL, texto_boton="📊 Abrir Análisis en la Web App")
+            enviar_telegram(alerta_msg, url_accion=APP_URL, texto_boton="📱 Abrir en Web App")
             alertas_acumuladas.append({
                 "id_partido": str(p.get("id")),
                 "id_alerta": id_alerta_unica,
@@ -690,8 +657,6 @@ def ejecutar_ciclo():
                 "categoria_visual": analisis.get("categoria_visual", "1x2" if analisis["tipo_mercado"] == "1X2" else "goles"),
                 "equipo_pronosticado": analisis.get("equipo_pronosticado"),
                 "cuota": f"@{analisis['cuota']}",
-                "cuota_cierre": f"@{analisis.get('cuota_cierre', analisis['cuota'])}",
-                "clv_ventaja": analisis.get("clv_ventaja", "+5.5%"),
                 "ev": f"+{analisis['ev']}%",
                 "stake": f"{analisis['stake']}/10",
                 "hora": hora_madrid_partido,
@@ -730,8 +695,6 @@ def ejecutar_ciclo():
             "tipo_mercado": analisis["tipo_mercado"],
             "categoria_visual": analisis.get("categoria_visual", "1x2"),
             "cuota": analisis["cuota"],
-            "cuota_cierre": analisis.get("cuota_cierre", analisis["cuota"]),
-            "clv_ventaja": analisis.get("clv_ventaja", "+5.5%"),
             "prob_modelo": analisis["prob_modelo"],
             "ev": f"+{analisis['ev']}%",
             "ev_numero": analisis["ev"],
@@ -745,7 +708,7 @@ def ejecutar_ciclo():
         partidos_para_web.append(item)
 
     # ==============================================================================
-    # RECONCILIACIÓN Y LIQUIDACIÓN CORREGIDA DE TODAS LAS ALERTAS
+    # RECONCILIACIÓN Y LIQUIDACIÓN CORREGIDA DE TODAS LAS ALERTAS (FORMATO EXACTO FOTO)
     # ==============================================================================
     for alerta in alertas_acumuladas:
         p_id = str(alerta.get("id_partido", ""))
@@ -792,29 +755,24 @@ def ejecutar_ciclo():
                 if not alerta.get("liquidada_telegram"):
                     if acertado:
                         msg_settle = (
-                            f"✅ <b>LIQUIDACIÓN OFICIAL — PRONÓSTICO ACERTADO</b> 🎯\n\n"
-                            f"⚽ <b>Partido:</b> {p_nombre}\n"
-                            f"🏁 <b>Resultado Final:</b> <b>{marcador_fin or 'Final'}</b>\n"
-                            f"📌 <b>Mercado Ganado:</b> {alerta['mercado']}\n"
+                            f"({alerta['mercado']})\n"
                             f"💰 <b>Cuota Cobrada:</b> {alerta['cuota']}\n"
                             f"💡 <b>Stake:</b> {alerta['stake']}\n\n"
-                            f"🎉 <i>¡Verificado y sumado al ROI / Efectividad Oficial en la App!</i>\n"
+                            f"🎉 <i>¡Verificado y sumado a la Efectividad Oficial en la App!</i>\n"
                             f"⚡ <i>Apex Quant Engine</i>"
                         )
                     else:
                         msg_settle = (
-                            f"❌ <b>LIQUIDACIÓN OFICIAL — PRONÓSTICO FINALIZADO</b>\n\n"
-                            f"⚽ <b>Partido:</b> {p_nombre}\n"
-                            f"🏁 <b>Resultado Final:</b> <b>{marcador_fin or 'Final'}</b>\n"
-                            f"📌 <b>Mercado:</b> {alerta['mercado']}\n"
+                            f"({alerta['mercado']})\n"
+                            f"🏁 <b>Resultado Final:</b> {marcador_fin or 'Final'}\n"
                             f"💡 <b>Stake:</b> {alerta['stake']} (Control estricto de banca)\n\n"
                             f"⚡ <i>Apex Quant Engine • Disciplina a Largo Plazo</i>"
                         )
-                    enviar_telegram(msg_settle, url_accion=APP_URL, texto_boton="📱 Ver Métricas en la App Web")
+                    enviar_telegram(msg_settle, url_accion=APP_URL, texto_boton="📱 Ver en la Web App")
                     alerta["liquidada_telegram"] = True
                     print(f"📢 Alerta liquidada en Telegram: {p_nombre} -> {'ACERTADO' if acertado else 'PERDIDO'}")
 
-    # Resumen dominical nocturno a Telegram con ROI y Unidades
+    # Resumen dominical nocturno a Telegram
     if dia_semana == 6 and hora_int >= 22 and resumen_semanal_enviado != semana_actual_id:
         partidos_domingo = [p for p in partidos_para_web if p["fecha"] == hoy_madrid_str]
         partidos_pendientes_domingo = [p for p in partidos_domingo if p["estado"] != "FINISHED"]
@@ -846,7 +804,6 @@ def ejecutar_ciclo():
                 resumen_semanal_enviado = semana_actual_id
                 print(f"🏆 Resumen semanal oficial de domingo enviado a Telegram con éxito.")
 
-    # Guardar datos.json y archivar
     alertas_semana_act = [a for a in alertas_acumuladas if a.get("semana_id") == semana_actual_id]
     metricas_semana = calcular_resumen_financiero(alertas_semana_act)
 
