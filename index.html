@@ -296,6 +296,37 @@
     let modoOled = false;
     let semanaIdActual = '';
 
+    function formatearRachaVisual(cadenaRacha) {
+      if (!cadenaRacha) return '';
+      return cadenaRacha.toUpperCase().split('').map(letra => {
+        if (letra === 'W') {
+          return '<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500/25 text-emerald-400 border border-emerald-500/40 text-[9px] font-bold mx-[1px]">W</span>';
+        }
+        if (letra === 'D') {
+          return '<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/25 text-amber-400 border border-amber-500/40 text-[9px] font-bold mx-[1px]">D</span>';
+        }
+        if (letra === 'L') {
+          return '<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-rose-500/25 text-rose-400 border border-rose-500/40 text-[9px] font-bold mx-[1px]">L</span>';
+        }
+        return '';
+      }).join('');
+    }
+
+    function formatearBloqueRachas(rachaLocal, rachaVisitante, tendencia) {
+      const htmlLocal = formatearRachaVisual(rachaLocal || 'WWDWL');
+      const htmlVisitante = formatearRachaVisual(rachaVisitante || 'LLDWL');
+      const textoTendencia = tendencia || '• ⚖️ Tendencia Equilibrada';
+      return `
+        <div class="flex items-center flex-wrap gap-1 text-[10px] text-slate-400 font-mono">
+          <span class="font-bold text-slate-400 mr-0.5">RACHA:</span>
+          <span class="inline-flex items-center">${htmlLocal}</span>
+          <span class="text-slate-500 text-[10px] mx-1">vs</span>
+          <span class="inline-flex items-center">${htmlVisitante}</span>
+          <span class="ml-1 text-slate-400 text-[10px] font-sans">${textoTendencia}</span>
+        </div>
+      `;
+    }
+
     function obtenerBadgeMercado(mercadoTexto, tipoMercado) {
       const texto = ((mercadoTexto || '') + ' ' + (tipoMercado || '')).toLowerCase();
       if (texto.includes('gol') || texto.includes('over') || texto.includes('más de') || texto.includes('mas de') || texto.includes('under') || (tipoMercado && tipoMercado.toUpperCase().includes('GOLES'))) {
@@ -669,6 +700,11 @@
         const stake = p.stake || 3;
         const badgeMercadoHTML = obtenerBadgeMercado(p.mercado, p.tipo_mercado);
 
+        const rachaLocalStr = p.racha_local || (p.racha ? p.racha.split('vs')[0] : 'WWDWL');
+        const rachaVisitanteStr = p.racha_visitante || (p.racha ? p.racha.split('vs')[1] : 'LLDWL');
+        const tendenciaStr = p.tendencia ? `• ${p.tendencia}` : '• ⚖️ Tendencia Equilibrada';
+        const bloqueRachasHTML = formatearBloqueRachas(rachaLocalStr, rachaVisitanteStr, tendenciaStr);
+
         const card = document.createElement('div');
         card.className = 'p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-md space-y-3';
         card.innerHTML = `
@@ -719,7 +755,7 @@
                 <div class="h-full bg-gradient-to-r from-[#00f59b] to-[#ffb800] rounded-full" style="width: 78%"></div>
               </div>
             </div>
-            <p class="text-[10px] text-slate-400 font-mono">RACHA: <span class="text-slate-300">W-W-D-W-L</span> vs <span class="text-slate-300">L-L-D-W-L</span> • ⚖️ Tendencia Equilibrada</p>
+            ${bloqueRachasHTML}
           </div>
 
           <!-- Métricas de Modelo y Botón Compartir -->
