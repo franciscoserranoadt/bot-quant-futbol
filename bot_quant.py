@@ -50,10 +50,6 @@ def generar_barra_stake(stake_num, max_stake=10):
     return "▰" * s + "▱" * (max_stake - s)
 
 def enviar_telegram(mensaje, url_accion=None, texto_boton="📱 Abrir en Web App"):
-    """
-    Envía la alerta enriquecida en HTML al canal oficial.
-    Soporta teclado inline (InlineKeyboardMarkup) para acceso directo interactivo a la PWA.
-    """
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         return False
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -86,7 +82,6 @@ def enviar_telegram(mensaje, url_accion=None, texto_boton="📱 Abrir en Web App
     return False
 
 def normalizar_texto(texto):
-    """Normaliza cadenas eliminando sufijos comunes y puntuación para emparejamientos infalibles."""
     if not texto:
         return ""
     t = texto.lower()
@@ -95,9 +90,6 @@ def normalizar_texto(texto):
     return " ".join(t.split())
 
 def obtener_partidos(dias_atras=3, dias_adelanto=4):
-    """
-    Consulta Football-Data.org con reintento y retroceso exponencial (Healthcheck silencioso).
-    """
     hoy_utc = datetime.now(timezone.utc)
     date_from = (hoy_utc - timedelta(days=dias_atras)).strftime("%Y-%m-%d")
     date_to = (hoy_utc + timedelta(days=dias_adelanto)).strftime("%Y-%m-%d")
@@ -121,7 +113,6 @@ def obtener_partidos(dias_atras=3, dias_adelanto=4):
     return []
 
 def calcular_ev_y_stake(cuota_casa, prob_modelo):
-    """Cálculo de Valor Esperado (+EV) y Kelly Fraccional (1/4)."""
     ev = (prob_modelo * cuota_casa) - 1.0
     if ev <= 0.05:
         return 0.0, 0
@@ -133,7 +124,6 @@ def calcular_ev_y_stake(cuota_casa, prob_modelo):
     return round(ev * 100, 1), stake
 
 def calcular_factor_racha(partido_id, local, visitante):
-    """Filtro de Racha y Tendencia de Equipos (Form Factor)."""
     seed_str = f"FORM_{partido_id}_{local}_{visitante}"
     seed_val = int(hashlib.md5(seed_str.encode('utf-8')).hexdigest()[:8], 16)
     
@@ -148,7 +138,6 @@ def calcular_factor_racha(partido_id, local, visitante):
     diferencia_forma = (puntos_local - puntos_visitante)
     
     ajuste_prob = round(diferencia_forma * 0.008, 3)
-    
     etiqueta = f"Local: {racha_local} ({puntos_local} pts) vs Vis: {racha_visitante} ({puntos_visitante} pts)"
     if diferencia_forma >= 5:
         tendencia = "🔥 Racha Favorable Local (+Dinámica)"
@@ -166,14 +155,12 @@ def calcular_factor_racha(partido_id, local, visitante):
     }
 
 def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None):
-    """CONFIGURACIÓN DE ALTO IMPACTO (+EV anterior: +20% a +50%) con Ponderación de Liga."""
     seed_str = f"{partido_id}_{local}_{visitante}"
     seed_val = int(hashlib.md5(seed_str.encode('utf-8')).hexdigest()[:8], 16)
     perfil = seed_val % 100
 
     form_info = calcular_factor_racha(partido_id, local, visitante)
     ajuste_racha = form_info["ajuste_prob"]
-
     tempo_goles = comp_info.get("tempo_goles", 1.0) if comp_info else 1.0
 
     if perfil < 45:
@@ -193,11 +180,9 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None):
         prob_goles = round((0.50 + (perfil % 5) * 0.01) * tempo_goles, 3)
 
     prob_goles = min(0.80, max(0.35, prob_goles))
-
     ev_1x2, stake_1x2 = calcular_ev_y_stake(cuota_1x2, prob_1x2)
     ev_goles, stake_goles = calcular_ev_y_stake(cuota_goles, prob_goles)
 
-    # Estimación de CLV (Closing Line Value): cuota proyectada de cierre más baja (+eficiencia)
     clv_factor = 1.05 + ((perfil % 5) * 0.01)
 
     if ev_1x2 >= ev_goles and ev_1x2 > 0:
@@ -252,7 +237,6 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None):
         }
 
 def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht, comp_info=None):
-    """Módulo Live HT: análisis in-play con +EV y Ponderación de Liga."""
     seed_str = f"HT_{partido_id}_{local}_{visitante}_{goles_ht}"
     seed_val = int(hashlib.md5(seed_str.encode('utf-8')).hexdigest()[:8], 16)
     subperfil = seed_val % 100
@@ -310,7 +294,6 @@ def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht, comp
             "cuota_cierre": round(cuota * 0.93, 2),
             "clv_ventaja": "+7.0%",
             "prob_modelo": f"{round(prob * 100, 1)}%",
-            "prob_num": round(prob * 100, 1),
             "ev": ev if ev > 0 else 25.2,
             "stake": stake if stake > 0 else 3,
             "contexto": "Empate 1-1 al Descanso • Alta expectativa goleadora 2T",
@@ -318,22 +301,17 @@ def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht, comp
         }
 
 def verificar_acierto(mercado_texto, tipo_mercado, goles_local, goles_visitante, nombre_local="", nombre_visitante="", equipo_pronosticado=None):
-    """
-    Verifica con precisión matemática estricta si un pronóstico finalizado resultó Acertado o Perdido.
-    """
     if goles_local is None or goles_visitante is None:
         return False
     
     goles_totales = goles_local + goles_visitante
     mercado_lower = (mercado_texto or "").lower()
 
-    # 1. MERCADOS DE GOLES
     if "1.5" in mercado_lower:
         return goles_totales > 1.5
     if "2.5" in mercado_lower or tipo_mercado in ["GOLES", "GOLES_HT"]:
         return goles_totales > 2.5
 
-    # 2. MERCADOS 1X2 (RESULTADO FINAL)
     if "victoria" in mercado_lower or "1x2" in (tipo_mercado or "").lower() or "1x2" in mercado_lower:
         if equipo_pronosticado:
             norm_pron = normalizar_texto(equipo_pronosticado)
@@ -359,7 +337,6 @@ def verificar_acierto(mercado_texto, tipo_mercado, goles_local, goles_visitante,
     return False
 
 def cargar_datos_existentes():
-    """Lee datos.json si existe para conservar historial de alertas y metadatos de semana."""
     if os.path.exists("datos.json"):
         try:
             with open("datos.json", "r", encoding="utf-8") as f:
@@ -369,12 +346,10 @@ def cargar_datos_existentes():
     return {}
 
 def obtener_identificador_semana(fecha_madrid):
-    """Devuelve el año y el número de semana ISO (ej. '2026-W41') para el reinicio de los lunes."""
     año, semana, dia_semana = fecha_madrid.isocalendar()
     return f"{año}-W{semana:02d}"
 
 def archivar_historico_mensual(alertas_viejas, mes_id):
-    """Copia y preserva alertas cerradas en historico_mensual.json sin saturar datos.json."""
     archivo_hist = "historico_mensual.json"
     historico = {}
     if os.path.exists(archivo_hist):
@@ -400,7 +375,6 @@ def archivar_historico_mensual(alertas_viejas, mes_id):
         print(f"Aviso guardando histórico mensual: {e}")
 
 def calcular_resumen_financiero(alertas_lista):
-    """Calcula Unidades Netas ganadas y ROI / Yield sobre el capital arriesgado."""
     unidades_apostadas = 0.0
     beneficio_neto = 0.0
     acertadas = 0
@@ -445,7 +419,7 @@ def ejecutar_ciclo():
     hoy_madrid_str = ahora_madrid.strftime('%Y-%m-%d')
     semana_actual_id = obtener_identificador_semana(ahora_madrid)
     mes_actual_id = ahora_madrid.strftime('%Y-%m')
-    dia_semana = ahora_madrid.weekday() # 0 = Lunes, 6 = Domingo
+    dia_semana = ahora_madrid.weekday()
     hora_int = ahora_madrid.hour
 
     print(f"[{hora_madrid_str}] Iniciando ciclo Apex Quant Pro (Semana {semana_actual_id}, Día {dia_semana})...")
@@ -455,7 +429,6 @@ def ejecutar_ciclo():
     semana_guardada = datos_previos.get("semana_activa", semana_actual_id)
     resumen_semanal_enviado = datos_previos.get("resumen_semanal_enviado_para", "")
 
-    # Reinicio cada Lunes a las 00:00 (guardando histórico de semana previa)
     if semana_actual_id != semana_guardada:
         print(f"🔄 ¡LUNES DETECTADO! Reiniciando contadores semanales ({semana_guardada} -> {semana_actual_id})...")
         archivar_historico_mensual([a for a in alertas_acumuladas if not a.get("es_semana_actual", True)], mes_actual_id)
@@ -497,19 +470,24 @@ def ejecutar_ciclo():
         nombre_visitante = away_team_data.get("name", "Visitante")
         partido_nombre = f"{nombre_local} vs {nombre_visitante}"
 
+        # ======================================================================
+        # EXTRACCIÓN ROBUSTA DE GOLES Y MARCADOR EN VIVO (CASCADA COMPLETA)
+        # ======================================================================
         score_data = p.get("score", {})
         full_time = score_data.get("fullTime", {})
         regular_time = score_data.get("regularTime", {})
         half_time = score_data.get("halfTime", {})
-        
+
         goles_local = full_time.get("home")
         goles_visitante = full_time.get("away")
 
-        if goles_local is None and regular_time.get("home") is not None:
+        # 1. Si fullTime es None (en juego), consultar regularTime
+        if (goles_local is None or goles_visitante is None) and (regular_time.get("home") is not None and regular_time.get("away") is not None):
             goles_local = regular_time.get("home")
             goles_visitante = regular_time.get("away")
 
-        if goles_local is None and half_time.get("home") is not None:
+        # 2. Si sigue siendo None, consultar halfTime
+        if (goles_local is None or goles_visitante is None) and (half_time.get("home") is not None and half_time.get("away") is not None):
             goles_local = half_time.get("home")
             goles_visitante = half_time.get("away")
 
@@ -517,6 +495,7 @@ def ejecutar_ciclo():
         minutos_desde_inicio = -minutos_restantes if minutos_restantes < 0 else 0
         es_partido_empezado = estado_api in ["IN_PLAY", "PAUSED", "HT", "LIVE"] or (minutos_restantes <= 0 and estado_api not in ["FINISHED", "FINALIZADO", "AWARDED", "CANCELLED", "POSTPONED"])
         
+        # 3. Si el partido está en juego y la API no ha registrado goles todavía, 0 - 0 real
         if es_partido_empezado and (goles_local is None or goles_visitante is None):
             goles_local = 0
             goles_visitante = 0
@@ -583,11 +562,9 @@ def ejecutar_ciclo():
         prob_val_num = analisis.get("prob_num", 55.0)
         barra_alfa = generar_barra_progreso(prob_val_num, 100, 10)
         barra_stake_grafica = generar_barra_stake(analisis["stake"], 10)
-        
-        # Etiqueta de valor
         badge_ev = "💎 <b>[VALOR ÉLITE +EV]</b>" if analisis["ev"] >= 25.0 else "⚡ <b>[VALOR CUANTITATIVO]</b>"
 
-        # 1. DISPARO AL CANAL TELEGRAM: Alerta Descanso Empate (In-Play) con Escudo y Cajas de Color
+        # 1. DISPARO AL CANAL TELEGRAM: Alerta Descanso Empate (In-Play)
         if es_empate_descanso and analisis["ev"] > 0 and not ya_registrada:
             fue_enviado_telegram = True
             alerta_msg = (
@@ -644,7 +621,7 @@ def ejecutar_ciclo():
                 "liquidada_telegram": False
             })
 
-        # 2. DISPARO AL CANAL TELEGRAM: Pre-partido tradicional (T-45m a T-25m) con Escudos y Tarjeta Visual
+        # 2. DISPARO AL CANAL TELEGRAM: Pre-partido tradicional (T-45m a T-25m)
         elif 25 <= minutos_restantes <= 50 and analisis["ev"] > 0 and not ya_registrada:
             fue_enviado_telegram = True
             icono_mercado = "⚽" if analisis["tipo_mercado"] == "1X2" else "🥅"
@@ -853,7 +830,6 @@ def ejecutar_ciclo():
                 resumen_semanal_enviado = semana_actual_id
                 print(f"🏆 Resumen semanal oficial de domingo enviado a Telegram con éxito.")
 
-    # Guardar datos.json y archivar
     alertas_semana_act = [a for a in alertas_acumuladas if a.get("semana_id") == semana_actual_id]
     metricas_semana = calcular_resumen_financiero(alertas_semana_act)
 
