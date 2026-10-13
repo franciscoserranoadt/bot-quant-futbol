@@ -76,29 +76,52 @@ def normalizar_texto(texto):
 
 def obtener_partidos(dias_atras=3, dias_adelanto=4):
     """
-    Consulta Football-Data.org con reintento y retroceso exponencial (Healthcheck silencioso).
+    Consulta Football-Data.org:
+    1) Endpoint de ventana general de partidos (?dateFrom=...&dateTo=...)
+    2) Endpoint directo /v4/matches?status=IN_PLAY,PAUSED para asegurar la captura de partidos en juego con sus goles reales actualizados al segundo
     """
     hoy_utc = datetime.now(timezone.utc)
     date_from = (hoy_utc - timedelta(days=dias_atras)).strftime("%Y-%m-%d")
     date_to = (hoy_utc + timedelta(days=dias_adelanto)).strftime("%Y-%m-%d")
     
-    url = f"https://api.football-data.org/v4/matches?dateFrom={date_from}&dateTo={date_to}"
     headers = {"X-Auth-Token": FOOTBALL_DATA_TOKEN}
+    matches_dict = {}
+
+    # Consulta 1: Ventana de calendario
+    url_window = f"https://api.football-data.org/v4/matches?dateFrom={date_from}&dateTo={date_to}"
     print(f"📡 [Football-Data.org] Consultando ventana: {date_from} hasta {date_to}")
 
     for intento in range(3):
         try:
-            res = requests.get(url, headers=headers, timeout=12)
+            res = requests.get(url_window, headers=headers, timeout=12)
             if res.status_code == 200:
-                matches = res.json().get("matches", [])
-                print(f"   Total partidos globales devueltos: {len(matches)}")
-                return matches
-            print(f"⚠️ Reintento {intento+1} por código HTTP {res.status_code}")
-            time.sleep(2 ** intento)
+                raw_list = res.json().get("matches", [])
+                for m in raw_list:
+                    m_id = m.get("id")
+                    if m_id:
+                        matches_dict[m_id] = m
+                print(f"   Total partidos devueltos por ventana: {len(raw_list)}")
+                break
+            time.sleep(1.5)
         except Exception as e:
-            print(f"⚠️ Excepción en intento {intento+1}: {e}")
-            time.sleep(2 ** intento)
-    return []
+            print(f"⚠️ Reintento ventana {intento+1}: {e}")
+            time.sleep(1.5)
+
+    # Consulta 2: Petición complementaria de partidos en vivo para actualizar marcadores sin retrasos de caché de la API
+    url_live = "https://api.football-data.org/v4/matches?status=IN_PLAY,PAUSED"
+    try:
+        res_live = requests.get(url_live, headers=headers, timeout=10)
+        if res_live.status_code == 200:
+            live_list = res_live.json().get("matches", [])
+            print(f"📡 [Football-Data.org] Partidos en vivo reportados: {len(live_list)}")
+            for lm in live_list:
+                lm_id = lm.get("id")
+                if lm_id:
+                    matches_dict[lm_id] = lm
+    except Exception as e:
+        print(f"Aviso consultando live status: {e}")
+
+    return list(matches_dict.values())
 
 def calcular_ev_y_stake(cuota_casa, prob_modelo):
     """Cálculo de Valor Esperado (+EV) y Kelly Fraccional (1/4)."""
@@ -474,37 +497,44 @@ def ejecutar_ciclo():
         full_time = score_data.get("fullTime", {})
         regular_time = score_data.get("regularTime", {})
         half_time = score_data.get("halfTime", {})
+        extra_time = score_data.get("extraTime", {})
         
         # ======================================================================
-        # CASCADA OFICIAL DE GOLES (EN VIVO Y FINALIZADO)
+        # CASCADA OFICIAL Y EXHAUSTIVA DE GOLES (EN VIVO Y FINALIZADO)
         # ======================================================================
         goles_local = full_time.get("home")
         goles_visitante = full_time.get("away")
 
-        # 1. Si fullTime es None (en juego), consultar regularTime
+        # 1. Si fullTime es None (típico durante partidos en vivo), consultar regularTime
         if (goles_local is None or goles_visitante is None) and regular_time.get("home") is not None and regular_time.get("away") is not None:
             goles_local = regular_time.get("home")
             goles_visitante = regular_time.get("away")
 
-        # 2. Si sigue siendo None, consultar halfTime
+        # 2. Si hay prórroga (extraTime)
+        if (goles_local is None or goles_visitante is None) and extra_time.get("home") is not None and extra_time.get("away") is not None:
+            goles_local = extra_time.get("home")
+            goles_visitante = extra_time.get("away")
+
+        # 3. Si sigue siendo None, consultar halfTime (primer tiempo concluido o en descanso)
         if (goles_local is None or goles_visitante is None) and half_time.get("home") is not None and half_time.get("away") is not None:
             goles_local = half_time.get("home")
             goles_visitante = half_time.get("away")
 
         estado_api = p.get("status", "SCHEDULED")
 
-        # Determinación de partido finalizado vs en juego con ventana máxima de 130 min
+        # Determinación precisa de si el partido ya ha finalizado
         es_finalizado = estado_api in ["FINISHED", "FINALIZADO", "AWARDED"]
         minutos_desde_inicio = -minutos_restantes if minutos_restantes < 0 else 0
         
+        # Determinación de partido en juego
         es_en_juego = False
         if not es_finalizado:
             if estado_api in ["IN_PLAY", "PAUSED", "HT", "LIVE"]:
                 es_en_juego = True
-            elif 0 <= minutos_desde_inicio <= 130 and estado_api not in ["CANCELLED", "POSTPONED", "TIMED"]:
+            elif 0 <= minutos_desde_inicio <= 125 and estado_api not in ["CANCELLED", "POSTPONED", "TIMED"]:
                 es_en_juego = True
 
-        # Marcador en vivo garantizado (inicializar a 0-0 si ya empezó pero no hay goles)
+        # Marcador garantizado: Si está en juego y la API no ha anotado goles, son 0 - 0
         if es_en_juego and (goles_local is None or goles_visitante is None):
             goles_local = 0
             goles_visitante = 0
@@ -529,7 +559,6 @@ def ejecutar_ciclo():
             elif minutos_desde_inicio <= 60:
                 minuto_en_juego_str = "Descanso"
             elif minutos_desde_inicio <= 105:
-                # Segundo tiempo descontando el descanso
                 m2t = min(90, max(46, minutos_desde_inicio - 15))
                 minuto_en_juego_str = f"{m2t}'"
             else:
