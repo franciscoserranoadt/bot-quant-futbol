@@ -297,6 +297,9 @@ def ejecutar_ciclo():
         escudo_local = home_team_data.get("crest", "")
         escudo_visitante = away_team_data.get("crest", "")
 
+        # ======================================================================
+        # EXTRACCIÓN BLINDADA DE MARCADOR EN VIVO Y FINALIZADO
+        # ======================================================================
         score_data = p.get("score", {})
         full_time = score_data.get("fullTime", {})
         regular_time = score_data.get("regularTime", {})
@@ -312,12 +315,21 @@ def ejecutar_ciclo():
         if goles_local is None and half_time.get("home") is not None:
             goles_local = half_time.get("home")
             goles_visitante = half_time.get("away")
+
+        estado_api = p.get("status", "SCHEDULED")
         
+        # Si el partido está en juego (o en descanso) y la API aún no ha puesto goles, van 0 - 0
+        minutos_desde_inicio = -minutos_restantes if minutos_restantes < 0 else 0
+        es_partido_empezado = estado_api in ["IN_PLAY", "PAUSED", "HT", "LIVE"] or (minutos_restantes <= 0 and estado_api not in ["FINISHED", "FINALIZADO", "AWARDED", "CANCELLED", "POSTPONED"])
+        
+        if es_partido_empezado and (goles_local is None or goles_visitante is None):
+            goles_local = 0
+            goles_visitante = 0
+
         marcador_str = None
         if goles_local is not None and goles_visitante is not None:
             marcador_str = f"{goles_local} - {goles_visitante}"
 
-        estado_api = p.get("status", "SCHEDULED")
         nombre_local = home_team_data.get("name", "Local")
         nombre_visitante = away_team_data.get("name", "Visitante")
         partido_nombre = f"{nombre_local} vs {nombre_visitante}"
@@ -331,7 +343,6 @@ def ejecutar_ciclo():
 
         es_en_descanso = False
         es_empate_descanso = False
-        minutos_desde_inicio = -minutos_restantes if minutos_restantes < 0 else 0
 
         if estado_api in ["PAUSED", "HT"] or (45 <= minutos_desde_inicio <= 65):
             es_en_descanso = True
