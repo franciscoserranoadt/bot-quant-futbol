@@ -20,15 +20,34 @@ TZ_MADRID = ZoneInfo("Europe/Madrid")
 
 # 7 Ligas Oficiales Admitidas con Ponderación de Liga (League Weighting Factor)
 LEAGUES_MAP = {
-    "PD":  {"name": "LaLiga EA Sports", "key": "laliga", "country": "ESP", "tempo_goles": 1.00, "empate_ht_factor": 1.05},
-    "SD":  {"name": "LaLiga Hypermotion", "key": "laliga2", "country": "ESP", "tempo_goles": 0.85, "empate_ht_factor": 1.25},
-    "PL":  {"name": "Premier League", "key": "premier", "country": "ENG", "tempo_goles": 1.15, "empate_ht_factor": 0.95},
-    "BL1": {"name": "Bundesliga", "key": "bundesliga", "country": "GER", "tempo_goles": 1.30, "empate_ht_factor": 0.90},
-    "SA":  {"name": "Serie A", "key": "seriea", "country": "ITA", "tempo_goles": 1.00, "empate_ht_factor": 1.10},
-    "FL1": {"name": "Ligue 1", "key": "ligue1", "country": "FRA", "tempo_goles": 0.95, "empate_ht_factor": 1.05},
-    "CL":  {"name": "Champions League", "key": "champions", "country": "UEFA", "tempo_goles": 1.20, "empate_ht_factor": 1.00},
-    "CDR": {"name": "Copa del Rey", "key": "copadelrey", "country": "ESP", "tempo_goles": 1.00, "empate_ht_factor": 1.00}
+    "PD":  {"name": "LaLiga EA Sports", "key": "laliga", "country": "ESP", "flag": "🇪🇸", "tempo_goles": 1.00, "empate_ht_factor": 1.05},
+    "SD":  {"name": "LaLiga Hypermotion", "key": "laliga2", "country": "ESP", "flag": "🇪🇸", "tempo_goles": 0.85, "empate_ht_factor": 1.25},
+    "PL":  {"name": "Premier League", "key": "premier", "country": "ENG", "flag": "🇬🇧", "tempo_goles": 1.15, "empate_ht_factor": 0.95},
+    "BL1": {"name": "Bundesliga", "key": "bundesliga", "country": "GER", "flag": "🇩🇪", "tempo_goles": 1.30, "empate_ht_factor": 0.90},
+    "SA":  {"name": "Serie A", "key": "seriea", "country": "ITA", "flag": "🇮🇹", "tempo_goles": 1.00, "empate_ht_factor": 1.10},
+    "FL1": {"name": "Ligue 1", "key": "ligue1", "country": "FRA", "flag": "🇫🇷", "tempo_goles": 0.95, "empate_ht_factor": 1.05},
+    "CL":  {"name": "Champions League", "key": "champions", "country": "UEFA", "flag": "🇪🇺", "tempo_goles": 1.20, "empate_ht_factor": 1.00},
+    "CDR": {"name": "Copa del Rey", "key": "copadelrey", "country": "ESP", "flag": "🇪🇸", "tempo_goles": 1.00, "empate_ht_factor": 1.00}
 }
+
+def generar_barra_progreso(porcentaje_val, max_val=100, bloques=10):
+    """Genera una barra visual en bloques de color para Telegram (🟩 y ⬜)."""
+    try:
+        val = float(porcentaje_val)
+    except Exception:
+        val = 50.0
+    llenos = max(1, min(bloques, round((val / max_val) * bloques)))
+    vacios = bloques - llenos
+    return "🟩" * llenos + "⬜" * vacios
+
+def generar_barra_stake(stake_num, max_stake=10):
+    """Genera una barra visual para el dimensionamiento del stake (▰ y ▱)."""
+    try:
+        s = int(stake_num)
+    except Exception:
+        s = 3
+    s = max(1, min(max_stake, s))
+    return "▰" * s + "▱" * (max_stake - s)
 
 def enviar_telegram(mensaje, url_accion=None, texto_boton="📱 Abrir en Web App"):
     """
@@ -41,7 +60,8 @@ def enviar_telegram(mensaje, url_accion=None, texto_boton="📱 Abrir en Web App
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
         "text": mensaje,
-        "parse_mode": "HTML"
+        "parse_mode": "HTML",
+        "disable_web_page_preview": False
     }
 
     destino_web = url_accion or APP_URL
@@ -192,6 +212,7 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None):
             "cuota_cierre": cuota_cierre_est,
             "clv_ventaja": f"+{clv_pct}%",
             "prob_modelo": f"{round(prob_1x2 * 100, 1)}%",
+            "prob_num": round(prob_1x2 * 100, 1),
             "ev": ev_1x2,
             "stake": stake_1x2,
             "form_info": form_info
@@ -208,6 +229,7 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None):
             "cuota_cierre": cuota_cierre_est,
             "clv_ventaja": f"+{clv_pct}%",
             "prob_modelo": f"{round(prob_goles * 100, 1)}%",
+            "prob_num": round(prob_goles * 100, 1),
             "ev": ev_goles,
             "stake": stake_goles,
             "form_info": form_info
@@ -223,6 +245,7 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None):
             "cuota_cierre": cuota_cierre_est,
             "clv_ventaja": "+5.8%",
             "prob_modelo": f"{round(prob_1x2 * 100, 1)}%",
+            "prob_num": round(prob_1x2 * 100, 1),
             "ev": 28.5,
             "stake": 3,
             "form_info": form_info
@@ -249,6 +272,7 @@ def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht, comp
                 "cuota_cierre": round(cuota * 0.94, 2),
                 "clv_ventaja": "+6.2%",
                 "prob_modelo": f"{round(prob * 100, 1)}%",
+                "prob_num": round(prob * 100, 1),
                 "ev": ev if ev > 0 else 22.4,
                 "stake": stake if stake > 0 else 3,
                 "contexto": "Empate 0-0 al Descanso • Ritmo ofensivo favorable en 2T",
@@ -267,6 +291,7 @@ def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht, comp
                 "cuota_cierre": round(cuota * 0.93, 2),
                 "clv_ventaja": "+7.5%",
                 "prob_modelo": f"{round(prob * 100, 1)}%",
+                "prob_num": round(prob * 100, 1),
                 "ev": ev if ev > 0 else 20.8,
                 "stake": stake if stake > 0 else 2,
                 "contexto": "Empate 0-0 al Descanso • Valor acumulado en el local",
@@ -285,6 +310,7 @@ def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht, comp
             "cuota_cierre": round(cuota * 0.93, 2),
             "clv_ventaja": "+7.0%",
             "prob_modelo": f"{round(prob * 100, 1)}%",
+            "prob_num": round(prob * 100, 1),
             "ev": ev if ev > 0 else 25.2,
             "stake": stake if stake > 0 else 3,
             "contexto": "Empate 1-1 al Descanso • Alta expectativa goleadora 2T",
@@ -383,14 +409,12 @@ def calcular_resumen_financiero(alertas_lista):
     for a in alertas_lista:
         if a.get("finalizado"):
             finalizadas += 1
-            # Extraer stake numérico
             stk_str = str(a.get("stake", "3")).split("/")[0].replace("U", "").strip()
             try:
                 stk = float(stk_str)
             except Exception:
                 stk = 3.0
             
-            # Extraer cuota
             cuota_str = str(a.get("cuota", "@2.00")).replace("@", "").strip()
             try:
                 cuota_val = float(cuota_str)
@@ -551,21 +575,42 @@ def ejecutar_ciclo():
 
         fue_enviado_telegram = False
 
-        # 1. DISPARO AL CANAL TELEGRAM: Alerta Descanso Empate (In-Play) con Botón Interactivo PWA
+        # Preparación de elementos visuales (Escudos en cabecera + Barras de intensidad y Stake)
+        escudo_preview_url = escudo_local or escudo_visitante
+        tag_imagen_oculta = f'<a href="{escudo_preview_url}">&#8203;</a>' if escudo_preview_url else ''
+        flag_liga = comp_info.get("flag", "🏆")
+        
+        prob_val_num = analisis.get("prob_num", 55.0)
+        barra_alfa = generar_barra_progreso(prob_val_num, 100, 10)
+        barra_stake_grafica = generar_barra_stake(analisis["stake"], 10)
+        
+        # Etiqueta de valor
+        badge_ev = "💎 <b>[VALOR ÉLITE +EV]</b>" if analisis["ev"] >= 25.0 else "⚡ <b>[VALOR CUANTITATIVO]</b>"
+
+        # 1. DISPARO AL CANAL TELEGRAM: Alerta Descanso Empate (In-Play) con Escudo y Cajas de Color
         if es_empate_descanso and analisis["ev"] > 0 and not ya_registrada:
             fue_enviado_telegram = True
             alerta_msg = (
-                f"⏸️ <b>ALERTA EN VIVO — DESCANSO EN EMPATE (HT)</b>\n\n"
-                f"🏆 <b>Competición:</b> {comp_info['name']}\n"
-                f"⚽ <b>Partido:</b> {partido_nombre}\n"
-                f"🔢 <b>Marcador HT:</b> <b>{marcador_str or '0 - 0'}</b> (Descanso)\n"
-                f"📊 <b>Mercado 2T:</b> {analisis['mercado']}\n"
-                f"💰 <b>Cuota de Valor:</b> @{analisis['cuota']} <i>(Cierre est: @{analisis.get('cuota_cierre', analisis['cuota'])})</i>\n"
-                f"📈 <b>Ventaja Algorítmica (+EV):</b> +{analisis['ev']}%\n"
-                f"💎 <b>Ventaja CLV Estimada:</b> {analisis.get('clv_ventaja', '+6.0%')}\n"
-                f"💡 <b>Stake Sugerido:</b> <b>{analisis['stake']}/10 unidades</b>\n"
-                f"📈 <b>Tendencia:</b> {analisis['form_info']['tendencia']}\n"
+                f"{tag_imagen_oculta}"
+                f"╔═══════════════════════════════════════╗\n"
+                f"║ ⏸️ <b>LIVE SCANNER HT: EMPATE AL DESCANSO</b>\n"
+                f"║ {flag_liga} <b>{comp_info['name'].upper()}</b>\n"
+                f"╚═══════════════════════════════════════╝\n\n"
+                f"⚽ <b>PARTIDO:</b>\n"
+                f"🛡️ <b>{nombre_local}</b> vs 🛡️ <b>{nombre_visitante}</b>\n\n"
+                f"🔢 <b>Marcador HT:</b> <b>{marcador_str or '0 - 0'}</b> (Descanso Oficial)\n"
                 f"ℹ️ <i>{analisis.get('contexto', 'Análisis In-Play al Descanso')}</i>\n\n"
+                f"🎯 <b>MERCADO DE VALOR (2º TIEMPO):</b>\n"
+                f"👉 <b>{analisis['mercado']}</b>\n\n"
+                f"💰 <b>Cuota de Entrada:</b> <b>@{analisis['cuota']}</b> <i>(Cierre est: @{analisis.get('cuota_cierre', analisis['cuota'])})</i>\n"
+                f"📈 <b>Ventaja Algorítmica:</b> <b>+{analisis['ev']}%</b> {badge_ev}\n"
+                f"📊 <b>Intensidad Modelo:</b> {barra_alfa} (<b>{analisis['prob_modelo']}</b>)\n"
+                f"💎 <b>Ventaja CLV Proyectada:</b> {analisis.get('clv_ventaja', '+6.0%')}\n\n"
+                f"⚡ <b>GESTIÓN DE BANCA (KELLY FRACCIONAL):</b>\n"
+                f"💡 <b>Stake Sugerido:</b> <b>{analisis['stake']}/10 U</b>\n"
+                f"📊 <b>Asignación:</b> {barra_stake_grafica}\n"
+                f"📈 <b>Dinámica:</b> {analisis['form_info']['tendencia']}\n\n"
+                f"───────────────────────────────────────\n"
                 f"⚡ <i>Apex Quant Engine • Live HT Scanner</i>"
             )
             enviar_telegram(alerta_msg, url_accion=APP_URL, texto_boton="📱 Ver en Vivo en la App Web")
@@ -599,22 +644,31 @@ def ejecutar_ciclo():
                 "liquidada_telegram": False
             })
 
-        # 2. DISPARO AL CANAL TELEGRAM: Pre-partido tradicional (T-45m a T-25m) con Racha y Botón
+        # 2. DISPARO AL CANAL TELEGRAM: Pre-partido tradicional (T-45m a T-25m) con Escudos y Tarjeta Visual
         elif 25 <= minutos_restantes <= 50 and analisis["ev"] > 0 and not ya_registrada:
             fue_enviado_telegram = True
             icono_mercado = "⚽" if analisis["tipo_mercado"] == "1X2" else "🥅"
             alerta_msg = (
-                f"🎯 <b>ALERTA CUANTITATIVA (+EV) — [T-45m]</b>\n\n"
-                f"🏆 <b>Competición:</b> {comp_info['name']}\n"
-                f"⚽ <b>Partido:</b> {partido_nombre}\n"
-                f"⏰ <b>Inicio:</b> {hora_madrid_partido} (en {minutos_restantes} min)\n"
-                f"{icono_mercado} <b>Mercado:</b> {analisis['mercado']}\n"
-                f"💰 <b>Cuota de Valor:</b> @{analisis['cuota']} <i>(Cierre est: @{analisis.get('cuota_cierre', analisis['cuota'])})</i>\n"
-                f"📈 <b>Ventaja Algorítmica (+EV):</b> +{analisis['ev']}%\n"
-                f"💎 <b>Ventaja CLV (Beat the line):</b> {analisis.get('clv_ventaja', '+5.5%')}\n"
-                f"💡 <b>Stake Sugerido:</b> <b>{analisis['stake']}/10 unidades</b>\n"
-                f"📊 <b>Filtro de Racha:</b> {analisis['form_info']['resumen']}\n"
+                f"{tag_imagen_oculta}"
+                f"╔═══════════════════════════════════════╗\n"
+                f"║ 🎯 <b>ALERTA CUANTITATIVA (+EV) — [T-45m]</b>\n"
+                f"║ {flag_liga} <b>{comp_info['name'].upper()}</b>\n"
+                f"╚═══════════════════════════════════════╝\n\n"
+                f"⚽ <b>PARTIDO:</b>\n"
+                f"🛡️ <b>{nombre_local}</b> vs 🛡️ <b>{nombre_visitante}</b>\n"
+                f"⏰ <b>Inicio:</b> <b>{hora_madrid_partido}</b> (en {minutos_restantes} min)\n\n"
+                f"{icono_mercado} <b>MERCADO SELECCIONADO:</b>\n"
+                f"👉 <b>{analisis['mercado']}</b>\n\n"
+                f"💰 <b>Cuota de Valor:</b> <b>@{analisis['cuota']}</b> <i>(Cierre est: @{analisis.get('cuota_cierre', analisis['cuota'])})</i>\n"
+                f"📈 <b>Ventaja Algorítmica:</b> <b>+{analisis['ev']}%</b> {badge_ev}\n"
+                f"📊 <b>Intensidad Modelo:</b> {barra_alfa} (<b>{analisis['prob_modelo']}</b>)\n"
+                f"💎 <b>Ventaja CLV (Beat the Line):</b> {analisis.get('clv_ventaja', '+5.5%')}\n\n"
+                f"⚡ <b>GESTIÓN DE BANCA (KELLY FRACCIONAL):</b>\n"
+                f"💡 <b>Stake Sugerido:</b> <b>{analisis['stake']}/10 U</b>\n"
+                f"📊 <b>Asignación:</b> {barra_stake_grafica}\n"
+                f"📊 <b>Filtro de Racha:</b> <code>{analisis['form_info']['resumen']}</code>\n"
                 f"📈 <b>Dinámica:</b> {analisis['form_info']['tendencia']}\n\n"
+                f"───────────────────────────────────────\n"
                 f"⚡ <i>Apex Quant Engine • Multimercado</i>"
             )
             enviar_telegram(alerta_msg, url_accion=APP_URL, texto_boton="📊 Abrir Análisis en la Web App")
@@ -730,21 +784,32 @@ def ejecutar_ciclo():
                 alerta["acertado"] = acertado
 
                 if not alerta.get("liquidada_telegram"):
+                    escudo_liq = alerta.get("escudo_local") or alerta.get("escudo_visitante") or ""
+                    tag_img_liq = f'<a href="{escudo_liq}">&#8203;</a>' if escudo_liq else ''
+                    
                     if acertado:
                         msg_settle = (
-                            f"✅ <b>LIQUIDACIÓN OFICIAL — PRONÓSTICO ACERTADO</b> 🎯\n\n"
-                            f"⚽ <b>Partido:</b> {p_nombre}\n"
-                            f"🏁 <b>Resultado Final:</b> <b>{marcador_fin or 'Final'}</b>\n"
-                            f"📌 <b>Mercado Ganado:</b> {alerta['mercado']}\n"
-                            f"💰 <b>Cuota Cobrada:</b> {alerta['cuota']}\n"
-                            f"💡 <b>Stake:</b> {alerta['stake']}\n\n"
+                            f"{tag_img_liq}"
+                            f"╔═══════════════════════════════════════╗\n"
+                            f"║ ✅ <b>LIQUIDACIÓN OFICIAL — ACERTADO</b> 🎯\n"
+                            f"╚═══════════════════════════════════════╝\n\n"
+                            f"⚽ <b>PARTIDO:</b>\n"
+                            f"🛡️ <b>{p_nombre}</b>\n\n"
+                            f"🏁 <b>Resultado Final:</b> <b>{marcador_fin or 'Final'}</b> 🟩\n"
+                            f"📌 <b>Mercado Ganado:</b> <b>{alerta['mercado']}</b>\n"
+                            f"💰 <b>Cuota Cobrada:</b> <b>{alerta['cuota']}</b>\n"
+                            f"💡 <b>Stake:</b> <b>{alerta['stake']}</b>\n\n"
                             f"🎉 <i>¡Verificado y sumado al ROI / Efectividad Oficial en la App!</i>\n"
                             f"⚡ <i>Apex Quant Engine</i>"
                         )
                     else:
                         msg_settle = (
-                            f"❌ <b>LIQUIDACIÓN OFICIAL — PRONÓSTICO FINALIZADO</b>\n\n"
-                            f"⚽ <b>Partido:</b> {p_nombre}\n"
+                            f"{tag_img_liq}"
+                            f"╔═══════════════════════════════════════╗\n"
+                            f"║ ❌ <b>LIQUIDACIÓN OFICIAL — FINALIZADO</b>\n"
+                            f"╚═══════════════════════════════════════╝\n\n"
+                            f"⚽ <b>PARTIDO:</b>\n"
+                            f"🛡️ <b>{p_nombre}</b>\n\n"
                             f"🏁 <b>Resultado Final:</b> <b>{marcador_fin or 'Final'}</b>\n"
                             f"📌 <b>Mercado:</b> {alerta['mercado']}\n"
                             f"💡 <b>Stake:</b> {alerta['stake']} (Control estricto de banca)\n\n"
@@ -771,8 +836,10 @@ def ejecutar_ciclo():
                 signo_u = "+" if resumen_fin["unidades_netas"] >= 0 else ""
 
                 msg_resumen_domingo = (
-                    f"📊 <b>CIERRE SEMANAL OFICIAL — APEX QUANT ANALYTICS</b> 🏆\n\n"
-                    f"📅 <b>Semana:</b> {semana_actual_id} (Finalizada)\n"
+                    f"╔═══════════════════════════════════════╗\n"
+                    f"║ 📊 <b>CIERRE SEMANAL OFICIAL APEX QUANT</b> 🏆\n"
+                    f"╚═══════════════════════════════════════╝\n\n"
+                    f"📅 <b>Semana ISO:</b> <code>{semana_actual_id}</code> (Finalizada)\n"
                     f"📈 <b>Total Pronósticos Oficiales:</b> <b>{total_semana}</b>\n\n"
                     f"✅ <b>Alertas Acertadas:</b> <b>{aciertos_semana}</b> ({pct_acierto}%)\n"
                     f"❌ <b>Alertas Falladas:</b> <b>{fallos_semana}</b>\n"
