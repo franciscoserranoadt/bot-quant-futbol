@@ -475,24 +475,37 @@ def ejecutar_ciclo():
         regular_time = score_data.get("regularTime", {})
         half_time = score_data.get("halfTime", {})
         
+        # ======================================================================
+        # CASCADA OFICIAL DE GOLES (EN VIVO Y FINALIZADO)
+        # ======================================================================
         goles_local = full_time.get("home")
         goles_visitante = full_time.get("away")
 
-        # Cascada de goles oficial y estable
+        # 1. Si fullTime es None (en juego), consultar regularTime
         if (goles_local is None or goles_visitante is None) and regular_time.get("home") is not None and regular_time.get("away") is not None:
             goles_local = regular_time.get("home")
             goles_visitante = regular_time.get("away")
 
+        # 2. Si sigue siendo None, consultar halfTime
         if (goles_local is None or goles_visitante is None) and half_time.get("home") is not None and half_time.get("away") is not None:
             goles_local = half_time.get("home")
             goles_visitante = half_time.get("away")
 
         estado_api = p.get("status", "SCHEDULED")
+
+        # Determinación de partido finalizado vs en juego con ventana máxima de 130 min
+        es_finalizado = estado_api in ["FINISHED", "FINALIZADO", "AWARDED"]
         minutos_desde_inicio = -minutos_restantes if minutos_restantes < 0 else 0
-        es_partido_empezado = estado_api in ["IN_PLAY", "PAUSED", "HT", "LIVE"] or (minutos_restantes <= 0 and estado_api not in ["FINISHED", "FINALIZADO", "AWARDED", "CANCELLED", "POSTPONED"])
         
-        # Corrección: si está en juego y no hay goles registrados, son 0 - 0
-        if es_partido_empezado and (goles_local is None or goles_visitante is None):
+        es_en_juego = False
+        if not es_finalizado:
+            if estado_api in ["IN_PLAY", "PAUSED", "HT", "LIVE"]:
+                es_en_juego = True
+            elif 0 <= minutos_desde_inicio <= 130 and estado_api not in ["CANCELLED", "POSTPONED", "TIMED"]:
+                es_en_juego = True
+
+        # Marcador en vivo garantizado (inicializar a 0-0 si ya empezó pero no hay goles)
+        if es_en_juego and (goles_local is None or goles_visitante is None):
             goles_local = 0
             goles_visitante = 0
 
@@ -500,12 +513,36 @@ def ejecutar_ciclo():
         if goles_local is not None and goles_visitante is not None:
             marcador_str = f"{goles_local} - {goles_visitante}"
 
+        # Estado normalizado y minuto acotado (1' a 90'+ o Descanso)
+        estado_normalizado = estado_api
+        minuto_en_juego_str = None
+
+        if es_finalizado:
+            estado_normalizado = "FINISHED"
+        elif estado_api in ["PAUSED", "HT"] or (45 <= minutos_desde_inicio <= 60 and es_en_juego):
+            estado_normalizado = "HT"
+            minuto_en_juego_str = "Descanso"
+        elif es_en_juego:
+            estado_normalizado = "IN_PLAY"
+            if minutos_desde_inicio <= 45:
+                minuto_en_juego_str = f"{max(1, minutos_desde_inicio)}'"
+            elif minutos_desde_inicio <= 60:
+                minuto_en_juego_str = "Descanso"
+            elif minutos_desde_inicio <= 105:
+                # Segundo tiempo descontando el descanso
+                m2t = min(90, max(46, minutos_desde_inicio - 15))
+                minuto_en_juego_str = f"{m2t}'"
+            else:
+                minuto_en_juego_str = "90+'"
+
         info_partido_actual = {
             "id": p.get("id"),
             "partido": partido_nombre,
             "local": nombre_local,
             "visitante": nombre_visitante,
-            "estado": estado_api,
+            "estado": estado_normalizado,
+            "estado_original": estado_api,
+            "minuto_juego": minuto_en_juego_str,
             "goles_local": goles_local,
             "goles_visitante": goles_visitante,
             "marcador": marcador_str,
@@ -520,13 +557,7 @@ def ejecutar_ciclo():
         key_norm = f"{normalizar_texto(nombre_local)} vs {normalizar_texto(nombre_visitante)}"
         partidos_map_por_nombres[key_norm] = info_partido_actual
 
-        es_en_descanso = False
-        es_empate_descanso = False
-
-        if estado_api in ["PAUSED", "HT"] or (45 <= minutos_desde_inicio <= 65):
-            es_en_descanso = True
-            if goles_local is not None and goles_visitante is not None and goles_local == goles_visitante:
-                es_empate_descanso = True
+        es_empate_descanso = (estado_normalizado == "HT") and (goles_local is not None and goles_visitante is not None and goles_local == goles_visitante)
 
         if es_empate_descanso:
             analisis = evaluar_mercado_descanso_empate(p.get("id", 0), nombre_local, nombre_visitante, goles_local, comp_info)
@@ -534,7 +565,7 @@ def ejecutar_ciclo():
             analisis = evaluar_mercados_prepartido(p.get("id", 0), nombre_local, nombre_visitante, comp_info)
 
         acertado_partido = None
-        if estado_api in ["FINISHED", "FINALIZADO", "AWARDED"] and goles_local is not None and goles_visitante is not None:
+        if es_finalizado and goles_local is not None and goles_visitante is not None:
             acertado_partido = verificar_acierto(
                 analisis["mercado"],
                 analisis["tipo_mercado"],
@@ -590,7 +621,7 @@ def ejecutar_ciclo():
                 "es_ht": True,
                 "semana_id": semana_actual_id,
                 "es_semana_actual": True,
-                "estado_partido": estado_api,
+                "estado_partido": estado_normalizado,
                 "marcador": marcador_str,
                 "marcador_final": None,
                 "finalizado": False,
@@ -639,7 +670,7 @@ def ejecutar_ciclo():
                 "es_ht": False,
                 "semana_id": semana_actual_id,
                 "es_semana_actual": True,
-                "estado_partido": estado_api,
+                "estado_partido": estado_normalizado,
                 "marcador": marcador_str,
                 "marcador_final": None,
                 "finalizado": False,
@@ -661,7 +692,8 @@ def ejecutar_ciclo():
             "utcDate": hora_utc_raw,
             "timestamp_ms": timestamp_inicio_ms,
             "minutos_restantes": minutos_restantes,
-            "estado": estado_api,
+            "estado": estado_normalizado,
+            "minuto_juego": minuto_en_juego_str,
             "marcador": marcador_str,
             "goles_local": goles_local,
             "goles_visitante": goles_visitante,
@@ -707,7 +739,7 @@ def ejecutar_ciclo():
             if partido_encontrado["marcador"]:
                 alerta["marcador"] = partido_encontrado["marcador"]
 
-            if partido_encontrado["estado"] in ["FINISHED", "FINALIZADO", "AWARDED"]:
+            if partido_encontrado["estado"] == "FINISHED":
                 g_loc = partido_encontrado["goles_local"]
                 g_vis = partido_encontrado["goles_visitante"]
                 marcador_fin = partido_encontrado["marcador"] or (f"{g_loc} - {g_vis}" if g_loc is not None else None)
@@ -756,7 +788,7 @@ def ejecutar_ciclo():
     # Resumen dominical nocturno a Telegram con ROI y Unidades
     if dia_semana == 6 and hora_int >= 22 and resumen_semanal_enviado != semana_actual_id:
         partidos_domingo = [p for p in partidos_para_web if p["fecha"] == hoy_madrid_str]
-        partidos_pendientes_domingo = [p for p in partidos_domingo if p["estado"] not in ["FINISHED", "FINALIZADO", "AWARDED", "CANCELLED", "POSTPONED"]]
+        partidos_pendientes_domingo = [p for p in partidos_domingo if p["estado"] != "FINISHED"]
         
         if len(partidos_pendientes_domingo) == 0 or (hora_int == 23 and ahora_madrid.minute >= 45):
             alertas_semana_actual = [a for a in alertas_acumuladas if a.get("semana_id") == semana_actual_id and a.get("finalizado")]
