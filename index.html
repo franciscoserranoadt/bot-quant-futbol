@@ -217,6 +217,7 @@
         renderizarVista();
       } catch (err) {
         console.warn('Cargando partidos:', err);
+        actualizarMetricas();
         renderizarVista();
       } finally {
         if (icon) setTimeout(() => icon.classList.remove('animate-spin'), 600);
@@ -273,34 +274,79 @@
       return p.minutos_restantes !== undefined ? p.minutos_restantes : 999;
     }
 
-    function verificarAciertoPronostico(p) {
-      const gLoc = p.goles_local;
-      const gVis = p.goles_visitante;
-      if (gLoc === null || gVis === null || gLoc === undefined || gVis === undefined) {
+    function normalizarTexto(str) {
+      if (!str) return '';
+      return str
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]/g, "");
+    }
+
+    function verificarPronostico(p) {
+      let gLoc = p.goles_local;
+      let gVis = p.goles_visitante;
+
+      if (gLoc === null || gLoc === undefined || gVis === null || gVis === undefined) {
         if (p.marcador && p.marcador.includes('-')) {
           const partes = p.marcador.split('-').map(s => parseInt(s.trim()));
           if (!isNaN(partes[0]) && !isNaN(partes[1])) {
-            return verificarResultadoPorGoles(partes[0], partes[1], p.mercado, p.tipo_mercado);
+            gLoc = partes[0];
+            gVis = partes[1];
           }
         }
+      }
+
+      if (gLoc === null || gLoc === undefined || gVis === null || gVis === undefined) {
         return null;
       }
-      return verificarResultadoPorGoles(gLoc, gVis, p.mercado, p.tipo_mercado);
-    }
 
-    function verificarResultadoPorGoles(gLoc, gVis, m, tm) {
       const gTot = gLoc + gVis;
-      const mercadoStr = (m || '').toLowerCase();
-      const tipoStr = (tm || '').toLowerCase();
+      const mStr = (p.mercado || '').toLowerCase();
+      const tmStr = (p.tipo_mercado || '').toLowerCase();
 
-      if (mercadoStr.includes('1.5')) return gTot > 1;
-      if (mercadoStr.includes('2.5') || tipoStr === 'goles') return gTot > 2;
-      if (mercadoStr.includes('victoria') || mercadoStr.includes('gana') || tipoStr.includes('1x2')) {
-        if (mercadoStr.includes('visitante') || mercadoStr.includes('2')) return gVis > gLoc;
+      // Reglas estrictas de total de goles
+      if (mStr.includes('2.5') || tmStr.includes('2.5')) {
+        return gTot > 2;
+      }
+      if (mStr.includes('1.5') || tmStr.includes('1.5')) {
+        return gTot > 1;
+      }
+
+      // Reglas de ganador (1X2 / Victoria / Gana)
+      if (mStr.includes('victoria') || mStr.includes('gana') || mStr.includes('1x2') || tmStr.includes('1x2')) {
+        let nombreLocal = p.local || '';
+        let nombreVisitante = p.visitante || '';
+
+        if ((!nombreLocal || !nombreVisitante) && p.partido && p.partido.includes(' vs ')) {
+          const partes = p.partido.split(' vs ');
+          nombreLocal = partes[0].trim();
+          nombreVisitante = partes[1].trim();
+        }
+
+        const mNorm = normalizarTexto(p.mercado);
+        const locNorm = normalizarTexto(nombreLocal);
+        const visNorm = normalizarTexto(nombreVisitante);
+
+        // Si explícitamente indica visitante o ' 2'
+        const esPronosticoVisitante = (visNorm && mNorm.includes(visNorm)) ||
+                                      mStr.includes('visitante') ||
+                                      mStr.endsWith(' 2') ||
+                                      mStr.includes('(2)');
+
+        if (esPronosticoVisitante) {
+          return gVis > gLoc;
+        }
+
+        // Si coincide con el local, o por defecto en 1X2 / Victoria local
         return gLoc > gVis;
       }
-      if (mercadoStr.includes('ambos') || mercadoStr.includes('btts')) return (gLoc > 0 && gVis > 0);
-      return false;
+
+      if (mStr.includes('ambos') || mStr.includes('btts')) {
+        return gLoc > 0 && gVis > 0;
+      }
+
+      return null;
     }
 
     function actualizarMetricas() {
@@ -320,7 +366,7 @@
       let globV = 0, globD = 0;
 
       finalizados.forEach(p => {
-        const ok = verificarAciertoPronostico(p);
+        const ok = verificarPronostico(p);
         if (ok !== null) {
           if (ok) globV++; else globD++;
           if (p.telegram_enviado) {
@@ -390,7 +436,7 @@
           let badgeAcierto = '';
 
           if (esFin) {
-            const ok = verificarAciertoPronostico(fusion);
+            const ok = verificarPronostico(fusion);
             if (ok === true) {
               badgeAcierto = `<span class="px-2 py-1 rounded-md text-xs font-black bg-[#00f59b]/20 text-[#00f59b] border border-[#00f59b]/50 flex items-center gap-1">✔ ACERTADO</span>`;
             } else if (ok === false) {
@@ -528,7 +574,7 @@
         // Verificación Acertado / Perdido para finalizados
         let badgeAcierto = '';
         if (esFin) {
-          const ok = verificarAciertoPronostico(p);
+          const ok = verificarPronostico(p);
           if (ok === true) {
             badgeAcierto = `<span class="px-2 py-1 rounded-md text-xs font-black bg-[#00f59b]/20 text-[#00f59b] border border-[#00f59b]/50 flex items-center gap-1">✔ ACERTADO</span>`;
           } else if (ok === false) {
