@@ -41,11 +41,20 @@ def enviar_telegram(mensaje):
         print(f"Error Telegram: {e}")
         return False
 
-def obtener_partidos(dias_atras=2, dias_adelanto=4):
+def normalizar_texto(texto):
+    """Normaliza cadenas eliminando sufijos comunes (FC, CF, UD, etc.) para emparejamiento flexible."""
+    if not texto:
+        return ""
+    t = texto.lower()
+    for drop in [" fc", " cf", " ud", " sad", " de fútbol", " de futbol", " rc", " cd", " ca", " real "]:
+        t = t.replace(drop, " ")
+    return " ".join(t.split())
+
+def obtener_partidos(dias_atras=3, dias_adelanto=4):
     """
     Consulta Football-Data.org con ventana amplia:
-    Abarca desde 2 días atrás (para retener finalizados recientes)
-    hasta 4 días por delante (para mostrar siempre los próximos encuentros de la jornada).
+    Abarca desde 3 días atrás (para retener y liquidar finalizados)
+    hasta 4 días por delante (próxima jornada).
     """
     hoy_utc = datetime.now(timezone.utc)
     date_from = (hoy_utc - timedelta(days=dias_atras)).strftime("%Y-%m-%d")
@@ -112,7 +121,7 @@ def calcular_factor_racha(partido_id, local, visitante):
     }
 
 def evaluar_mercados_prepartido(partido_id, local, visitante):
-    """CONFIGURACIÓN ORIGINAL DE ALTO IMPACTO (+EV anterior: +20% a +50%)."""
+    """CONFIGURACIÓN DE ALTO IMPACTO (+EV anterior: +20% a +50%)."""
     seed_str = f"{partido_id}_{local}_{visitante}"
     seed_val = int(hashlib.md5(seed_str.encode('utf-8')).hexdigest()[:8], 16)
     perfil = seed_val % 100
@@ -235,41 +244,52 @@ def verificar_acierto(mercado_texto, tipo_mercado, goles_local, goles_visitante)
         return goles_local > goles_visitante
     return False
 
-def cargar_alertas_previas():
-    """Lee datos.json si existe para NO perder las alertas emitidas anteriormente."""
+def cargar_datos_existentes():
+    """Lee datos.json si existe para conservar historial de alertas y metadatos de semana."""
     if os.path.exists("datos.json"):
         try:
             with open("datos.json", "r", encoding="utf-8") as f:
-                d = json.load(f)
-                return d.get("alertas", [])
+                return json.load(f)
         except Exception as e:
-            print(f"Aviso leyendo alertas previas: {e}")
-    return []
+            print(f"Aviso leyendo datos existentes: {e}")
+    return {}
 
-def guardar_datos_json(partidos_procesados, alertas_totales, hora_madrid_str):
-    datos = {
-        "ultima_actualizacion": hora_madrid_str,
-        "huso_horario": "Europe/Madrid",
-        "total_partidos_hoy": len(partidos_procesados),
-        "partidos": partidos_procesados,
-        "alertas": alertas_totales
-    }
-    with open("datos.json", "w", encoding="utf-8") as f:
-        json.dump(datos, f, ensure_ascii=False, indent=2)
-    print(f"📁 Archivo datos.json guardado con éxito. Total alertas en historial acumulado: {len(alertas_totales)}")
+def obtener_identificador_semana(fecha_madrid):
+    """Devuelve el año y el número de semana ISO (ej. '2026-W41') para el reinicio de los lunes."""
+    año, semana, dia_semana = fecha_madrid.isocalendar()
+    return f"{año}-W{semana:02d}"
 
 def ejecutar_ciclo():
     ahora_utc = datetime.now(timezone.utc)
     ahora_madrid = ahora_utc.astimezone(TZ_MADRID)
     hora_madrid_str = ahora_madrid.strftime('%H:%M Madrid')
     hoy_madrid_str = ahora_madrid.strftime('%Y-%m-%d')
-    print(f"[{hora_madrid_str}] Iniciando ciclo cuantitativo (+EV original amplio y ventana multidía)...")
+    semana_actual_id = obtener_identificador_semana(ahora_madrid)
+    dia_semana = ahora_madrid.weekday() # 0 = Lunes, 6 = Domingo
+    hora_int = ahora_madrid.hour
 
-    alertas_acumuladas = cargar_alertas_previas()
-    partidos_raw = obtener_partidos(dias_atras=2, dias_adelanto=4)
+    print(f"[{hora_madrid_str}] Iniciando ciclo Apex Quant (Semana {semana_actual_id}, Día {dia_semana})...")
+
+    datos_previos = cargar_datos_existentes()
+    alertas_acumuladas = datos_previos.get("alertas", [])
+    semana_guardada = datos_previos.get("semana_activa", semana_actual_id)
+    resumen_semanal_enviado = datos_previos.get("resumen_semanal_enviado_para", "")
+
+    # ==============================================================================
+    # REINICIO AUTOMÁTICO CADA LUNES
+    # ==============================================================================
+    # Si la semana actual es distinta de la guardada (es decir, ya es lunes de una nueva semana):
+    if semana_actual_id != semana_guardada:
+        print(f"🔄 ¡LUNES DETECTADO! Reiniciando contadores y estadísticas semanales ({semana_guardada} -> {semana_actual_id})...")
+        # Marcamos alertas de semanas pasadas con etiqueta historica_semana_anterior
+        for a in alertas_acumuladas:
+            a["es_semana_actual"] = False
+        semana_guardada = semana_actual_id
+
+    partidos_raw = obtener_partidos(dias_atras=3, dias_adelanto=4)
     partidos_para_web = []
-
-    partidos_estado_map = {}
+    partidos_map_por_id = {}
+    partidos_map_por_nombres = {}
 
     for p in partidos_raw:
         comp_code = p.get("competition", {}).get("code", "")
@@ -296,10 +316,10 @@ def ejecutar_ciclo():
         away_team_data = p.get("awayTeam", {})
         escudo_local = home_team_data.get("crest", "")
         escudo_visitante = away_team_data.get("crest", "")
+        nombre_local = home_team_data.get("name", "Local")
+        nombre_visitante = away_team_data.get("name", "Visitante")
+        partido_nombre = f"{nombre_local} vs {nombre_visitante}"
 
-        # ======================================================================
-        # EXTRACCIÓN BLINDADA DE MARCADOR EN VIVO Y FINALIZADO
-        # ======================================================================
         score_data = p.get("score", {})
         full_time = score_data.get("fullTime", {})
         regular_time = score_data.get("regularTime", {})
@@ -317,8 +337,6 @@ def ejecutar_ciclo():
             goles_visitante = half_time.get("away")
 
         estado_api = p.get("status", "SCHEDULED")
-        
-        # Si el partido está en juego (o en descanso) y la API aún no ha puesto goles, van 0 - 0
         minutos_desde_inicio = -minutos_restantes if minutos_restantes < 0 else 0
         es_partido_empezado = estado_api in ["IN_PLAY", "PAUSED", "HT", "LIVE"] or (minutos_restantes <= 0 and estado_api not in ["FINISHED", "FINALIZADO", "AWARDED", "CANCELLED", "POSTPONED"])
         
@@ -330,16 +348,25 @@ def ejecutar_ciclo():
         if goles_local is not None and goles_visitante is not None:
             marcador_str = f"{goles_local} - {goles_visitante}"
 
-        nombre_local = home_team_data.get("name", "Local")
-        nombre_visitante = away_team_data.get("name", "Visitante")
-        partido_nombre = f"{nombre_local} vs {nombre_visitante}"
-
-        partidos_estado_map[partido_nombre] = {
+        info_partido_actual = {
+            "id": p.get("id"),
+            "partido": partido_nombre,
+            "local": nombre_local,
+            "visitante": nombre_visitante,
             "estado": estado_api,
             "goles_local": goles_local,
             "goles_visitante": goles_visitante,
-            "marcador": marcador_str
+            "marcador": marcador_str,
+            "fecha": fecha_madrid_partido,
+            "hora": hora_madrid_partido,
+            "escudo_local": escudo_local,
+            "escudo_visitante": escudo_visitante
         }
+
+        partidos_map_por_id[str(p.get("id"))] = info_partido_actual
+        partidos_map_por_nombres[partido_nombre] = info_partido_actual
+        key_norm = f"{normalizar_texto(nombre_local)} vs {normalizar_texto(nombre_visitante)}"
+        partidos_map_por_nombres[key_norm] = info_partido_actual
 
         es_en_descanso = False
         es_empate_descanso = False
@@ -354,10 +381,10 @@ def ejecutar_ciclo():
         else:
             analisis = evaluar_mercados_prepartido(p.get("id", 0), nombre_local, nombre_visitante)
 
-        fue_enviado_telegram = False
-
         id_alerta_unica = f"{p.get('id')}_{analisis['tipo_mercado']}"
         ya_registrada = any(a.get("id_alerta") == id_alerta_unica or (a.get("partido") == partido_nombre and a.get("tipo_mercado") == analisis["tipo_mercado"]) for a in alertas_acumuladas)
+
+        fue_enviado_telegram = False
 
         # 1. DISPARO AL CANAL TELEGRAM: Alerta Descanso Empate (In-Play)
         if es_empate_descanso and analisis["ev"] > 0 and not ya_registrada:
@@ -377,8 +404,11 @@ def ejecutar_ciclo():
             )
             enviar_telegram(alerta_msg)
             alertas_acumuladas.append({
+                "id_partido": str(p.get("id")),
                 "id_alerta": id_alerta_unica,
                 "partido": partido_nombre,
+                "local": nombre_local,
+                "visitante": nombre_visitante,
                 "escudo_local": escudo_local,
                 "escudo_visitante": escudo_visitante,
                 "mercado": analisis["mercado"],
@@ -389,6 +419,13 @@ def ejecutar_ciclo():
                 "hora": hora_madrid_partido,
                 "fecha": fecha_madrid_partido,
                 "es_ht": True,
+                "semana_id": semana_actual_id,
+                "es_semana_actual": True,
+                "estado_partido": estado_api,
+                "marcador": marcador_str,
+                "marcador_final": None,
+                "finalizado": False,
+                "acertado": None,
                 "liquidada_telegram": False
             })
 
@@ -411,8 +448,11 @@ def ejecutar_ciclo():
             )
             enviar_telegram(alerta_msg)
             alertas_acumuladas.append({
+                "id_partido": str(p.get("id")),
                 "id_alerta": id_alerta_unica,
                 "partido": partido_nombre,
+                "local": nombre_local,
+                "visitante": nombre_visitante,
                 "escudo_local": escudo_local,
                 "escudo_visitante": escudo_visitante,
                 "mercado": analisis["mercado"],
@@ -423,6 +463,13 @@ def ejecutar_ciclo():
                 "hora": hora_madrid_partido,
                 "fecha": fecha_madrid_partido,
                 "es_ht": False,
+                "semana_id": semana_actual_id,
+                "es_semana_actual": True,
+                "estado_partido": estado_api,
+                "marcador": marcador_str,
+                "marcador_final": None,
+                "finalizado": False,
+                "acertado": None,
                 "liquidada_telegram": False
             })
 
@@ -458,47 +505,122 @@ def ejecutar_ciclo():
         }
         partidos_para_web.append(item)
 
-    # 3. LIQUIDACIÓN AUTOMÁTICA EN TELEGRAM DE ALERTAS FINALIZADAS
+    # ==============================================================================
+    # LIQUIDACIÓN Y ACTUALIZACIÓN EXHAUSTIVA DE TODAS LAS ALERTAS EN HISTORIAL
+    # ==============================================================================
+    # Para cada alerta en alertas_acumuladas, buscamos el partido correspondiente para
+    # enriquecer la tarjeta con su marcador final y estado (ACERTADO / PERDIDO).
     for alerta in alertas_acumuladas:
-        p_nombre = alerta.get("partido")
-        if not alerta.get("liquidada_telegram") and p_nombre in partidos_estado_map:
-            p_data = partidos_estado_map[p_nombre]
-            if p_data["estado"] in ["FINISHED", "FINALIZADO", "AWARDED"]:
-                g_loc = p_data["goles_local"]
-                g_vis = p_data["goles_visitante"]
-                marcador_fin = p_data["marcador"] or f"{g_loc} - {g_vis}"
-                acertado = verificar_acierto(alerta["mercado"], alerta["tipo_mercado"], g_loc, g_vis)
+        p_id = str(alerta.get("id_partido", ""))
+        p_nombre = alerta.get("partido", "")
+        p_norm = normalizar_texto(p_nombre)
+
+        partido_encontrado = None
+        if p_id and p_id in partidos_map_por_id:
+            partido_encontrado = partidos_map_por_id[p_id]
+        elif p_nombre in partidos_map_por_nombres:
+            partido_encontrado = partidos_map_por_nombres[p_nombre]
+        else:
+            # Buscar por coincidencia parcial de nombres
+            for k, info in partidos_map_por_nombres.items():
+                if normalizar_texto(k) == p_norm or (info["local"] in p_nombre and info["visitante"] in p_nombre):
+                    partido_encontrado = info
+                    break
+
+        if partido_encontrado:
+            alerta["estado_partido"] = partido_encontrado["estado"]
+            if partido_encontrado["marcador"]:
+                alerta["marcador"] = partido_encontrado["marcador"]
+
+            # Si el partido ya ha finalizado
+            if partido_encontrado["estado"] in ["FINISHED", "FINALIZADO", "AWARDED"]:
+                g_loc = partido_encontrado["goles_local"]
+                g_vis = partido_encontrado["goles_visitante"]
+                marcador_fin = partido_encontrado["marcador"] or (f"{g_loc} - {g_vis}" if g_loc is not None else None)
                 
-                if acertado:
-                    msg_settle = (
-                        f"✅ <b>LIQUIDACIÓN OFICIAL — PRONÓSTICO ACERTADO</b> 🎯\n\n"
-                        f"⚽ <b>Partido:</b> {p_nombre}\n"
-                        f"🏁 <b>Resultado Final:</b> <b>{marcador_fin}</b>\n"
-                        f"📌 <b>Mercado Ganado:</b> {alerta['mercado']}\n"
-                        f"💰 <b>Cuota Cobrada:</b> {alerta['cuota']}\n"
-                        f"💡 <b>Stake:</b> {alerta['stake']}\n\n"
-                        f"🎉 <i>¡Verificado y sumado a la Efectividad Oficial en la App!</i>\n"
-                        f"⚡ <i>Apex Quant Engine</i>"
-                    )
-                else:
-                    msg_settle = (
-                        f"❌ <b>LIQUIDACIÓN OFICIAL — PRONÓSTICO FINALIZADO</b>\n\n"
-                        f"⚽ <b>Partido:</b> {p_nombre}\n"
-                        f"🏁 <b>Resultado Final:</b> <b>{marcador_fin}</b>\n"
-                        f"📌 <b>Mercado:</b> {alerta['mercado']}\n"
-                        f"💡 <b>Stake:</b> {alerta['stake']} (Control estricto de banca)\n\n"
-                        f"⚡ <i>Apex Quant Engine • Disciplina a Largo Plazo</i>"
-                    )
-                enviar_telegram(msg_settle)
-                alerta["liquidada_telegram"] = True
-                alerta["resultado_final"] = marcador_fin
+                alerta["finalizado"] = True
+                alerta["marcador_final"] = marcador_fin
+                alerta["goles_local"] = g_loc
+                alerta["goles_visitante"] = g_vis
+
+                acertado = verificar_acierto(alerta["mercado"], alerta.get("tipo_mercado", ""), g_loc, g_vis)
                 alerta["acertado"] = acertado
-                print(f"📢 Alerta liquidada y comunicada en Telegram: {p_nombre} -> {'ACERTADO' if acertado else 'PERDIDO'}")
 
-    alertas_acumuladas = alertas_acumuladas[-50:]
+                # Notificar liquidación oficial en Telegram si no se envió todavía
+                if not alerta.get("liquidada_telegram"):
+                    if acertado:
+                        msg_settle = (
+                            f"✅ <b>LIQUIDACIÓN OFICIAL — PRONÓSTICO ACERTADO</b> 🎯\n\n"
+                            f"⚽ <b>Partido:</b> {p_nombre}\n"
+                            f"🏁 <b>Resultado Final:</b> <b>{marcador_fin or 'Final'}</b>\n"
+                            f"📌 <b>Mercado Ganado:</b> {alerta['mercado']}\n"
+                            f"💰 <b>Cuota Cobrada:</b> {alerta['cuota']}\n"
+                            f"💡 <b>Stake:</b> {alerta['stake']}\n\n"
+                            f"🎉 <i>¡Verificado y sumado a la Efectividad Oficial en la App!</i>\n"
+                            f"⚡ <i>Apex Quant Engine</i>"
+                        )
+                    else:
+                        msg_settle = (
+                            f"❌ <b>LIQUIDACIÓN OFICIAL — PRONÓSTICO FINALIZADO</b>\n\n"
+                            f"⚽ <b>Partido:</b> {p_nombre}\n"
+                            f"🏁 <b>Resultado Final:</b> <b>{marcador_fin or 'Final'}</b>\n"
+                            f"📌 <b>Mercado:</b> {alerta['mercado']}\n"
+                            f"💡 <b>Stake:</b> {alerta['stake']} (Control estricto de banca)\n\n"
+                            f"⚡ <i>Apex Quant Engine • Disciplina a Largo Plazo</i>"
+                        )
+                    enviar_telegram(msg_settle)
+                    alerta["liquidada_telegram"] = True
+                    print(f"📢 Alerta liquidada en Telegram: {p_nombre} -> {'ACERTADO' if acertado else 'PERDIDO'}")
 
-    guardar_datos_json(partidos_para_web, alertas_acumuladas, hora_madrid_str)
-    print(f"🏁 Ciclo finalizado. Total partidos: {len(partidos_para_web)} | Historial Alertas: {len(alertas_acumuladas)}")
+    # ==============================================================================
+    # RESUMEN SEMANAL DOMINICAL A TELEGRAM (CUANDO FINALIZAN TODOS LOS PARTIDOS DEL DOMINGO)
+    # ==============================================================================
+    # Condición: Domingo (dia_semana == 6) a partir de las 22:30 Madrid, o tarde en la noche,
+    # y comprobar que todos los partidos de la jornada del domingo estén en FINISHED.
+    if dia_semana == 6 and hora_int >= 22 and resumen_semanal_enviado != semana_actual_id:
+        partidos_domingo = [p for p in partidos_para_web if p["fecha"] == hoy_madrid_str]
+        partidos_pendientes_domingo = [p for p in partidos_domingo if p["estado"] not in ["FINISHED", "FINALIZADO", "AWARDED", "CANCELLED", "POSTPONED"]]
+        
+        # Si ya concluyeron todos los partidos del domingo (o son más de las 23:45)
+        if len(partidos_pendientes_domingo) == 0 or (hora_int == 23 and ahora_madrid.minute >= 45):
+            alertas_semana_actual = [a for a in alertas_acumuladas if a.get("semana_id") == semana_actual_id and a.get("finalizado")]
+            total_semana = len(alertas_semana_actual)
+            
+            if total_semana > 0:
+                aciertos_semana = sum(1 for a in alertas_semana_actual if a.get("acertado") is True)
+                fallos_semana = total_semana - aciertos_semana
+                pct_acierto = round((aciertos_semana / total_semana) * 100, 1)
+                pct_fallo = round(100.0 - pct_acierto, 1)
+
+                msg_resumen_domingo = (
+                    f"📊 <b>CIERRE SEMANAL OFICIAL — APEX QUANT ANALYTICS</b> 🏆\n\n"
+                    f"📅 <b>Semana:</b> {semana_actual_id} (Finalizada)\n"
+                    f"📈 <b>Total Pronósticos Oficiales:</b> <b>{total_semana}</b>\n\n"
+                    f"✅ <b>Alertas Acertadas:</b> <b>{aciertos_semana}</b> ({pct_acierto}%)\n"
+                    f"❌ <b>Alertas Falladas:</b> <b>{fallos_semana}</b> ({pct_fallo}%)\n"
+                    f"🎯 <b>Efectividad Oficial:</b> <b>{pct_acierto}%</b>\n\n"
+                    f"🔄 <i>Las estadísticas se reiniciarán automáticamente a las 00:00 del lunes para la nueva semana.</i>\n"
+                    f"⚡ <i>Apex Quant Engine • Máxima Transparencia y Disciplina</i>"
+                )
+                enviar_telegram(msg_resumen_domingo)
+                resumen_semanal_enviado = semana_actual_id
+                print(f"🏆 Resumen semanal oficial de domingo enviado a Telegram con éxito.")
+
+    # Guardar en datos.json
+    datos_completos = {
+        "ultima_actualizacion": hora_madrid_str,
+        "huso_horario": "Europe/Madrid",
+        "semana_activa": semana_guardada,
+        "resumen_semanal_enviado_para": resumen_semanal_enviado,
+        "total_partidos_hoy": len(partidos_para_web),
+        "partidos": partidos_para_web,
+        "alertas": alertas_acumuladas[-60:]
+    }
+
+    with open("datos.json", "w", encoding="utf-8") as f:
+        json.dump(datos_completos, f, ensure_ascii=False, indent=2)
+
+    print(f"📁 datos.json guardado. Partidos: {len(partidos_para_web)} | Alertas totales: {len(alertas_acumuladas)}")
 
 if __name__ == "__main__":
     ejecutar_ciclo()
