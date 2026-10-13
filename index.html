@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="es" class="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Apex Quant Analytics</title>
-  <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#0c1322">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
-  <script>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Apex Quant Analytics</title>
+<link href="./manifest.json" rel="manifest"/>
+<meta content="#0c1322" name="theme-color"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500;700;800&amp;display=swap" rel="stylesheet"/>
+<script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
@@ -34,151 +34,167 @@
       }
     }
   </script>
-  <style>
+<style>
     body { background-color: #070e1d; color: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
     .pulse-glow { animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     @keyframes pulseGlow { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.08); } }
   </style>
 </head>
 <body class="min-h-screen bg-[#070e1d] pb-24 text-slate-100 antialiased selection:bg-[#00f59b] selection:text-black">
-
-  <!-- Header Superior -->
-  <header class="sticky top-0 z-50 bg-[#0c1322]/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-3.5 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00f59b] to-[#0284c7] p-0.5 flex items-center justify-center shadow-lg shadow-[#00f59b]/10">
-        <div class="w-full h-full bg-[#070e1d] rounded-[10px] flex items-center justify-center">
-          <span class="font-extrabold text-sm text-[#00f59b] tracking-wider">AQ</span>
-        </div>
-      </div>
-      <div>
-        <div class="flex items-center gap-2">
-          <h1 class="text-base font-extrabold text-white tracking-tight">Apex Quant</h1>
-          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#00f59b]/10 text-[#00f59b] border border-[#00f59b]/30">
-            <span class="w-1.5 h-1.5 rounded-full bg-[#00f59b] pulse-glow"></span> 24/7 ONLINE
+<!-- Header Superior -->
+<header class="sticky top-0 z-50 bg-[#0c1322]/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-3.5 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00f59b] to-[#0284c7] p-0.5 flex items-center justify-center shadow-lg shadow-[#00f59b]/10">
+<div class="w-full h-full bg-[#070e1d] rounded-[10px] flex items-center justify-center">
+<span class="font-extrabold text-sm text-[#00f59b] tracking-wider">AQ</span>
+</div>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h1 class="text-base font-extrabold text-white tracking-tight">Apex Quant</h1>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#00f59b]/10 text-[#00f59b] border border-[#00f59b]/30">
+<span class="w-1.5 h-1.5 rounded-full bg-[#00f59b] pulse-glow"></span> 24/7 ONLINE
           </span>
-        </div>
-        <p class="text-[11px] text-slate-400 font-medium">Motor Predictivo Just-In-Time (+EV)</p>
-      </div>
-    </div>
-    <button id="btnRecargar" onclick="recargarDatos(true)" class="p-2.5 rounded-xl bg-[#141b2b] text-slate-300 hover:text-white border border-slate-800 active:scale-95 transition-all">
-      <svg id="iconSync" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-    </button>
-  </header>
-
-  <main class="max-w-2xl mx-auto px-4 pt-4 space-y-4">
-
-    <!-- Tarjeta Interactiva Canal Telegram Oficial -->
-    <a href="https://t.me/apex_quant_alertas" target="_blank" rel="noopener noreferrer" class="block group relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0284c7]/20 via-[#141b2b] to-[#00f59b]/10 border border-[#38bdf8]/30 p-3.5 hover:border-[#38bdf8] transition-all shadow-lg shadow-[#0284c7]/5">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-[#0284c7]/20 border border-[#38bdf8]/40 flex items-center justify-center text-[#38bdf8] group-hover:scale-110 transition-transform">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-          </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-sm font-bold text-white group-hover:text-[#38bdf8] transition-colors">Canal Telegram Oficial</span>
-              <span class="w-2 h-2 rounded-full bg-[#00f59b] pulse-glow"></span>
-            </div>
-            <p class="text-xs text-slate-400">Alertas automáticas en <span class="text-[#38bdf8] font-semibold">@apex_quant_alertas</span></p>
-          </div>
-        </div>
-        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0284c7]/20 border border-[#38bdf8]/40 text-[#38bdf8] text-xs font-bold group-hover:bg-[#0284c7] group-hover:text-white transition-all">
-          <span>ACTIVO</span>
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-        </div>
-      </div>
-    </a>
-
-    <!-- Métricas del Motor -->
-    <div class="grid grid-cols-3 gap-2.5">
-      <div class="bg-[#141b2b] border border-slate-800/80 rounded-xl p-3 text-center">
-        <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block mb-1">PARTIDOS</span>
-        <div id="statPartidos" class="text-xl font-extrabold text-white font-mono">--</div>
-        <span class="text-[10px] text-slate-500">Monitoreo</span>
-      </div>
-      <div class="bg-[#141b2b] border border-slate-800/80 rounded-xl p-3 text-center">
-        <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block mb-1">FILTRO EV</span>
-        <div class="text-xl font-extrabold text-[#00f59b] font-mono">+5.0%</div>
-        <span class="text-[10px] text-slate-500">Ventaja</span>
-      </div>
-      <div class="bg-[#141b2b] border border-slate-800/80 rounded-xl p-3 text-center">
-        <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block mb-1">GESTIÓN</span>
-        <div class="text-xl font-extrabold text-[#38bdf8] font-mono">1/4</div>
-        <span class="text-[10px] text-slate-500">Kelly</span>
-      </div>
-    </div>
-
-    <!-- Triple Efectividad Oficial -->
-    <div class="grid grid-cols-3 gap-2.5">
-      <div class="bg-[#141b2b] border border-[#00f59b]/30 rounded-xl p-2.5 text-center">
-        <span class="text-[10px] font-bold text-[#00f59b] uppercase block mb-0.5">● TELEGRAM</span>
-        <div id="statEfectividadTG" class="text-base font-extrabold text-[#00f59b] font-mono">--%</div>
-        <span id="statSubTG" class="text-[9px] text-slate-400 font-mono block">0V - 0D TG</span>
-      </div>
-      <div class="bg-[#141b2b] border border-slate-800 rounded-xl p-2.5 text-center">
-        <span class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">SIN ALERTA</span>
-        <div id="statEfectividadNoTG" class="text-base font-extrabold text-slate-300 font-mono">--%</div>
-        <span id="statSubNoTG" class="text-[9px] text-slate-500 font-mono block">0V - 0D No TG</span>
-      </div>
-      <div class="bg-[#141b2b] border border-slate-800 rounded-xl p-2.5 text-center">
-        <span class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">GLOBAL TOTAL</span>
-        <div id="statEfectividadGlobal" class="text-base font-extrabold text-slate-300 font-mono">--%</div>
-        <span id="statSubGlobal" class="text-[9px] text-slate-500 font-mono block">0V - 0D Total</span>
-      </div>
-    </div>
-
-    <!-- Pestañas Principales -->
-    <div class="flex items-center gap-2 p-1 bg-[#0c1322] border border-slate-800/80 rounded-xl">
-      <button onclick="cambiarPestana('activos')" id="tabActivos" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-[#00f59b] text-black shadow-md">
-        En Juego / Hoy <span id="badgeActivos" class="opacity-80 font-mono text-[11px]">(0)</span>
-      </button>
-      <button onclick="cambiarPestana('finalizados')" id="tabFinalizados" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white">
-        Finalizados <span id="badgeFinalizados" class="opacity-80 font-mono text-[11px]">(0)</span>
-      </button>
-      <button onclick="cambiarPestana('alertas')" id="tabAlertas" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white">
-        Alertas <span id="badgeAlertas" class="opacity-80 font-mono text-[11px]">(0)</span>
-      </button>
-    </div>
-
-    <!-- Filtros de Competición (Solo visible en Activos y Finalizados) -->
-    <div id="seccionFiltrosLigas" class="space-y-2">
-      <div class="flex items-center justify-between text-[11px] px-1 text-slate-400">
-        <span class="font-bold uppercase tracking-wider text-slate-400">COMPETICIONES</span>
-        <span id="syncHora" class="font-mono text-slate-500">Sincronizando...</span>
-      </div>
-      <div class="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
-        <button onclick="filtrarLiga('all')" id="flt-all" class="px-3.5 py-1.5 rounded-lg font-bold bg-[#00f59b] text-black border border-[#00f59b] whitespace-nowrap">Todas</button>
-        <button onclick="filtrarLiga('laliga')" id="flt-laliga" class="px-3.5 py-1.5 rounded-lg font-bold bg-[#141b2b] text-slate-300 border border-slate-800 hover:border-slate-700 whitespace-nowrap">LaLiga (ESP)</button>
-        <button onclick="filtrarLiga('laliga2')" id="flt-laliga2" class="px-3.5 py-1.5 rounded-lg font-bold bg-[#141b2b] text-slate-300 border border-slate-800 hover:border-slate-700 whitespace-nowrap">LaLiga 2 (ESP)</button>
-        <button onclick="filtrarLiga('premier')" id="flt-premier" class="px-3.5 py-1.5 rounded-lg font-bold bg-[#141b2b] text-slate-300 border border-slate-800 hover:border-slate-700 whitespace-nowrap">Premier (ENG)</button>
-        <button onclick="filtrarLiga('bundesliga')" id="flt-bundesliga" class="px-3.5 py-1.5 rounded-lg font-bold bg-[#141b2b] text-slate-300 border border-slate-800 hover:border-slate-700 whitespace-nowrap">Bundesliga (GER)</button>
-        <button onclick="filtrarLiga('seriea')" id="flt-seriea" class="px-3.5 py-1.5 rounded-lg font-bold bg-[#141b2b] text-slate-300 border border-slate-800 hover:border-slate-700 whitespace-nowrap">Serie A (ITA)</button>
-        <button onclick="filtrarLiga('ligue1')" id="flt-ligue1" class="px-3.5 py-1.5 rounded-lg font-bold bg-[#141b2b] text-slate-300 border border-slate-800 hover:border-slate-700 whitespace-nowrap">Ligue 1 (FRA)</button>
-        <button onclick="filtrarLiga('champions')" id="flt-champions" class="px-3.5 py-1.5 rounded-lg font-bold bg-[#141b2b] text-slate-300 border border-slate-800 hover:border-slate-700 whitespace-nowrap">Champions (UEFA)</button>
-      </div>
-    </div>
-
-    <!-- Contenedor de Lista de Partidos / Alertas -->
-    <div class="space-y-3">
-      <div class="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider px-1">
-        <span id="tituloSeccion">ENCUENTROS PROGRAMADOS Y EN VIVO</span>
-        <span class="flex items-center gap-1.5 text-[11px] text-[#00f59b] font-mono lowercase">
-          <span class="w-1.5 h-1.5 rounded-full bg-[#00f59b]"></span> Hora Peninsular (Madrid)
+</div>
+<p class="text-[11px] text-slate-400 font-medium">Motor Predictivo Just-In-Time (+EV)</p>
+</div>
+</div>
+<button class="p-2.5 rounded-xl bg-[#141b2b] text-slate-300 hover:text-white border border-slate-800 active:scale-95 transition-all" id="btnRecargar" onclick="recargarDatos(true)">
+<svg class="w-5 h-5" fill="none" id="iconSync" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</header>
+<main class="max-w-2xl mx-auto px-4 pt-4 space-y-4">
+<!-- Tarjeta Interactiva Canal Telegram Oficial -->
+<a class="block group relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0284c7]/20 via-[#141b2b] to-[#00f59b]/10 border border-[#38bdf8]/30 p-3.5 hover:border-[#38bdf8] transition-all shadow-lg shadow-[#0284c7]/5" href="https://t.me/apex_quant_alertas" rel="noopener noreferrer" target="_blank">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-[#0284c7]/20 border border-[#38bdf8]/40 flex items-center justify-center text-[#38bdf8] group-hover:scale-110 transition-transform">
+<svg class="w-5 h-5" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"></path></svg>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="text-sm font-bold text-white group-hover:text-[#38bdf8] transition-colors">Canal Telegram Oficial</span>
+<span class="w-2 h-2 rounded-full bg-[#00f59b] pulse-glow"></span>
+</div>
+<p class="text-xs text-slate-400">Alertas automáticas en <span class="text-[#38bdf8] font-semibold">@apex_quant_alertas</span></p>
+</div>
+</div>
+<div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0284c7]/20 border border-[#38bdf8]/40 text-[#38bdf8] text-xs font-bold group-hover:bg-[#0284c7] group-hover:text-white transition-all">
+<span>ACTIVO</span>
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
+</div>
+</div>
+</a>
+<!-- Métricas del Motor -->
+<div class="grid grid-cols-3 gap-2.5">
+<div class="bg-[#141b2b] border border-slate-800/80 rounded-xl p-3 text-center">
+<span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block mb-1">PARTIDOS</span>
+<div class="text-xl font-extrabold text-white font-mono" id="statPartidos">--</div>
+<span class="text-[10px] text-slate-500">Monitoreo</span>
+</div>
+<div class="bg-[#141b2b] border border-slate-800/80 rounded-xl p-3 text-center">
+<span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block mb-1">FILTRO EV</span>
+<div class="text-xl font-extrabold text-[#00f59b] font-mono">+5.0%</div>
+<span class="text-[10px] text-slate-500">Ventaja</span>
+</div>
+<div class="bg-[#141b2b] border border-slate-800/80 rounded-xl p-3 text-center">
+<span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block mb-1">GESTIÓN</span>
+<div class="text-xl font-extrabold text-[#38bdf8] font-mono">1/4</div>
+<span class="text-[10px] text-slate-500">Kelly</span>
+</div>
+</div>
+<!-- Indicador de Ventana Semanal -->
+<div class="flex items-center justify-between px-2 pt-0.5 text-[11px] text-slate-400">
+<span class="flex items-center gap-1.5 font-semibold text-slate-300">
+<span class="w-1.5 h-1.5 rounded-full bg-[#38bdf8]"></span> Semana actual
+      </span>
+<span class="text-[10px] text-slate-500 font-mono">Reinicio oficial cada lunes 00:00h</span>
+</div>
+<!-- Triple Efectividad Oficial -->
+<div class="grid grid-cols-3 gap-2.5">
+<div class="bg-[#141b2b] border border-[#00f59b]/30 rounded-xl p-2.5 text-center">
+<span class="text-[10px] font-bold text-[#00f59b] uppercase block mb-0.5">● TELEGRAM</span>
+<div class="text-base font-extrabold text-[#00f59b] font-mono" id="statEfectividadTG">--%</div>
+<span class="text-[9px] text-slate-400 font-mono block" id="statSubTG">0V - 0D TG</span>
+</div>
+<div class="bg-[#141b2b] border border-slate-800 rounded-xl p-2.5 text-center">
+<span class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">SIN ALERTA</span>
+<div class="text-base font-extrabold text-slate-300 font-mono" id="statEfectividadNoTG">--%</div>
+<span class="text-[9px] text-slate-500 font-mono block" id="statSubNoTG">0V - 0D No TG</span>
+</div>
+<div class="bg-[#141b2b] border border-slate-800 rounded-xl p-2.5 text-center">
+<span class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">GLOBAL TOTAL</span>
+<div class="text-base font-extrabold text-slate-300 font-mono" id="statEfectividadGlobal">--%</div>
+<span class="text-[9px] text-slate-500 font-mono block" id="statSubGlobal">0V - 0D Total</span>
+</div>
+</div>
+<!-- Pestañas Principales -->
+<div class="flex items-center gap-2 p-1 bg-[#0c1322] border border-slate-800/80 rounded-xl">
+<button class="flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-[#00f59b] text-black shadow-md" id="tabActivos" onclick="cambiarPestana('activos')">
+        En Juego / Hoy <span class="opacity-80 font-mono text-[11px]" id="badgeActivos">(0)</span>
+</button>
+<button class="flex-1 py-2 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white" id="tabFinalizados" onclick="cambiarPestana('finalizados')">
+        Finalizados <span class="opacity-80 font-mono text-[11px]" id="badgeFinalizados">(0)</span>
+</button>
+<button class="flex-1 py-2 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white" id="tabAlertas" onclick="cambiarPestana('alertas')">
+        Alertas <span class="opacity-80 font-mono text-[11px]" id="badgeAlertas">(0)</span>
+</button>
+</div>
+<!-- Filtros de Competición (Solo visible en Activos y Finalizados) -->
+<div class="space-y-2" id="seccionFiltrosLigas">
+<div class="flex items-center justify-between text-[11px] px-1 text-slate-400">
+<span class="font-bold uppercase tracking-wider text-slate-400">COMPETICIONES</span>
+<span class="font-mono text-slate-500" id="syncHora">Sincronizando...</span>
+</div>
+<div class="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
+<button class="px-3.5 py-1.5 rounded-lg font-bold bg-[#00f59b] text-black border border-[#00f59b] whitespace-nowrap" id="flt-all" onclick="filtrarLiga('all')">Todas</button>
+<button class="px-3.5 py-1.5 rounded-lg font-bold bg-[#141b2b] text-slate-300 border border-slate-800 hover:border-slate-700 whitespace-nowrap" id="flt-laliga" onclick="filtrarLiga('laliga')">LaLiga (ESP)</button>
+<button class="px-3.5 py-1.5 rounded-lg font-bold bg-[#141b2b] text-slate-300 border border-slate-800 hover:border-slate-700 whitespace-nowrap" id="flt-laliga2" onclick="filtrarLiga('laliga2')">LaLiga 2 (ESP)</button>
+<button class="px-3.5 py-1.5 rounded-lg font-bold bg-[#141b2b] text-slate-300 border border-slate-800 hover:border-slate-700 whitespace-nowrap" id="flt-premier" onclick="filtrarLiga('premier')">Premier (ENG)</button>
+<button class="px-3.5 py-1.5 rounded-lg font-bold bg-[#141b2b] text-slate-300 border border-slate-800 hover:border-slate-700 whitespace-nowrap" id="flt-bundesliga" onclick="filtrarLiga('bundesliga')">Bundesliga (GER)</button>
+<button class="px-3.5 py-1.5 rounded-lg font-bold bg-[#141b2b] text-slate-300 border border-slate-800 hover:border-slate-700 whitespace-nowrap" id="flt-seriea" onclick="filtrarLiga('seriea')">Serie A (ITA)</button>
+<button class="px-3.5 py-1.5 rounded-lg font-bold bg-[#141b2b] text-slate-300 border border-slate-800 hover:border-slate-700 whitespace-nowrap" id="flt-ligue1" onclick="filtrarLiga('ligue1')">Ligue 1 (FRA)</button>
+<button class="px-3.5 py-1.5 rounded-lg font-bold bg-[#141b2b] text-slate-300 border border-slate-800 hover:border-slate-700 whitespace-nowrap" id="flt-champions" onclick="filtrarLiga('champions')">Champions (UEFA)</button>
+</div>
+</div>
+<!-- Contenedor de Lista de Partidos / Alertas -->
+<div class="space-y-3">
+<div class="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider px-1">
+<span id="tituloSeccion">ENCUENTROS PROGRAMADOS Y EN VIVO</span>
+<span class="flex items-center gap-1.5 text-[11px] text-[#00f59b] font-mono lowercase">
+<span class="w-1.5 h-1.5 rounded-full bg-[#00f59b]"></span> Hora Peninsular (Madrid)
         </span>
-      </div>
-
-      <div id="listaContenido" class="space-y-3">
-        <!-- Tarjetas dinámicas inyectadas por JS -->
-      </div>
-    </div>
-
-  </main>
-
-  <script>
+</div>
+<div class="space-y-3" id="listaContenido">
+<!-- Tarjetas dinámicas inyectadas por JS -->
+</div>
+</div>
+</main>
+<script>
     let PARTIDOS_GLOBAL = [];
     let ALERTAS_GLOBAL = [];
     let PESTANA_ACTUAL = 'activos';
     let FILTRO_LIGA = 'all';
+
+    // Obtener marca de inicio de semana (Lunes 00:00:00 hora local)
+    function obtenerInicioSemanaActual() {
+      const ahora = new Date();
+      const diaSemana = ahora.getDay(); // 0 domingo, 1 lunes...
+      const distanciaLunes = (diaSemana + 6) % 7;
+      const inicio = new Date(ahora);
+      inicio.setDate(ahora.getDate() - distanciaLunes);
+      inicio.setHours(0, 0, 0, 0);
+      return inicio.getTime();
+    }
+
+    function perteneceASemanaActual(item) {
+      if (item.es_semana_actual !== undefined) return Boolean(item.es_semana_actual);
+      const ts = item.timestamp_ms || (item.fecha ? new Date(item.fecha).getTime() : null);
+      if (ts) {
+        return ts >= obtenerInicioSemanaActual();
+      }
+      return true; // Por defecto computa como semana corriente si no se indica fecha antigua
+    }
 
     async function recargarDatos(manual = false) {
       const icon = document.getElementById('iconSync');
@@ -260,27 +276,45 @@
     function verificarAciertoPronostico(p) {
       const gLoc = p.goles_local;
       const gVis = p.goles_visitante;
-      if (gLoc === null || gVis === null || gLoc === undefined || gVis === undefined) return null;
-      const gTot = gLoc + gVis;
-      const m = p.mercado || '';
-      const tm = p.tipo_mercado || '';
+      if (gLoc === null || gVis === null || gLoc === undefined || gVis === undefined) {
+        if (p.marcador && p.marcador.includes('-')) {
+          const partes = p.marcador.split('-').map(s => parseInt(s.trim()));
+          if (!isNaN(partes[0]) && !isNaN(partes[1])) {
+            return verificarResultadoPorGoles(partes[0], partes[1], p.mercado, p.tipo_mercado);
+          }
+        }
+        return null;
+      }
+      return verificarResultadoPorGoles(gLoc, gVis, p.mercado, p.tipo_mercado);
+    }
 
-      if (m.includes('1.5')) return gTot > 1;
-      if (m.includes('2.5') || tm === 'GOLES') return gTot > 2;
-      if (m.includes('Victoria') || tm.includes('1X2')) return gLoc > gVis;
+    function verificarResultadoPorGoles(gLoc, gVis, m, tm) {
+      const gTot = gLoc + gVis;
+      const mercadoStr = (m || '').toLowerCase();
+      const tipoStr = (tm || '').toLowerCase();
+
+      if (mercadoStr.includes('1.5')) return gTot > 1;
+      if (mercadoStr.includes('2.5') || tipoStr === 'goles') return gTot > 2;
+      if (mercadoStr.includes('victoria') || mercadoStr.includes('gana') || tipoStr.includes('1x2')) {
+        if (mercadoStr.includes('visitante') || mercadoStr.includes('2')) return gVis > gLoc;
+        return gLoc > gVis;
+      }
+      if (mercadoStr.includes('ambos') || mercadoStr.includes('btts')) return (gLoc > 0 && gVis > 0);
       return false;
     }
 
     function actualizarMetricas() {
-      const finalizados = PARTIDOS_GLOBAL.filter(esPartidoFinalizado);
+      // Filtrar por semana actual con reinicio cada lunes
+      const partidosSemana = PARTIDOS_GLOBAL.filter(p => perteneceASemanaActual(p));
+      const finalizados = partidosSemana.filter(esPartidoFinalizado);
       const activos = PARTIDOS_GLOBAL.filter(p => !esPartidoFinalizado(p));
 
       document.getElementById('statPartidos').innerText = PARTIDOS_GLOBAL.length;
       document.getElementById('badgeActivos').innerText = `(${activos.length})`;
-      document.getElementById('badgeFinalizados').innerText = `(${finalizados.length})`;
+      document.getElementById('badgeFinalizados').innerText = `(${PARTIDOS_GLOBAL.filter(esPartidoFinalizado).length})`;
       document.getElementById('badgeAlertas').innerText = `(${ALERTAS_GLOBAL.length})`;
 
-      // Cálculos de Efectividad
+      // Cálculos de Efectividad Semana Actual
       let tgV = 0, tgD = 0;
       let noTgV = 0, noTgD = 0;
       let globV = 0, globD = 0;
@@ -331,20 +365,108 @@
         }
 
         ALERTAS_GLOBAL.slice().reverse().forEach(a => {
+          // Asociar con el partido completo si existe
+          const matchRef = PARTIDOS_GLOBAL.find(p => 
+            p.id === a.partido_id || 
+            (p.local && p.visitante && a.partido && a.partido.includes(p.local) && a.partido.includes(p.visitante))
+          ) || {};
+
+          const fusion = { ...matchRef, ...a };
+          const esFin = esPartidoFinalizado(fusion);
+          const mins = calcularMinutosRestantes(fusion);
+          const minsDesdeInicio = -mins;
+          const esEnJuego = !esFin && (fusion.estado === 'IN_PLAY' || fusion.estado === 'PAUSED' || fusion.estado === 'HT' || (mins <= 0 && mins !== 999));
+
+          // Marcador badge
+          let badgeMarcador = '';
+          if (fusion.marcador) {
+            badgeMarcador = `<span class="px-2.5 py-1 rounded-md text-xs font-black bg-[#070e1d] text-[#00f59b] border border-[#00f59b]/50 font-mono tracking-wider shadow-inner">${fusion.marcador}</span>`;
+          } else if (esEnJuego) {
+            badgeMarcador = `<span class="px-2.5 py-1 rounded-md text-xs font-black bg-[#070e1d] text-[#00f59b] border border-[#00f59b]/50 font-mono tracking-wider shadow-inner">0 - 0</span>`;
+          }
+
+          // Badges de estado / resultado
+          let badgeEstadoAlerta = '';
+          let badgeAcierto = '';
+
+          if (esFin) {
+            const ok = verificarAciertoPronostico(fusion);
+            if (ok === true) {
+              badgeAcierto = `<span class="px-2 py-1 rounded-md text-xs font-black bg-[#00f59b]/20 text-[#00f59b] border border-[#00f59b]/50 flex items-center gap-1">✔ ACERTADO</span>`;
+            } else if (ok === false) {
+              badgeAcierto = `<span class="px-2 py-1 rounded-md text-xs font-black bg-[#f43f5e]/20 text-[#f43f5e] border border-[#f43f5e]/50 flex items-center gap-1">✖ PERDIDO</span>`;
+            }
+            badgeEstadoAlerta = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">FINALIZADO</span>`;
+          } else if (fusion.estado === 'PAUSED' || fusion.estado === 'HT') {
+            badgeEstadoAlerta = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#f43f5e]/20 text-[#f43f5e] border border-[#f43f5e]/40 pulse-glow">● En Juego HT</span>`;
+          } else if (esEnJuego) {
+            const mText = minsDesdeInicio <= 45 ? `${minsDesdeInicio}'` : (minsDesdeInicio <= 60 ? 'HT' : `${minsDesdeInicio - 15}'`);
+            badgeEstadoAlerta = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#f43f5e]/20 text-[#f43f5e] border border-[#f43f5e]/40 pulse-glow">● EN JUEGO (${mText})</span>`;
+          } else {
+            badgeEstadoAlerta = `<span class="px-2 py-0.5 rounded text-[10px] font-black bg-[#0284c7]/20 text-[#38bdf8] border border-[#38bdf8]/40">Alerta Real</span>`;
+          }
+
+          // Equipos separados con escudos si están disponibles
+          let nombreLocal = fusion.local;
+          let nombreVisitante = fusion.visitante;
+          if (!nombreLocal && a.partido && a.partido.includes(' vs ')) {
+            const partes = a.partido.split(' vs ');
+            nombreLocal = partes[0];
+            nombreVisitante = partes[1];
+          }
+
           const card = document.createElement('div');
-          card.className = 'rounded-2xl bg-[#141b2b] border border-slate-800 p-4 space-y-3';
+          card.className = 'rounded-2xl bg-[#141b2b] border border-slate-800/90 p-4 space-y-3 hover:border-slate-700 transition-all shadow-md';
           card.innerHTML = `
             <div class="flex items-center justify-between text-xs">
-              <span class="text-[#38bdf8] font-bold">Enviado a Telegram • ${a.hora || ''}</span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-black bg-[#0284c7]/20 text-[#38bdf8] border border-[#38bdf8]/40">Alerta Real</span>
+              <div class="flex items-center gap-2">
+                <span class="text-[#38bdf8] font-bold">Enviado a Telegram • ${a.hora || fusion.hora || ''}</span>
+                ${fusion.liga ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#070e1d] text-slate-300 border border-slate-800">${fusion.liga}</span>` : ''}
+              </div>
+              <div class="flex items-center gap-2">
+                ${badgeMarcador}
+                ${badgeEstadoAlerta}
+                ${badgeAcierto}
+              </div>
             </div>
-            <div class="text-sm font-bold text-white flex items-center justify-between">
-              <span>${a.partido} — <span class="text-[#00f59b]">${a.mercado}</span></span>
+
+            <!-- Nombres de equipos completos sin truncar y escudos -->
+            <div class="flex items-center justify-between gap-3 pt-1">
+              <div class="flex items-center gap-2 flex-1 min-w-0">
+                <div class="flex items-center gap-2 font-bold text-sm text-white flex-wrap">
+                  <span class="flex items-center gap-1.5 whitespace-normal">
+                    ${fusion.escudo_local ? `<img src="${fusion.escudo_local}" class="w-4 h-4 object-contain inline shrink-0" onerror="this.remove()">` : ''}${nombreLocal || a.partido}
+                  </span>
+                  ${nombreVisitante ? `
+                  <span class="text-slate-500 text-xs font-normal">VS</span>
+                  <span class="flex items-center gap-1.5 whitespace-normal">
+                    ${fusion.escudo_visitante ? `<img src="${fusion.escudo_visitante}" class="w-4 h-4 object-contain inline shrink-0" onerror="this.remove()">` : ''}${nombreVisitante}
+                  </span>` : ''}
+                </div>
+              </div>
+              <div class="text-right shrink-0">
+                <span class="text-[10px] font-bold uppercase text-slate-400 block tracking-wider">CUOTA</span>
+                <span class="text-base font-extrabold text-[#00f59b] font-mono">@${a.cuota || fusion.cuota || '2.00'}</span>
+              </div>
             </div>
+
+            <!-- Caja de Mercado Pronosticado -->
+            <div class="p-2.5 rounded-xl bg-[#070e1d] border border-slate-800 flex items-center justify-between">
+              <div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">PRONÓSTICO OFICIAL:</span>
+                <span class="text-xs font-bold text-white flex items-center gap-1">
+                  <span class="text-[#f43f5e]">🎯</span> ${a.mercado || fusion.mercado}
+                </span>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[11px] font-extrabold bg-[#fbbf24]/10 text-[#fbbf24] border border-[#fbbf24]/30 font-mono">
+                ${a.ev || fusion.ev || '+20.0%'}
+              </span>
+            </div>
+
             <div class="flex items-center justify-between text-xs text-slate-400 pt-1 border-t border-slate-800/60 font-mono">
-              <span>Cuota: <strong class="text-white">${a.cuota}</strong></span>
-              <span>Ventaja: <strong class="text-[#00f59b]">${a.ev}</strong></span>
-              <span>Stake: <strong class="text-[#38bdf8]">${a.stake}</strong></span>
+              <span>Cuota: <strong class="text-white">${a.cuota || fusion.cuota || '2.00'}</strong></span>
+              <span>Ventaja: <strong class="text-[#00f59b]">${a.ev || fusion.ev || '+20.0%'}</strong></span>
+              <span>Stake: <strong class="text-[#38bdf8]">${a.stake || fusion.stake || '2/10'}</strong></span>
             </div>`;
           contenedor.appendChild(card);
         });
@@ -394,13 +516,12 @@
         }
 
         // ======================================================================
-        // FALLBACK ROBUSTO DE MARCADOR EN VIVO Y FINALIZADO
+        // MARCADOR EN VIVO Y FINALIZADO
         // ======================================================================
         let badgeMarcador = '';
         if (p.marcador) {
           badgeMarcador = `<span class="px-2.5 py-1 rounded-md text-xs font-black bg-[#070e1d] text-[#00f59b] border border-[#00f59b]/50 font-mono tracking-wider shadow-inner">${p.marcador}</span>`;
         } else if (esEnJuego) {
-          // Si el partido está en juego y la API no ha actualizado goles, van 0 - 0
           badgeMarcador = `<span class="px-2.5 py-1 rounded-md text-xs font-black bg-[#070e1d] text-[#00f59b] border border-[#00f59b]/50 font-mono tracking-wider shadow-inner">0 - 0</span>`;
         }
 
@@ -451,9 +572,9 @@
           <div class="flex items-center justify-between gap-3">
             <div class="flex items-center gap-2 flex-1 min-w-0">
               <div class="flex items-center gap-2 font-bold text-sm text-white flex-wrap">
-                <span class="flex items-center gap-1.5">${p.escudo_local ? `<img src="${p.escudo_local}" class="w-4 h-4 object-contain inline" onerror="this.remove()">` : ''}${p.local}</span>
+                <span class="flex items-center gap-1.5 whitespace-normal">${p.escudo_local ? `<img src="${p.escudo_local}" class="w-4 h-4 object-contain inline shrink-0" onerror="this.remove()">` : ''}${p.local}</span>
                 <span class="text-slate-500 text-xs font-normal">VS</span>
-                <span class="flex items-center gap-1.5">${p.escudo_visitante ? `<img src="${p.escudo_visitante}" class="w-4 h-4 object-contain inline" onerror="this.remove()">` : ''}${p.visitante}</span>
+                <span class="flex items-center gap-1.5 whitespace-normal">${p.escudo_visitante ? `<img src="${p.escudo_visitante}" class="w-4 h-4 object-contain inline shrink-0" onerror="this.remove()">` : ''}${p.visitante}</span>
               </div>
             </div>
             <div class="text-right shrink-0">
@@ -521,7 +642,7 @@
 
       // Reloj de refresco dinámico cada 15s para minutos in-play y cuentas atrás
       setInterval(() => {
-        if (PARTIDOS_GLOBAL.length > 0 && PESTANA_ACTUAL !== 'alertas') {
+        if (PARTIDOS_GLOBAL.length > 0) {
           renderizarVista();
         }
       }, 15000);
@@ -539,5 +660,4 @@
       });
     }
   </script>
-</body>
-</html>
+</body></html>
