@@ -121,7 +121,7 @@
       </div>
     </div>
 
-    <!-- TARJETA RENDIMIENTO SEMANAL (EXCLUSIVO TELEGRAM) -->
+    <!-- TARJETA RENDIMIENTO SEMANAL (EXCLUSIVO TELEGRAM CON CÁLCULO INMEDIATO) -->
     <div class="p-4 rounded-2xl bg-brand-card border border-brand-border relative overflow-hidden shadow-lg">
       <div class="flex items-start justify-between">
         <div class="flex items-center gap-2.5">
@@ -164,7 +164,7 @@
         </div>
       </div>
 
-      <!-- MINI GRÁFICO CURVA DE CRECIMIENTO -->
+      <!-- MINI GRÁFICO CURVA DE CRECIMIENTO DINÁMICA -->
       <div class="mt-3 pt-2 border-t border-slate-800/80">
         <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1.5">
           <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-brand-primary"></span>Curva de Crecimiento Bankroll (Alertas TG)</span>
@@ -172,7 +172,7 @@
         </div>
         <div class="h-10 w-full bg-slate-900/80 rounded-xl p-1 relative flex items-end">
           <svg class="w-full h-full overflow-visible" viewBox="0 0 100 30" preserveAspectRatio="none">
-            <path id="equityCurvePath" d="M 0 25 L 20 22 L 40 18 L 60 20 L 80 14 L 100 12" fill="none" stroke="#00f59b" stroke-width="2" stroke-linecap="round"/>
+            <path id="equityCurvePath" d="M 0 25 L 100 25" fill="none" stroke="#00f59b" stroke-width="2" stroke-linecap="round"/>
           </svg>
         </div>
       </div>
@@ -255,7 +255,6 @@
 
     <!-- CONTENEDOR DE TARJETAS -->
     <div id="matchesContainer" class="space-y-3">
-      <!-- Skeleton loader inicial -->
       <div class="p-6 rounded-2xl bg-brand-card/50 border border-brand-border/60 text-center text-slate-400">
         <div class="w-6 h-6 border-2 border-brand-primary border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
         <p class="text-xs font-medium">Sincronizando pronósticos y partidos reales...</p>
@@ -274,7 +273,6 @@
       ultimaActualizacion: ''
     };
 
-    // FORMATEADOR VISUAL DE RACHAS (W Verde, D Ámbar, L Rojo)
     function formatearRachaVisual(rachaStr, formInfo) {
       if (!rachaStr && !formInfo) return '';
       let rachaLocal = '';
@@ -327,27 +325,19 @@
       `;
     }
 
-    // FORMATEADOR DE BADGE DE MERCADO DINÁMICO (SOPORTA: 1X2, OVER 2.5, OVER 1.5, AMBOS MARCAN)
     function obtenerBadgeMercado(partido) {
       const mercadoTexto = (partido.mercado || '').toLowerCase();
       const tipoMercado = (partido.tipo_mercado || '').toUpperCase();
 
-      // 1. AMBOS EQUIPOS MARCAN (BTTS) — [NUEVO]
       if (tipoMercado === 'BTTS' || mercadoTexto.includes('ambos') || mercadoTexto.includes('btts')) {
         return `<span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-950/80 text-amber-400 border border-amber-500/30 tracking-wider uppercase">AMBOS MARCAN</span>`;
       }
-
-      // 2. MÁS DE 1.5 GOLES (OVER 1.5) — [NUEVO]
       if (tipoMercado === 'OVER_15' || (mercadoTexto.includes('1.5') && mercadoTexto.includes('gol'))) {
         return `<span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-teal-950/80 text-teal-400 border border-teal-500/30 tracking-wider uppercase">+1.5 GOLES TOTALES</span>`;
       }
-
-      // 3. MÁS DE 2.5 GOLES (OVER 2.5)
       if (tipoMercado === 'GOLES' || tipoMercado === 'GOLES_HT' || mercadoTexto.includes('2.5') || (mercadoTexto.includes('gol') && !mercadoTexto.includes('1.5'))) {
         return `<span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-950/80 text-emerald-400 border border-emerald-500/30 tracking-wider uppercase">GOLES TOTALES</span>`;
       }
-
-      // 4. 1X2 GANADOR
       return `<span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-indigo-950/80 text-indigo-300 border border-indigo-500/30 tracking-wider uppercase">1X2 GANADOR</span>`;
     }
 
@@ -375,6 +365,84 @@
       }
     }
 
+    // =========================================================================
+    // CÁLCULO INMEDIATO DE UNIDADES, ROI Y CURVA DE CRECIMIENTO
+    // =========================================================================
+    function calcularRendimientoAlertasTelegram() {
+      let unidadesApostadas = 0.0;
+      let beneficioNeto = 0.0;
+      let finalizadas = 0;
+      let acertadas = 0;
+      let puntosEquity = [0];
+
+      state.alertas.forEach(a => {
+        const esFin = a.finalizado === true || a.acertado !== null && a.acertado !== undefined;
+        if (esFin) {
+          finalizadas++;
+          
+          let stk = 3.0;
+          if (a.stake) {
+            const stkClean = String(a.stake).split('/')[0].replace('U', '').trim();
+            const val = parseFloat(stkClean);
+            if (!isNaN(val) && val > 0) stk = val;
+          }
+
+          let cuota = 2.10;
+          if (a.cuota) {
+            const cuotaClean = String(a.cuota).replace('@', '').trim();
+            const cval = parseFloat(cuotaClean);
+            if (!isNaN(cval) && cval > 1.0) cuota = cval;
+          }
+
+          unidadesApostadas += stk;
+          if (a.acertado === true) {
+            acertadas++;
+            beneficioNeto += stk * (cuota - 1.0);
+          } else {
+            beneficioNeto -= stk;
+          }
+
+          puntosEquity.push(beneficioNeto);
+        }
+      });
+
+      const roi = unidadesApostadas > 0 ? (beneficioNeto / unidadesApostadas) * 100 : 0.0;
+
+      return {
+        finalizadas,
+        acertadas,
+        falladas: finalizadas - acertadas,
+        unidadesApostadas: Math.round(unidadesApostadas * 10) / 10,
+        unidadesNetas: Math.round(beneficioNeto * 100) / 100,
+        roiPct: Math.round(roi * 10) / 10,
+        puntosEquity
+      };
+    }
+
+    function dibujarCurvaEquity(puntos) {
+      if (!puntos || puntos.length <= 1) {
+        document.getElementById('equityCurvePath').setAttribute('d', 'M 0 25 L 100 25');
+        return;
+      }
+
+      const minVal = Math.min(0, ...puntos);
+      const maxVal = Math.max(1, ...puntos);
+      const rango = maxVal - minVal || 1;
+
+      const pathData = puntos.map((p, idx) => {
+        const x = (idx / (puntos.length - 1)) * 100;
+        // Invertir eje Y: 28 es el fondo, 4 es el tope superior
+        const y = 26 - ((p - minVal) / rango) * 22;
+        return `${idx === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
+      }).join(' ');
+
+      const pathEl = document.getElementById('equityCurvePath');
+      pathEl.setAttribute('d', pathData);
+      
+      const ultimoPunto = puntos[puntos.length - 1];
+      pathEl.setAttribute('stroke', ultimoPunto >= 0 ? '#00f59b' : '#ff4b4b');
+    }
+
     function actualizarMetricas() {
       document.getElementById('statPartidos').innerText = state.partidos.length || '--';
       document.getElementById('syncHour').innerText = state.ultimaActualizacion ? (state.ultimaActualizacion + ' sync') : 'Sincronizado';
@@ -388,7 +456,7 @@
 
       const finConPronostico = finalizados.filter(p => p.acertado !== null && p.acertado !== undefined);
       
-      const alertasFin = state.alertas.filter(a => a.finalizado && a.acertado !== null);
+      const alertasFin = state.alertas.filter(a => a.finalizado || (a.acertado !== null && a.acertado !== undefined));
       const aciertosTG = alertasFin.filter(a => a.acertado === true).length;
       const totalTG = alertasFin.length;
       const pctTG = totalTG > 0 ? Math.round((aciertosTG / totalTG) * 100) : '--';
@@ -411,16 +479,34 @@
       document.getElementById('efectividadSinAlerta').innerText = pctSin !== '--' ? `${pctSin}%` : '--%';
       document.getElementById('conteoSinAlerta').innerText = `${aciertosSin}V - ${totalSin - aciertosSin}D No TG`;
 
-      const m = state.metricasSemana;
-      if (m && m.finalizadas > 0) {
-        const u = m.unidades_netas !== undefined ? m.unidades_netas : 0;
-        const signo = u >= 0 ? '+' : '';
-        document.getElementById('balanceNetoUnidades').innerText = `${signo}${u.toFixed(2)} U.`;
-        document.getElementById('yieldRoiSemanal').innerText = `${m.roi_pct >= 0 ? '+' : ''}${m.roi_pct}%`;
-        document.getElementById('unidadesGanadasSemanal').innerText = `${signo}${u.toFixed(2)} U.`;
-        document.getElementById('stakeApostadoSemanal').innerText = `${(m.unidades_apostadas || 0).toFixed(1)} U.`;
-        document.getElementById('totalPicksEvaluados').innerText = `${m.finalizadas} picks evaluados`;
-      }
+      // CÁLCULO INMEDIATO Y GARANTIZADO DE RENDIMIENTO SEMANAL
+      const calculo = calcularRendimientoAlertasTelegram();
+      
+      // Fallback a las métricas del archivo si ya vinieran calculadas y con valor
+      const uNetas = (state.metricasSemana && state.metricasSemana.finalizadas > 0 && state.metricasSemana.unidades_netas !== 0)
+        ? state.metricasSemana.unidades_netas
+        : calculo.unidadesNetas;
+
+      const roiFinal = (state.metricasSemana && state.metricasSemana.finalizadas > 0 && state.metricasSemana.roi_pct !== 0)
+        ? state.metricasSemana.roi_pct
+        : calculo.roiPct;
+
+      const uApostadas = (state.metricasSemana && state.metricasSemana.unidades_apostadas)
+        ? state.metricasSemana.unidades_apostadas
+        : calculo.unidadesApostadas;
+
+      const totalPicks = calculo.finalizadas || (state.metricasSemana && state.metricasSemana.finalizadas) || 0;
+
+      const signoU = uNetas >= 0 ? '+' : '';
+      const signoRoi = roiFinal >= 0 ? '+' : '';
+
+      document.getElementById('balanceNetoUnidades').innerText = `${signoU}${uNetas.toFixed(2)} U.`;
+      document.getElementById('yieldRoiSemanal').innerText = `${signoRoi}${roiFinal.toFixed(1)}%`;
+      document.getElementById('unidadesGanadasSemanal').innerText = `${signoU}${uNetas.toFixed(2)} U.`;
+      document.getElementById('stakeApostadoSemanal').innerText = `${uApostadas.toFixed(1)} U.`;
+      document.getElementById('totalPicksEvaluados').innerText = `${totalPicks} picks evaluados`;
+
+      dibujarCurvaEquity(calculo.puntosEquity);
     }
 
     function renderizar() {
