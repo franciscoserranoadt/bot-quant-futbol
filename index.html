@@ -431,7 +431,6 @@
 
       const pathData = puntos.map((p, idx) => {
         const x = (idx / (puntos.length - 1)) * 100;
-        // Invertir eje Y: 28 es el fondo, 4 es el tope superior
         const y = 26 - ((p - minVal) / rango) * 22;
         return `${idx === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
       }).join(' ');
@@ -482,7 +481,6 @@
       // CÁLCULO INMEDIATO Y GARANTIZADO DE RENDIMIENTO SEMANAL
       const calculo = calcularRendimientoAlertasTelegram();
       
-      // Fallback a las métricas del archivo si ya vinieran calculadas y con valor
       const uNetas = (state.metricasSemana && state.metricasSemana.finalizadas > 0 && state.metricasSemana.unidades_netas !== 0)
         ? state.metricasSemana.unidades_netas
         : calculo.unidadesNetas;
@@ -657,6 +655,9 @@
       `;
     }
 
+    // =========================================================================
+    // RENDERIZADO CORREGIDO DE ALERTAS: CON MARCADOR FINAL Y ESTADO DE LIQUIDACIÓN
+    // =========================================================================
     function renderizarAlertas() {
       const container = document.getElementById('matchesContainer');
       if (state.alertas.length === 0) {
@@ -670,21 +671,89 @@
       }
 
       container.innerHTML = state.alertas.slice().reverse().map(a => {
+        // 1. Determinar si el partido ha finalizado o está liquidado
+        const esFinalizado = a.finalizado === true || a.estado_partido === 'FINISHED' || (a.acertado !== null && a.acertado !== undefined);
+        const esEnJuego = a.estado_partido === 'IN_PLAY' || a.estado_partido === 'PAUSED' || a.estado_partido === 'HT';
+
+        // 2. Extraer el marcador final o en vivo
+        let marcadorTexto = a.marcador_final || a.marcador || a.resultado_final || null;
+        if (!marcadorTexto && (a.goles_local !== undefined && a.goles_local !== null) && (a.goles_visitante !== undefined && a.goles_visitante !== null)) {
+          marcadorTexto = `${a.goles_local} - ${a.goles_visitante}`;
+        }
+
+        // 3. Badge oficial de liquidación (Acertado / Perdido / Pendiente)
+        let badgeLiquidacion = '';
+        if (a.acertado === true) {
+          badgeLiquidacion = `
+            <div class="flex items-center gap-1.5">
+              ${marcadorTexto ? `<span class="px-2 py-0.5 rounded-lg bg-slate-900 border border-slate-700 text-brand-primary text-xs font-extrabold font-mono">${marcadorTexto}</span>` : ''}
+              <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center gap-1">
+                ✓ ACERTADO
+              </span>
+            </div>
+          `;
+        } else if (a.acertado === false) {
+          badgeLiquidacion = `
+            <div class="flex items-center gap-1.5">
+              ${marcadorTexto ? `<span class="px-2 py-0.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 text-xs font-extrabold font-mono">${marcadorTexto}</span>` : ''}
+              <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-rose-500/20 text-rose-400 border border-rose-500/40 flex items-center gap-1">
+                ✕ PERDIDO
+              </span>
+            </div>
+          `;
+        } else if (esEnJuego) {
+          badgeLiquidacion = `
+            <div class="flex items-center gap-1.5">
+              ${marcadorTexto ? `<span class="px-2 py-0.5 rounded-lg bg-slate-900 border border-slate-700 text-brand-primary text-xs font-extrabold font-mono">${marcadorTexto}</span>` : ''}
+              <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-rose-500/15 text-rose-400 border border-rose-500/30 animate-pulse">
+                EN JUEGO
+              </span>
+            </div>
+          `;
+        } else if (a.es_ht) {
+          badgeLiquidacion = `
+            <div class="flex items-center gap-1.5">
+              <span class="px-2 py-0.5 rounded text-[9px] font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/40">In-Play HT</span>
+              <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">Alerta Real</span>
+            </div>
+          `;
+        } else {
+          badgeLiquidacion = `<span class="px-2 py-0.5 rounded text-[9px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">Alerta Real</span>`;
+        }
+
+        // 4. Escudos si están disponibles
+        const escudosHtml = (a.escudo_local || a.escudo_visitante) ? `
+          <div class="flex items-center gap-2 mb-1">
+            ${a.escudo_local ? `<img src="${a.escudo_local}" class="w-4 h-4 object-contain" alt="">` : ''}
+            <span class="text-xs text-slate-400">${a.local || ''}</span>
+            <span class="text-xs text-slate-600 font-mono">vs</span>
+            ${a.escudo_visitante ? `<img src="${a.escudo_visitante}" class="w-4 h-4 object-contain" alt="">` : ''}
+            <span class="text-xs text-slate-400">${a.visitante || ''}</span>
+          </div>
+        ` : '';
+
         return `
-          <div class="p-4 rounded-2xl bg-brand-card border border-brand-border space-y-2.5 shadow-md">
+          <div class="p-4 rounded-2xl bg-brand-card border border-brand-border space-y-2.5 shadow-md hover:border-slate-700 transition">
             <div class="flex items-center justify-between">
               <span class="text-[11px] text-brand-highlight font-mono flex items-center gap-1.5">
                 <span class="w-1.5 h-1.5 rounded-full bg-brand-highlight"></span> Enviado a Telegram • ${a.hora || 'TBD'}
               </span>
-              <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">Alerta Real</span>
+              <div>${badgeLiquidacion}</div>
             </div>
+
+            ${escudosHtml}
+
             <div class="text-sm font-extrabold text-white">
               ${a.partido} — <span class="text-brand-primary">${a.mercado}</span>
             </div>
-            <div class="flex items-center gap-4 text-xs font-mono pt-1 text-slate-300">
-              <span>Cuota: <strong class="text-white">${a.cuota}</strong></span>
-              <span>Ventaja: <strong class="text-emerald-400">${a.ev}</strong></span>
-              <span>Stake: <strong class="text-brand-highlight">${a.stake}</strong></span>
+
+            <div class="flex items-center justify-between pt-1 border-t border-slate-800/80 text-xs font-mono text-slate-300">
+              <div class="flex items-center gap-3">
+                <span>Cuota: <strong class="text-white">${a.cuota}</strong></span>
+                <span>Ventaja: <strong class="text-emerald-400">${a.ev}</strong></span>
+                <span>Stake: <strong class="text-brand-highlight">${a.stake}</strong></span>
+              </div>
+              ${esFinalizado ? `<span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">CERRADA</span>` : `<span class="text-[10px] text-emerald-400/80 font-bold">ACTIVA</span>`}
             </div>
           </div>
         `;
