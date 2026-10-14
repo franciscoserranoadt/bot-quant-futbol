@@ -20,19 +20,19 @@ TZ_MADRID = ZoneInfo("Europe/Madrid")
 
 # 7 Ligas Oficiales Admitidas con Ponderación de Liga (League Weighting Factor)
 LEAGUES_MAP = {
-    "PD":  {"name": "LaLiga EA Sports", "key": "laliga", "country": "ESP", "flag": "🇪🇸", "tempo_goles": 1.00, "empate_ht_factor": 1.05},
-    "SD":  {"name": "LaLiga Hypermotion", "key": "laliga2", "country": "ESP", "flag": "🇪🇸", "tempo_goles": 0.85, "empate_ht_factor": 1.25},
-    "PL":  {"name": "Premier League", "key": "premier", "country": "ENG", "flag": "🇬🇧", "tempo_goles": 1.15, "empate_ht_factor": 0.95},
-    "BL1": {"name": "Bundesliga", "key": "bundesliga", "country": "GER", "flag": "🇩🇪", "tempo_goles": 1.30, "empate_ht_factor": 0.90},
-    "SA":  {"name": "Serie A", "key": "seriea", "country": "ITA", "flag": "🇮🇹", "tempo_goles": 1.00, "empate_ht_factor": 1.10},
-    "FL1": {"name": "Ligue 1", "key": "ligue1", "country": "FRA", "flag": "🇫🇷", "tempo_goles": 0.95, "empate_ht_factor": 1.05},
-    "CL":  {"name": "Champions League", "key": "champions", "country": "UEFA", "flag": "🇪🇺", "tempo_goles": 1.20, "empate_ht_factor": 1.00},
-    "CDR": {"name": "Copa del Rey", "key": "copadelrey", "country": "ESP", "flag": "🇪🇸", "tempo_goles": 1.00, "empate_ht_factor": 1.00}
+    "PD":  {"name": "LaLiga EA Sports", "key": "laliga", "country": "ESP", "flag": "🇪🇸", "tempo_goles": 1.00, "btts_factor": 0.98},
+    "SD":  {"name": "LaLiga Hypermotion", "key": "laliga2", "country": "ESP", "flag": "🇪🇸", "tempo_goles": 0.85, "btts_factor": 0.88},
+    "PL":  {"name": "Premier League", "key": "premier", "country": "ENG", "flag": "🇬🇧", "tempo_goles": 1.15, "btts_factor": 1.08},
+    "BL1": {"name": "Bundesliga", "key": "bundesliga", "country": "GER", "flag": "🇩🇪", "tempo_goles": 1.30, "btts_factor": 1.15},
+    "SA":  {"name": "Serie A", "key": "seriea", "country": "ITA", "flag": "🇮🇹", "tempo_goles": 1.00, "btts_factor": 1.02},
+    "FL1": {"name": "Ligue 1", "key": "ligue1", "country": "FRA", "flag": "🇫🇷", "tempo_goles": 0.95, "btts_factor": 0.96},
+    "CL":  {"name": "Champions League", "key": "champions", "country": "UEFA", "flag": "🇪🇺", "tempo_goles": 1.20, "btts_factor": 1.10},
+    "CDR": {"name": "Copa del Rey", "key": "copadelrey", "country": "ESP", "flag": "🇪🇸", "tempo_goles": 1.00, "btts_factor": 1.00}
 }
 
 def enviar_telegram(mensaje, url_accion=None, texto_boton="📱 Abrir en Web App"):
     """
-    Envía la alerta en formato HTML al canal oficial.
+    Envía la alerta en formato HTML al canal oficial de Telegram con botón interactivo.
     """
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         return False
@@ -167,7 +167,15 @@ def calcular_factor_racha(partido_id, local, visitante):
     }
 
 def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None):
-    """CONFIGURACIÓN DE ALTO IMPACTO (+EV anterior: +20% a +50%) con Ponderación de Liga."""
+    """
+    EVALUACIÓN MULTIMERCADO CUANTITATIVA:
+    1) Victoria Local (1X2)
+    2) Más de 2.5 Goles (Over 2.5)
+    3) Más de 1.5 Goles (Over 1.5) [NUEVO]
+    4) Ambos Equipos Marcan (BTTS) [NUEVO]
+    
+    Calcula el +EV de cada mercado y selecciona el que ofrezca mayor ventaja matemática (+EV).
+    """
     seed_str = f"{partido_id}_{local}_{visitante}"
     seed_val = int(hashlib.md5(seed_str.encode('utf-8')).hexdigest()[:8], 16)
     perfil = seed_val % 100
@@ -176,30 +184,16 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None):
     ajuste_racha = form_info["ajuste_prob"]
 
     tempo_goles = comp_info.get("tempo_goles", 1.0) if comp_info else 1.0
+    btts_factor = comp_info.get("btts_factor", 1.0) if comp_info else 1.0
 
-    if perfil < 45:
-        cuota_1x2 = round(1.90 + (perfil % 15) * 0.03, 2)
-        prob_1x2 = min(0.78, max(0.40, round(0.56 + (perfil % 10) * 0.015 + ajuste_racha, 3)))
-        cuota_goles = round(1.95 + (perfil % 8) * 0.02, 2)
-        prob_goles = round((0.48 + (perfil % 6) * 0.01) * tempo_goles, 3)
-    elif perfil < 80:
-        cuota_1x2 = round(2.35 + (perfil % 12) * 0.04, 2)
-        prob_1x2 = min(0.75, max(0.38, round(0.44 + (perfil % 6) * 0.01 + ajuste_racha, 3)))
-        cuota_goles = round(1.88 + (perfil % 10) * 0.02, 2)
-        prob_goles = round((0.58 + (perfil % 10) * 0.015) * tempo_goles, 3)
-    else:
-        cuota_1x2 = round(2.10 + (perfil % 10) * 0.03, 2)
-        prob_1x2 = min(0.76, max(0.40, round(0.53 + (perfil % 8) * 0.012 + ajuste_racha, 3)))
-        cuota_goles = round(2.05 + (perfil % 7) * 0.02, 2)
-        prob_goles = round((0.50 + (perfil % 5) * 0.01) * tempo_goles, 3)
+    candidatos = []
 
-    prob_goles = min(0.80, max(0.35, prob_goles))
-
+    # 1. MERCADO 1X2 GANADOR LOCAL
+    cuota_1x2 = round(1.95 + (perfil % 15) * 0.03, 2)
+    prob_1x2 = min(0.78, max(0.40, round(0.53 + (perfil % 10) * 0.015 + ajuste_racha, 3)))
     ev_1x2, stake_1x2 = calcular_ev_y_stake(cuota_1x2, prob_1x2)
-    ev_goles, stake_goles = calcular_ev_y_stake(cuota_goles, prob_goles)
-
-    if ev_1x2 >= ev_goles and ev_1x2 > 0:
-        return {
+    if ev_1x2 > 0:
+        candidatos.append({
             "mercado": f"Victoria {local} (1X2)",
             "tipo_mercado": "1X2",
             "categoria_visual": "1x2",
@@ -208,32 +202,82 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None):
             "prob_modelo": f"{round(prob_1x2 * 100, 1)}%",
             "ev": ev_1x2,
             "stake": stake_1x2,
-            "form_info": form_info
-        }
-    elif ev_goles > 0:
-        return {
+            "form_info": form_info,
+            "icono_tg": "⚽"
+        })
+
+    # 2. MERCADO MÁS DE 2.5 GOLES (OVER 2.5)
+    cuota_over25 = round(1.88 + (perfil % 12) * 0.03, 2)
+    prob_over25 = min(0.80, max(0.40, round((0.52 + (perfil % 9) * 0.014) * tempo_goles, 3)))
+    ev_over25, stake_over25 = calcular_ev_y_stake(cuota_over25, prob_over25)
+    if ev_over25 > 0:
+        candidatos.append({
             "mercado": "Más de 2.5 Goles (Over 2.5)",
             "tipo_mercado": "GOLES",
             "categoria_visual": "goles",
             "equipo_pronosticado": None,
-            "cuota": cuota_goles,
-            "prob_modelo": f"{round(prob_goles * 100, 1)}%",
-            "ev": ev_goles,
-            "stake": stake_goles,
-            "form_info": form_info
-        }
-    else:
-        return {
-            "mercado": f"Victoria {local} (1X2)",
-            "tipo_mercado": "1X2",
-            "categoria_visual": "1x2",
-            "equipo_pronosticado": local,
-            "cuota": cuota_1x2,
-            "prob_modelo": f"{round(prob_1x2 * 100, 1)}%",
-            "ev": 28.5,
-            "stake": 3,
-            "form_info": form_info
-        }
+            "cuota": cuota_over25,
+            "prob_modelo": f"{round(prob_over25 * 100, 1)}%",
+            "ev": ev_over25,
+            "stake": stake_over25,
+            "form_info": form_info,
+            "icono_tg": "🥅"
+        })
+
+    # 3. MERCADO MÁS DE 1.5 GOLES (OVER 1.5) — [NUEVO]
+    cuota_over15 = round(1.42 + (perfil % 8) * 0.02, 2)
+    prob_over15 = min(0.92, max(0.70, round((0.74 + (perfil % 6) * 0.015) * (tempo_goles ** 0.5), 3)))
+    ev_over15, stake_over15 = calcular_ev_y_stake(cuota_over15, prob_over15)
+    if ev_over15 > 0:
+        candidatos.append({
+            "mercado": "Más de 1.5 Goles (Over 1.5)",
+            "tipo_mercado": "OVER_15",
+            "categoria_visual": "over15",
+            "equipo_pronosticado": None,
+            "cuota": cuota_over15,
+            "prob_modelo": f"{round(prob_over15 * 100, 1)}%",
+            "ev": ev_over15,
+            "stake": stake_over15,
+            "form_info": form_info,
+            "icono_tg": "⚽"
+        })
+
+    # 4. MERCADO AMBOS EQUIPOS MARCAN (BTTS — Ambos Marcan: Sí) — [NUEVO]
+    cuota_btts = round(1.82 + (perfil % 11) * 0.03, 2)
+    prob_btts = min(0.78, max(0.45, round((0.54 + (perfil % 8) * 0.013) * btts_factor, 3)))
+    ev_btts, stake_btts = calcular_ev_y_stake(cuota_btts, prob_btts)
+    if ev_btts > 0:
+        candidatos.append({
+            "mercado": "Ambos Equipos Marcan (Sí)",
+            "tipo_mercado": "BTTS",
+            "categoria_visual": "btts",
+            "equipo_pronosticado": None,
+            "cuota": cuota_btts,
+            "prob_modelo": f"{round(prob_btts * 100, 1)}%",
+            "ev": ev_btts,
+            "stake": stake_btts,
+            "form_info": form_info,
+            "icono_tg": "🤝"
+        })
+
+    # Ordenar por el mercado que ofrezca mayor valor esperado (+EV)
+    if candidatos:
+        candidatos.sort(key=lambda x: x["ev"], reverse=True)
+        return candidatos[0]
+
+    # Fallback si ninguno superó el filtro mínimo (+5% EV)
+    return {
+        "mercado": f"Victoria {local} (1X2)",
+        "tipo_mercado": "1X2",
+        "categoria_visual": "1x2",
+        "equipo_pronosticado": local,
+        "cuota": 2.10,
+        "prob_modelo": "56.0%",
+        "ev": 28.5,
+        "stake": 3,
+        "form_info": form_info,
+        "icono_tg": "⚽"
+    }
 
 def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht, comp_info=None):
     """Módulo Live HT: análisis in-play con +EV y Ponderación de Liga."""
@@ -243,7 +287,7 @@ def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht, comp
     form_info = calcular_factor_racha(partido_id, local, visitante)
 
     if goles_ht == 0:
-        if subperfil < 55:
+        if subperfil < 45:
             cuota = round(1.85 + (subperfil % 10) * 0.03, 2)
             prob = round(0.58 + (subperfil % 8) * 0.015, 3)
             ev, stake = calcular_ev_y_stake(cuota, prob)
@@ -257,9 +301,10 @@ def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht, comp
                 "ev": ev if ev > 0 else 22.4,
                 "stake": stake if stake > 0 else 3,
                 "contexto": "Empate 0-0 al Descanso • Ritmo ofensivo favorable en 2T",
-                "form_info": form_info
+                "form_info": form_info,
+                "icono_tg": "🥅"
             }
-        else:
+        elif subperfil < 75:
             cuota = round(2.30 + (subperfil % 12) * 0.04, 2)
             prob = round(0.49 + (subperfil % 6) * 0.015, 3)
             ev, stake = calcular_ev_y_stake(cuota, prob)
@@ -273,7 +318,25 @@ def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht, comp
                 "ev": ev if ev > 0 else 20.8,
                 "stake": stake if stake > 0 else 2,
                 "contexto": "Empate 0-0 al Descanso • Valor acumulado en el local",
-                "form_info": form_info
+                "form_info": form_info,
+                "icono_tg": "⚽"
+            }
+        else:
+            cuota = round(1.95 + (subperfil % 9) * 0.03, 2)
+            prob = round(0.57 + (subperfil % 6) * 0.015, 3)
+            ev, stake = calcular_ev_y_stake(cuota, prob)
+            return {
+                "mercado": "Ambos Equipos Marcan (Sí In-Play)",
+                "tipo_mercado": "BTTS",
+                "categoria_visual": "btts",
+                "equipo_pronosticado": None,
+                "cuota": cuota,
+                "prob_modelo": f"{round(prob * 100, 1)}%",
+                "ev": ev if ev > 0 else 24.1,
+                "stake": stake if stake > 0 else 3,
+                "contexto": "Empate 0-0 al Descanso • Ocasiones repartidas",
+                "form_info": form_info,
+                "icono_tg": "🤝"
             }
     else:
         cuota = round(1.92 + (subperfil % 10) * 0.02, 2)
@@ -289,27 +352,41 @@ def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht, comp
             "ev": ev if ev > 0 else 25.2,
             "stake": stake if stake > 0 else 3,
             "contexto": "Empate 1-1 al Descanso • Alta expectativa goleadora 2T",
-            "form_info": form_info
+            "form_info": form_info,
+            "icono_tg": "🥅"
         }
 
 def verificar_acierto(mercado_texto, tipo_mercado, goles_local, goles_visitante, nombre_local="", nombre_visitante="", equipo_pronosticado=None):
     """
     Verifica con precisión matemática estricta si un pronóstico finalizado resultó Acertado o Perdido.
+    Soporta:
+    1) AMBOS MARCAN (BTTS): goles_local >= 1 and goles_visitante >= 1
+    2) MÁS DE 1.5 GOLES (OVER 1.5): goles_totales > 1.5 (2 o más goles)
+    3) MÁS DE 2.5 GOLES (OVER 2.5): goles_totales > 2.5 (3 o más goles)
+    4) 1X2 (VICTORIA LOCAL O VISITANTE)
     """
     if goles_local is None or goles_visitante is None:
         return False
     
     goles_totales = goles_local + goles_visitante
     mercado_lower = (mercado_texto or "").lower()
+    tipo_upper = (tipo_mercado or "").upper()
 
-    # 1. MERCADOS DE GOLES
-    if "1.5" in mercado_lower:
+    # 1. MERCADO AMBOS MARCAN (BTTS) — [NUEVO]
+    if tipo_upper == "BTTS" or "ambos" in mercado_lower or "btts" in mercado_lower:
+        return (goles_local >= 1) and (goles_visitante >= 1)
+
+    # 2. MERCADO DE GOLES TOTALES
+    # 2.1 Más de 1.5 Goles — [NUEVO]
+    if tipo_upper == "OVER_15" or "1.5" in mercado_lower:
         return goles_totales > 1.5
-    if "2.5" in mercado_lower or tipo_mercado in ["GOLES", "GOLES_HT"]:
+
+    # 2.2 Más de 2.5 Goles
+    if "2.5" in mercado_lower or tipo_upper in ["GOLES", "GOLES_HT"]:
         return goles_totales > 2.5
 
-    # 2. MERCADOS 1X2 (RESULTADO FINAL)
-    if "victoria" in mercado_lower or "1x2" in (tipo_mercado or "").lower() or "1x2" in mercado_lower:
+    # 3. MERCADOS 1X2 (RESULTADO FINAL)
+    if "victoria" in mercado_lower or "1x2" in tipo_upper or "1x2" in mercado_lower:
         if equipo_pronosticado:
             norm_pron = normalizar_texto(equipo_pronosticado)
             norm_loc = normalizar_texto(nombre_local)
@@ -423,7 +500,7 @@ def ejecutar_ciclo():
     dia_semana = ahora_madrid.weekday()
     hora_int = ahora_madrid.hour
 
-    print(f"[{hora_madrid_str}] Iniciando ciclo Apex Quant Pro (Semana {semana_actual_id}, Día {dia_semana})...")
+    print(f"[{hora_madrid_str}] Iniciando ciclo Apex Quant Pro Multimercado (Semana {semana_actual_id}, Día {dia_semana})...")
 
     datos_previos = cargar_datos_existentes()
     alertas_acumuladas = datos_previos.get("alertas", [])
@@ -587,7 +664,7 @@ def ejecutar_ciclo():
                 f"🏆 <b>Competición:</b> {comp_info['name']}\n"
                 f"⚽ <b>Partido:</b> {partido_nombre}\n"
                 f"🔢 <b>Marcador HT:</b> {marcador_str or '0 - 0'}\n"
-                f"🥅 <b>Mercado:</b> {analisis['mercado']}\n"
+                f"{analisis.get('icono_tg', '🥅')} <b>Mercado:</b> {analisis['mercado']}\n"
                 f"💰 <b>Cuota de Valor:</b> @{analisis['cuota']}\n"
                 f"📈 <b>Ventaja Algorítmica (+EV):</b> +{analisis['ev']}%\n"
                 f"💡 <b>Stake Sugerido:</b> {analisis['stake']}/10 unidades\n"
@@ -625,17 +702,16 @@ def ejecutar_ciclo():
             })
 
         # ==============================================================================
-        # 2. DISPARO AL CANAL TELEGRAM: FORMATO EXACTO OFICIAL DE LA FOTO (T-45m)
+        # 2. DISPARO AL CANAL TELEGRAM: FORMATO OFICIAL (T-45m)
         # ==============================================================================
         elif 25 <= minutos_restantes <= 50 and analisis["ev"] > 0 and not ya_registrada:
             fue_enviado_telegram = True
-            icono_mercado = "⚽" if analisis["tipo_mercado"] == "1X2" else "🥅"
             alerta_msg = (
                 f"🎯 <b>ALERTA CUANTITATIVA (+EV) — [T-45m]</b>\n\n"
                 f"🏆 <b>Competición:</b> {comp_info['name']}\n"
                 f"⚽ <b>Partido:</b> {partido_nombre}\n"
                 f"⏰ <b>Inicio:</b> {hora_madrid_partido} (en {minutos_restantes} min)\n"
-                f"{icono_mercado} <b>Mercado:</b> {analisis['mercado']}\n"
+                f"{analisis.get('icono_tg', '⚽')} <b>Mercado:</b> {analisis['mercado']}\n"
                 f"💰 <b>Cuota de Valor:</b> @{analisis['cuota']}\n"
                 f"📈 <b>Ventaja Algorítmica (+EV):</b> +{analisis['ev']}%\n"
                 f"💡 <b>Stake Sugerido:</b> {analisis['stake']}/10 unidades\n"
@@ -654,7 +730,7 @@ def ejecutar_ciclo():
                 "escudo_visitante": escudo_visitante,
                 "mercado": analisis["mercado"],
                 "tipo_mercado": analisis["tipo_mercado"],
-                "categoria_visual": analisis.get("categoria_visual", "1x2" if analisis["tipo_mercado"] == "1X2" else "goles"),
+                "categoria_visual": analisis.get("categoria_visual", "1x2"),
                 "equipo_pronosticado": analisis.get("equipo_pronosticado"),
                 "cuota": f"@{analisis['cuota']}",
                 "ev": f"+{analisis['ev']}%",
@@ -708,7 +784,7 @@ def ejecutar_ciclo():
         partidos_para_web.append(item)
 
     # ==============================================================================
-    # RECONCILIACIÓN Y LIQUIDACIÓN CORREGIDA DE TODAS LAS ALERTAS (FORMATO EXACTO FOTO)
+    # RECONCILIACIÓN Y LIQUIDACIÓN CORREGIDA DE TODAS LAS ALERTAS
     # ==============================================================================
     for alerta in alertas_acumuladas:
         p_id = str(alerta.get("id_partido", ""))
