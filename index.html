@@ -1,415 +1,614 @@
 <!DOCTYPE html>
-
-<html class="dark" lang="es"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
-<title>Apex Quant Analytics - Motor Predictivo</title>
-<link href="manifest.json" rel="manifest"/>
-<meta content="#0c1322" name="theme-color"/>
-<meta content="yes" name="apple-mobile-web-app-capable"/>
-<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Apex Quant Analytics</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0c1322">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
           },
           colors: {
-            surface: {
-              DEFAULT: '#0c1322',
-              dim: '#0c1322',
-              bright: '#323949',
-              lowest: '#070e1d',
-              low: '#141b2b',
-              card: '#111927',
-              border: 'rgba(255, 255, 255, 0.08)'
-            },
-            apex: {
-              green: '#00f59b',
-              cyan: '#00d2ff',
-              yellow: '#ffb800',
-              red: '#ff3b5c'
+            brand: {
+              primary: '#00f59b',
+              surface: '#0c1322',
+              card: '#141b2b',
+              border: '#1f293d',
+              highlight: '#00d2ff'
             }
           }
         }
       }
     }
   </script>
-<style>
+  <style>
     body {
       background-color: #070e1d;
       color: #f1f5f9;
       font-family: 'Plus Jakarta Sans', sans-serif;
       -webkit-tap-highlight-color: transparent;
-      user-select: none;
     }
-    .custom-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .custom-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-    .glow-green {
-      box-shadow: 0 0 20px rgba(0, 245, 155, 0.15);
-    }
-    .glow-cyan {
-      box-shadow: 0 0 20px rgba(0, 210, 255, 0.15);
-    }
-    @keyframes pulse-subtle {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
-    }
-    .pulse-live {
-      animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
+    .custom-scroll::-webkit-scrollbar { display: none; }
+    .custom-scroll { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="min-h-screen pb-16 bg-[#070e1d] text-slate-100 flex justify-center">
-<main class="w-full max-w-md px-4 py-4 space-y-4">
-<!-- Cabecera Oficial -->
-<header class="flex items-center justify-between pb-2">
-<div class="flex items-center space-x-3">
-<div class="w-11 h-11 rounded-xl bg-gradient-to-br from-[#00f59b]/20 to-[#00d2ff]/20 border border-[#00f59b]/40 flex items-center justify-center shadow-lg">
-<span class="text-xs font-black tracking-tighter text-[#00f59b]">AQ</span>
-</div>
-<div>
-<div class="flex items-center space-x-2">
-<h1 class="text-lg font-black tracking-tight text-white">Apex Quant</h1>
-<span class="px-2 py-0.5 text-[10px] font-bold bg-[#00f59b]/10 text-[#00f59b] border border-[#00f59b]/30 rounded-full flex items-center gap-1">
-<span class="w-1.5 h-1.5 rounded-full bg-[#00f59b] animate-ping"></span> 24/7 ONLINE
+<body class="min-h-screen pb-16 antialiased selection:bg-brand-primary/20 selection:text-brand-primary">
+
+  <div class="max-w-md mx-auto px-4 py-4 space-y-4">
+
+    <!-- TOP BAR -->
+    <header class="flex items-center justify-between pb-1">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-primary/20 to-brand-primary/5 border border-brand-primary/30 flex items-center justify-center font-extrabold text-brand-primary tracking-wider text-sm shadow-lg shadow-brand-primary/10">
+          AQ
+        </div>
+        <div>
+          <h1 class="text-lg font-extrabold tracking-tight text-white flex items-center gap-2">
+            Apex Quant
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              24/7 ONLINE
             </span>
-</div>
-<p class="text-[11px] font-medium text-slate-400">Motor Predictivo Just-In-Time (+EV)</p>
-</div>
-</div>
-<div class="flex items-center space-x-2">
-<button class="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-700 bg-slate-900/60 text-slate-300 hover:text-white transition flex items-center gap-1" id="btnOled" onclick="toggleOled()">
-<span class="w-2 h-2 rounded-full bg-slate-500" id="oledDot"></span> OLED
+          </h1>
+          <p class="text-[11px] font-medium text-slate-400">Motor Predictivo Just-In-Time (+EV)</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btnOled" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> OLED
         </button>
-<button class="p-2 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-300 hover:text-white transition active:rotate-180" onclick="recargarDatos(true)" title="Sincronizar datos">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</button>
-</div>
-</header>
-<!-- Tarjeta Interactiva Canal Telegram Oficial -->
-<a class="block group" href="https://t.me/apex_quant_alertas" rel="noopener noreferrer" target="_blank">
-<div class="relative overflow-hidden p-3.5 rounded-2xl bg-gradient-to-r from-[#00d2ff]/10 via-[#00f59b]/10 to-transparent border border-[#00d2ff]/30 shadow-lg group-hover:border-[#00d2ff]/60 transition-all active:scale-[0.99]">
-<div class="flex items-center justify-between">
-<div class="flex items-center space-x-3">
-<div class="w-10 h-10 rounded-xl bg-[#0088cc]/20 border border-[#0088cc]/40 flex items-center justify-center text-[#0088cc]">
-<svg class="w-5 h-5" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.77-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"></path></svg>
-</div>
-<div>
-<div class="flex items-center gap-1.5">
-<h2 class="text-sm font-black text-white group-hover:text-[#00d2ff] transition">Canal Telegram Oficial</h2>
-<span class="w-2 h-2 rounded-full bg-[#00f59b]"></span>
-</div>
-<p class="text-[11px] text-slate-400 font-medium">Alertas automáticas en <span class="text-[#00d2ff]">@apex_quant_alertas</span></p>
-</div>
-</div>
-<span class="px-3 py-1 rounded-lg text-xs font-bold bg-[#00d2ff]/20 text-[#00d2ff] border border-[#00d2ff]/40 flex items-center gap-1">
-            ACTIVO <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</span>
-</div>
-</div>
-</a>
-<!-- Fila Métricas Principales -->
-<div class="grid grid-cols-3 gap-2.5">
-<div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-center">
-<p class="text-[10px] font-bold text-slate-400 tracking-wider">PARTIDOS</p>
-<p class="text-xl font-black text-white my-0.5" id="statPartidos">--</p>
-<p class="text-[9px] text-slate-400">Monitoreo</p>
-</div>
-<div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-center">
-<p class="text-[10px] font-bold text-slate-400 tracking-wider">FILTRO EV</p>
-<p class="text-xl font-black text-[#00f59b] my-0.5">+5.0%</p>
-<p class="text-[9px] text-slate-400">Ventaja</p>
-</div>
-<div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-center">
-<p class="text-[10px] font-bold text-slate-400 tracking-wider">GESTIÓN</p>
-<p class="text-xl font-black text-[#00d2ff] my-0.5">1/4</p>
-<p class="text-[9px] text-slate-400">Kelly</p>
-</div>
-</div>
-<!-- TARJETA RENDIMIENTO SEMANAL EXCLUSIVA DE TELEGRAM CON TEXTO EXPLICATIVO -->
-<section class="p-4 rounded-2xl bg-gradient-to-br from-slate-900/90 to-[#070e1d] border border-slate-800/80 shadow-xl space-y-3">
-<div class="flex items-center justify-between">
-<div class="flex items-center space-x-2">
-<div class="w-7 h-7 rounded-lg bg-[#00f59b]/15 border border-[#00f59b]/30 flex items-center justify-center text-[#00f59b]">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</div>
-<div>
-<div class="flex items-center gap-1.5">
-<h2 class="text-xs font-black uppercase tracking-wider text-slate-200">Rendimiento Semanal</h2>
-<span class="px-1.5 py-0.2 text-[9px] font-extrabold uppercase rounded bg-[#00f59b]/20 text-[#00f59b] border border-[#00f59b]/40">EXCLUSIVO TELEGRAM</span>
-</div>
-<p class="text-[10px] text-slate-400">Curva de Equity &amp; Balance de Unidades</p>
-</div>
-</div>
-<div class="text-right">
-<p class="text-[9px] font-bold uppercase tracking-wider text-slate-400">BALANCE NETO</p>
-<p class="text-sm font-black text-[#00f59b]" id="statUnidadesNetas">+0.00 U.</p>
-</div>
-</div>
-<!-- TEXTO EXPLICATIVO RÁPIDO Y OFICIAL -->
-<div class="p-2 rounded-lg bg-slate-950/70 border border-slate-800/70 flex items-center gap-2">
-<span class="text-[#00d2ff] text-xs">ℹ️</span>
-<p class="text-[10px] text-slate-300 font-medium leading-tight">
-          Métricas calculadas <span class="text-white font-bold">exclusivamente</span> sobre las alertas oficiales emitidas al <span class="text-[#00d2ff] font-semibold">canal de Telegram</span>.
-        </p>
-</div>
-<div class="grid grid-cols-3 gap-2 pt-1 text-center">
-<div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/60">
-<p class="text-[9px] font-bold text-slate-400">YIELD / ROI</p>
-<p class="text-xs font-black text-[#00f59b] mt-0.5" id="statRoi">+0.0%</p>
-</div>
-<div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/60">
-<p class="text-[9px] font-bold text-slate-400">UNIDADES GANADAS</p>
-<p class="text-xs font-black text-[#00f59b] mt-0.5" id="statUnidadesSub">+0.00 U.</p>
-</div>
-<div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/60">
-<p class="text-[9px] font-bold text-slate-400">STAKE APOSTADO</p>
-<p class="text-xs font-black text-slate-200 mt-0.5" id="statStakeApostado">0.0 U.</p>
-</div>
-</div>
-<!-- Minigráfica Curva de Equity -->
-<div class="pt-1">
-<div class="flex items-center justify-between text-[10px] text-slate-400 mb-1.5 font-medium">
-<span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#00f59b]"></span> Curva de Crecimiento Bankroll (Alertas TG)</span>
-<span class="text-slate-400 font-semibold" id="statEvaluados">0 picks evaluados</span>
-</div>
-<div class="h-14 w-full rounded-xl bg-slate-950/80 border border-slate-800/80 p-1 flex items-end justify-center relative overflow-hidden">
-<svg class="w-full h-full overflow-visible" id="equityChartSvg" preserveaspectratio="none" viewbox="0 0 100 40">
-<defs>
-<lineargradient id="chartGrad" x1="0" x2="0" y1="0" y2="1">
-<stop offset="0%" stop-color="#00f59b" stop-opacity="0.35"></stop>
-<stop offset="100%" stop-color="#00f59b" stop-opacity="0.0"></stop>
-</lineargradient>
-</defs>
-<path d="M 0 35 L 100 35 Z" fill="url(#chartGrad)" id="equityAreaPath"></path>
-<path d="M 0 35 L 100 35" fill="none" id="equityLinePath" stroke="#00f59b" stroke-linecap="round" stroke-width="2"></path>
-</svg>
-</div>
-</div>
-</section>
-<!-- Fila Triple Efectividad Semanal -->
-<div class="space-y-1.5">
-<div class="flex items-center justify-between text-[10px] text-slate-400 px-1 font-semibold">
-<span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[#00d2ff]"></span> Semana actual</span>
-<span class="text-slate-500 font-mono">Reinicio oficial cada lunes 00:00h</span>
-</div>
-<div class="grid grid-cols-3 gap-2 text-center">
-<div class="p-2.5 rounded-xl bg-slate-900/60 border border-[#00f59b]/30">
-<p class="text-[9px] font-bold text-[#00f59b] tracking-wider flex items-center justify-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[#00f59b]"></span> TELEGRAM</p>
-<p class="text-base font-black text-[#00f59b] my-0.5" id="efectividadTG">--%</p>
-<p class="text-[9px] text-slate-400" id="recordTG">0V - 0D TG</p>
-</div>
-<div class="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
-<p class="text-[9px] font-bold text-slate-400 tracking-wider">SIN ALERTA</p>
-<p class="text-base font-black text-slate-300 my-0.5" id="efectividadNoTG">--%</p>
-<p class="text-[9px] text-slate-400" id="recordNoTG">0V - 0D No TG</p>
-</div>
-<div class="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
-<p class="text-[9px] font-bold text-slate-400 tracking-wider">GLOBAL TOTAL</p>
-<p class="text-base font-black text-slate-200 my-0.5" id="efectividadGlobal">--%</p>
-<p class="text-[9px] text-slate-400" id="recordGlobal">0V - 0D Total</p>
-</div>
-</div>
-</div>
-<!-- Pestañas Principales (En Juego, Finalizados, Alertas) -->
-<div class="flex p-1 rounded-xl bg-slate-900/80 border border-slate-800 text-xs font-bold">
-<button class="flex-1 py-2 rounded-lg bg-[#00f59b] text-slate-950 transition shadow" id="tabActivos" onclick="cambiarPestana('activos')">
-        En Juego / Hoy (<span id="countActivos">0</span>)
+        <button id="btnRefresh" class="w-8 h-8 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 flex items-center justify-center transition active:scale-95" title="Actualizar datos">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- BANNER CANAL TELEGRAM INTERACTIVO -->
+    <a href="https://t.me/apex_quant_alertas" target="_blank" rel="noopener noreferrer" class="block p-3.5 rounded-2xl bg-gradient-to-r from-[#0088cc]/15 via-slate-900 to-slate-900 border border-[#0088cc]/40 hover:border-[#0088cc] transition group shadow-lg shadow-[#0088cc]/5 active:scale-[0.99]">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-[#0088cc]/20 border border-[#0088cc]/40 flex items-center justify-center text-[#0088cc] group-hover:scale-105 transition">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-white tracking-wide">Canal Telegram Oficial</span>
+              <span class="w-1.5 h-1.5 rounded-full bg-brand-primary animate-ping"></span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-mono">Alertas automáticas en <span class="text-[#0088cc] font-semibold">@apex_quant_alertas</span></p>
+          </div>
+        </div>
+        <div class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#0088cc]/20 border border-[#0088cc]/30 text-[#0088cc] text-[10px] font-bold group-hover:bg-[#0088cc] group-hover:text-white transition">
+          <span>ACTIVO</span>
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </div>
+      </div>
+    </a>
+
+    <!-- 3 CAJAS SUPERIORES -->
+    <div class="grid grid-cols-3 gap-2 text-center">
+      <div class="p-3 rounded-2xl bg-brand-card/90 border border-brand-border/70 shadow-sm">
+        <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block">Partidos</span>
+        <span id="statPartidos" class="text-lg font-extrabold text-white font-mono mt-0.5 block">--</span>
+        <span class="text-[9px] text-slate-500 font-medium">Monitoreo</span>
+      </div>
+      <div class="p-3 rounded-2xl bg-brand-card/90 border border-brand-border/70 shadow-sm">
+        <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block">Filtro EV</span>
+        <span class="text-lg font-extrabold text-brand-primary font-mono mt-0.5 block">+5.0%</span>
+        <span class="text-[9px] text-slate-500 font-medium">Ventaja</span>
+      </div>
+      <div class="p-3 rounded-2xl bg-brand-card/90 border border-brand-border/70 shadow-sm">
+        <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block">Gestión</span>
+        <span class="text-lg font-extrabold text-brand-highlight font-mono mt-0.5 block">1/4</span>
+        <span class="text-[9px] text-slate-500 font-medium">Kelly</span>
+      </div>
+    </div>
+
+    <!-- TARJETA RENDIMIENTO SEMANAL (EXCLUSIVO TELEGRAM) -->
+    <div class="p-4 rounded-2xl bg-brand-card border border-brand-border relative overflow-hidden shadow-lg">
+      <div class="flex items-start justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-brand-primary/10 border border-brand-primary/30 flex items-center justify-center text-brand-primary">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-extrabold text-white uppercase tracking-wider">Rendimiento Semanal</span>
+              <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">EXCLUSIVO TELEGRAM</span>
+            </div>
+            <p class="text-[10px] text-slate-400">Curva de Equity & Balance de Unidades</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Balance Neto</span>
+          <span id="balanceNetoUnidades" class="text-sm font-extrabold text-brand-primary font-mono">+0.00 U.</span>
+        </div>
+      </div>
+
+      <!-- AVISO OFICIAL TELEGRAM -->
+      <div class="mt-2.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800 text-[10px] text-slate-300 flex items-center gap-2">
+        <svg class="w-3.5 h-3.5 text-brand-highlight flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+        <span>Métricas calculadas <strong>exclusivamente</strong> sobre las alertas oficiales emitidas al <a href="https://t.me/apex_quant_alertas" target="_blank" class="text-brand-highlight underline">canal de Telegram</a>.</span>
+      </div>
+
+      <!-- MÉTRICAS DE LA SEMANA -->
+      <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-slate-800 text-center">
+        <div>
+          <span class="text-[9px] text-slate-400 uppercase font-bold block">Yield / ROI</span>
+          <span id="yieldRoiSemanal" class="text-xs font-bold text-brand-primary font-mono">+0.0%</span>
+        </div>
+        <div>
+          <span class="text-[9px] text-slate-400 uppercase font-bold block">Unidades Ganadas</span>
+          <span id="unidadesGanadasSemanal" class="text-xs font-bold text-emerald-400 font-mono">+0.00 U.</span>
+        </div>
+        <div>
+          <span class="text-[9px] text-slate-400 uppercase font-bold block">Stake Apostado</span>
+          <span id="stakeApostadoSemanal" class="text-xs font-bold text-slate-300 font-mono">0.0 U.</span>
+        </div>
+      </div>
+
+      <!-- MINI GRÁFICO CURVA DE CRECIMIENTO -->
+      <div class="mt-3 pt-2 border-t border-slate-800/80">
+        <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1.5">
+          <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-brand-primary"></span>Curva de Crecimiento Bankroll (Alertas TG)</span>
+          <span id="totalPicksEvaluados" class="font-mono text-[9px] text-slate-400">0 picks evaluados</span>
+        </div>
+        <div class="h-10 w-full bg-slate-900/80 rounded-xl p-1 relative flex items-end">
+          <svg class="w-full h-full overflow-visible" viewBox="0 0 100 30" preserveAspectRatio="none">
+            <path id="equityCurvePath" d="M 0 25 L 20 22 L 40 18 L 60 20 L 80 14 L 100 12" fill="none" stroke="#00f59b" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESUMEN DE EFECTIVIDAD (3 BLOQUES) -->
+    <div>
+      <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1.5 px-1 font-medium">
+        <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-brand-highlight"></span>Semana actual</span>
+        <span class="text-[10px] text-slate-400 font-mono">Reinicio oficial cada lunes 00:00h</span>
+      </div>
+      <div class="grid grid-cols-3 gap-2 text-center">
+        <div class="p-3 rounded-2xl bg-brand-card border border-brand-primary/40 shadow-sm relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-8 h-8 bg-brand-primary/10 rounded-bl-full pointer-events-none"></div>
+          <span class="text-[10px] font-bold text-brand-primary uppercase tracking-wide flex items-center justify-center gap-1">
+            <span class="w-1 h-1 rounded-full bg-brand-primary"></span> Telegram
+          </span>
+          <span id="efectividadTelegram" class="text-base font-extrabold text-brand-primary font-mono mt-0.5 block">--%</span>
+          <span id="conteoTelegram" class="text-[9px] text-slate-400 font-mono">0V - 0D TG</span>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-brand-card border border-brand-border shadow-sm">
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">Sin Alerta</span>
+          <span id="efectividadSinAlerta" class="text-base font-extrabold text-slate-300 font-mono mt-0.5 block">--%</span>
+          <span id="conteoSinAlerta" class="text-[9px] text-slate-400 font-mono">0V - 0D No TG</span>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-brand-card border border-brand-border shadow-sm">
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">Global Total</span>
+          <span id="efectividadGlobal" class="text-base font-extrabold text-white font-mono mt-0.5 block">--%</span>
+          <span id="conteoGlobal" class="text-[9px] text-slate-400 font-mono">0V - 0D Total</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PESTAÑAS PRINCIPALES -->
+    <div class="flex p-1 bg-slate-900/90 rounded-2xl border border-brand-border/80">
+      <button id="tabHoy" class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-brand-primary text-slate-950 shadow-md">
+        <span>En Juego / Hoy</span>
+        <span id="countHoy" class="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-950/20 text-slate-950 font-extrabold">(0)</span>
       </button>
-<button class="flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition" id="tabFinalizados" onclick="cambiarPestana('finalizados')">
-        Finalizados (<span id="countFinalizados">0</span>)
+      <button id="tabFinalizados" class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white">
+        <span>Finalizados</span>
+        <span id="countFinalizados" class="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400 font-extrabold">(0)</span>
       </button>
-<button class="flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition" id="tabAlertas" onclick="cambiarPestana('alertas')">
-        Alertas (<span id="countAlertas">0</span>)
+      <button id="tabAlertas" class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white">
+        <span>Alertas</span>
+        <span id="countAlertas" class="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400 font-extrabold">(0)</span>
       </button>
-</div>
-<!-- Barra de Filtros de Competición (Solo visible en Activos y Finalizados) -->
-<div class="space-y-1.5" id="seccionFiltrosLigas">
-<div class="flex items-center justify-between text-[11px] font-bold px-1 text-slate-400">
-<span>COMPETICIONES</span>
-<span class="text-[10px] text-slate-400 font-mono" id="horaSync">Sincronizando...</span>
-</div>
-<div class="flex space-x-2 overflow-x-auto pb-1 custom-scrollbar">
-<button class="px-3 py-1.5 rounded-lg text-xs font-extrabold bg-slate-900 border border-slate-800 text-slate-400 flex items-center gap-1.5 shrink-0 transition" id="filterLive" onclick="toggleFiltroEnVivo()">
-<span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> EN VIVO
+    </div>
+
+    <!-- FILTROS DE COMPETICIÓN -->
+    <div>
+      <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1.5 px-1 font-medium">
+        <span class="uppercase tracking-wider font-bold">Competiciones</span>
+        <span id="syncHour" class="text-[10px] text-slate-400 font-mono">Sincronizando...</span>
+      </div>
+      <div id="leaguesFilterContainer" class="flex gap-1.5 overflow-x-auto pb-1 custom-scroll">
+        <button data-filter="LIVE" class="filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-rose-400 border border-rose-500/30 hover:border-rose-500 flex items-center gap-1.5 transition">
+          <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span> EN VIVO
         </button>
-<button class="liga-btn active px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#00f59b] text-slate-950 shrink-0 transition" data-liga="all" onclick="filtrarLiga('all')">
-          Todas
-        </button>
-<button class="liga-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 border border-slate-800 text-slate-400 shrink-0 transition" data-liga="laliga" onclick="filtrarLiga('laliga')">
-          LaLiga (ESP)
-        </button>
-<button class="liga-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 border border-slate-800 text-slate-400 shrink-0 transition" data-liga="laliga2" onclick="filtrarLiga('laliga2')">
-          LaLiga 2 (ESP)
-        </button>
-<button class="liga-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 border border-slate-800 text-slate-400 shrink-0 transition" data-liga="premier" onclick="filtrarLiga('premier')">
-          Premier (ENG)
-        </button>
-<button class="liga-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 border border-slate-800 text-slate-400 shrink-0 transition" data-liga="bundesliga" onclick="filtrarLiga('bundesliga')">
-          Bundesliga (GER)
-        </button>
-<button class="liga-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 border border-slate-800 text-slate-400 shrink-0 transition" data-liga="seriea" onclick="filtrarLiga('seriea')">
-          Serie A (ITA)
-        </button>
-<button class="liga-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 border border-slate-800 text-slate-400 shrink-0 transition" data-liga="ligue1" onclick="filtrarLiga('ligue1')">
-          Ligue 1 (FRA)
-        </button>
-<button class="liga-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 border border-slate-800 text-slate-400 shrink-0 transition" data-liga="champions" onclick="filtrarLiga('champions')">
-          Champions (UEFA)
-        </button>
-</div>
-</div>
-<!-- Título de Sección Dinámica -->
-<div class="flex items-center justify-between text-xs font-bold text-slate-400 px-1 pt-1">
-<span id="tituloListado">ENCUENTROS PROGRAMADOS Y EN VIVO</span>
-<span class="text-[10px] text-[#00f59b] font-medium flex items-center gap-1">
-<span class="w-1.5 h-1.5 rounded-full bg-[#00f59b]"></span> hora peninsular (madrid)
+        <button data-filter="all" class="filter-btn active px-3.5 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-brand-primary text-slate-950 shadow-sm transition">Todas</button>
+        <button data-filter="laliga" class="filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:text-white transition">LaLiga (ESP)</button>
+        <button data-filter="laliga2" class="filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:text-white transition">LaLiga 2 (ESP)</button>
+        <button data-filter="premier" class="filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:text-white transition">Premier (ENG)</button>
+        <button data-filter="bundesliga" class="filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:text-white transition">Bundesliga</button>
+        <button data-filter="seriea" class="filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:text-white transition">Serie A</button>
+        <button data-filter="ligue1" class="filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:text-white transition">Ligue 1</button>
+        <button data-filter="champions" class="filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:text-white transition">Champions</button>
+      </div>
+    </div>
+
+    <!-- ENCABEZADO DE SECCIÓN ACTIVA -->
+    <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 px-1 font-medium">
+      <span id="activeSectionTitle" class="uppercase tracking-wider font-extrabold text-slate-300">Encuentros Programados y en Vivo</span>
+      <span class="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> hora peninsular (madrid)
       </span>
-</div>
-<!-- Contenedor Dinámico de Tarjetas -->
-<div class="space-y-3" id="contenedorPartidos">
-<div class="p-8 text-center text-slate-400 bg-slate-900/30 rounded-2xl border border-slate-800/60">
-<svg class="w-8 h-8 mx-auto mb-2 text-slate-500 animate-spin" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-<p class="text-xs">Sincronizando pronósticos y partidos reales...</p>
-</div>
-</div>
-</main>
-<script>
-    // Variables de Estado Global
-    let partidosData = [];
-    let alertasData = [];
-    let pestanaActiva = 'activos';
-    let ligaSeleccionada = 'all';
-    let filtroEnVivoActivo = false;
-    let modoOled = false;
-    let semanaIdActual = '';
+    </div>
 
-    function formatearRachaVisual(cadenaRacha) {
-      if (!cadenaRacha) return '';
-      return cadenaRacha.toUpperCase().split('').map(letra => {
-        if (letra === 'W') {
-          return '<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500/25 text-emerald-400 border border-emerald-500/40 text-[9px] font-bold mx-[1px]">W</span>';
-        }
-        if (letra === 'D') {
-          return '<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/25 text-amber-400 border border-amber-500/40 text-[9px] font-bold mx-[1px]">D</span>';
-        }
-        if (letra === 'L') {
-          return '<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-rose-500/25 text-rose-400 border border-rose-500/40 text-[9px] font-bold mx-[1px]">L</span>';
-        }
-        return '';
-      }).join('');
-    }
+    <!-- CONTENEDOR DE TARJETAS -->
+    <div id="matchesContainer" class="space-y-3">
+      <!-- Skeleton loader inicial -->
+      <div class="p-6 rounded-2xl bg-brand-card/50 border border-brand-border/60 text-center text-slate-400">
+        <div class="w-6 h-6 border-2 border-brand-primary border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+        <p class="text-xs font-medium">Sincronizando pronósticos y partidos reales...</p>
+      </div>
+    </div>
 
-    function formatearBloqueRachas(rachaLocal, rachaVisitante, tendencia) {
-      const htmlLocal = formatearRachaVisual(rachaLocal || 'WWDWL');
-      const htmlVisitante = formatearRachaVisual(rachaVisitante || 'LLDWL');
-      const textoTendencia = tendencia || '• ⚖️ Tendencia Equilibrada';
+  </div>
+
+  <script>
+    let state = {
+      activeTab: 'hoy',
+      currentFilter: 'all',
+      partidos: [],
+      alertas: [],
+      metricasSemana: {},
+      ultimaActualizacion: ''
+    };
+
+    // FORMATEADOR VISUAL DE RACHAS (W Verde, D Ámbar, L Rojo)
+    function formatearRachaVisual(rachaStr, formInfo) {
+      if (!rachaStr && !formInfo) return '';
+      let rachaLocal = '';
+      let rachaVis = '';
+      let tendenciaTexto = '';
+
+      if (formInfo && formInfo.racha_local && formInfo.racha_visitante) {
+        rachaLocal = formInfo.racha_local;
+        rachaVis = formInfo.racha_visitante;
+        tendenciaTexto = formInfo.tendencia || '';
+      } else if (typeof rachaStr === 'string' && rachaStr.includes('vs')) {
+        const partes = rachaStr.replace('RACHA:', '').trim().split('•');
+        const versus = partes[0].split('vs');
+        rachaLocal = (versus[0] || '').trim();
+        rachaVis = (versus[1] || '').trim();
+        tendenciaTexto = partes[1] ? partes[1].trim() : '';
+      } else {
+        rachaLocal = 'W-W-D-W-L';
+        rachaVis = 'L-L-D-W-L';
+        tendenciaTexto = '⚖️ Tendencia Equilibrada';
+      }
+
+      function letrasACirculos(cadena) {
+        if (!cadena) return '';
+        const letras = cadena.replace(/[^WDL]/gi, '').split('');
+        return letras.map(letra => {
+          const l = letra.toUpperCase();
+          if (l === 'W') {
+            return `<span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-emerald-500/25 text-emerald-400 border border-emerald-500/40 text-[8.5px] font-bold mx-[1px]" title="Victoria">W</span>`;
+          } else if (l === 'D') {
+            return `<span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-amber-500/25 text-amber-400 border border-amber-500/40 text-[8.5px] font-bold mx-[1px]" title="Empate">D</span>`;
+          } else if (l === 'L') {
+            return `<span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-rose-500/25 text-rose-400 border border-rose-500/40 text-[8.5px] font-bold mx-[1px]" title="Derrota">L</span>`;
+          }
+          return '';
+        }).join('');
+      }
+
+      const circulosLoc = letrasACirculos(rachaLocal);
+      const circulosVis = letrasACirculos(rachaVis);
+
       return `
-        <div class="flex items-center flex-wrap gap-1 text-[10px] text-slate-400 font-mono">
-          <span class="font-bold text-slate-400 mr-0.5">RACHA:</span>
-          <span class="inline-flex items-center">${htmlLocal}</span>
-          <span class="text-slate-500 text-[10px] mx-1">vs</span>
-          <span class="inline-flex items-center">${htmlVisitante}</span>
-          <span class="ml-1 text-slate-400 text-[10px] font-sans">${textoTendencia}</span>
+        <div class="flex items-center flex-wrap gap-1.5 text-[11px] text-slate-400 mt-1">
+          <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">RACHA:</span>
+          <span class="inline-flex items-center">${circulosLoc}</span>
+          <span class="text-[10px] text-slate-500 font-medium">vs</span>
+          <span class="inline-flex items-center">${circulosVis}</span>
+          ${tendenciaTexto ? `<span class="text-slate-600">•</span><span class="text-[10px] text-slate-300 font-medium">${tendenciaTexto}</span>` : ''}
         </div>
       `;
     }
 
-    function obtenerBadgeMercado(mercadoTexto, tipoMercado) {
-      const texto = ((mercadoTexto || '') + ' ' + (tipoMercado || '')).toLowerCase();
-      if (texto.includes('gol') || texto.includes('over') || texto.includes('más de') || texto.includes('mas de') || texto.includes('under') || (tipoMercado && tipoMercado.toUpperCase().includes('GOLES'))) {
-        return `<span class="px-1.5 py-0.5 text-[9px] font-extrabold uppercase rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">GOLES TOTALES</span>`;
+    // FORMATEADOR DE BADGE DE MERCADO DINÁMICO (SOPORTA: 1X2, OVER 2.5, OVER 1.5, AMBOS MARCAN)
+    function obtenerBadgeMercado(partido) {
+      const mercadoTexto = (partido.mercado || '').toLowerCase();
+      const tipoMercado = (partido.tipo_mercado || '').toUpperCase();
+
+      // 1. AMBOS EQUIPOS MARCAN (BTTS) — [NUEVO]
+      if (tipoMercado === 'BTTS' || mercadoTexto.includes('ambos') || mercadoTexto.includes('btts')) {
+        return `<span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-950/80 text-amber-400 border border-amber-500/30 tracking-wider uppercase">AMBOS MARCAN</span>`;
       }
-      if (texto.includes('corner') || texto.includes('córner') || (tipoMercado && tipoMercado.toUpperCase().includes('CORNER'))) {
-        return `<span class="px-1.5 py-0.5 text-[9px] font-extrabold uppercase rounded bg-sky-500/20 text-sky-300 border border-sky-500/30">CÓRNERS TOTALES</span>`;
+
+      // 2. MÁS DE 1.5 GOLES (OVER 1.5) — [NUEVO]
+      if (tipoMercado === 'OVER_15' || (mercadoTexto.includes('1.5') && mercadoTexto.includes('gol'))) {
+        return `<span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-teal-950/80 text-teal-400 border border-teal-500/30 tracking-wider uppercase">+1.5 GOLES TOTALES</span>`;
       }
-      if (texto.includes('tarjeta') || texto.includes('card') || texto.includes('disciplina') || (tipoMercado && (tipoMercado.toUpperCase().includes('TARJETA') || tipoMercado.toUpperCase().includes('DISCIPLINA')))) {
-        return `<span class="px-1.5 py-0.5 text-[9px] font-extrabold uppercase rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">DISCIPLINA / TARJETAS</span>`;
+
+      // 3. MÁS DE 2.5 GOLES (OVER 2.5)
+      if (tipoMercado === 'GOLES' || tipoMercado === 'GOLES_HT' || mercadoTexto.includes('2.5') || (mercadoTexto.includes('gol') && !mercadoTexto.includes('1.5'))) {
+        return `<span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-950/80 text-emerald-400 border border-emerald-500/30 tracking-wider uppercase">GOLES TOTALES</span>`;
       }
-      return `<span class="px-1.5 py-0.5 text-[9px] font-extrabold uppercase rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">1X2 GANADOR</span>`;
+
+      // 4. 1X2 GANADOR
+      return `<span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-indigo-950/80 text-indigo-300 border border-indigo-500/30 tracking-wider uppercase">1X2 GANADOR</span>`;
     }
 
-    function toggleOled() {
-      modoOled = !modoOled;
-      const dot = document.getElementById('oledDot');
-      if (modoOled) {
-        document.body.classList.add('bg-black');
-        document.body.classList.remove('bg-[#070e1d]');
-        dot.classList.replace('bg-slate-500', 'bg-[#00f59b]');
+    async function cargarDatos() {
+      try {
+        const resp = await fetch('datos.json?t=' + Date.now());
+        if (!resp.ok) throw new Error('No se pudo cargar datos.json');
+        const data = await resp.json();
+
+        state.partidos = data.partidos || [];
+        state.alertas = data.alertas || [];
+        state.metricasSemana = data.metricas_semana || {};
+        state.ultimaActualizacion = data.ultima_actualizacion || '';
+
+        actualizarMetricas();
+        renderizar();
+      } catch (err) {
+        console.error('Error cargando datos.json:', err);
+        document.getElementById('matchesContainer').innerHTML = `
+          <div class="p-6 rounded-2xl bg-brand-card border border-brand-border text-center">
+            <p class="text-xs text-slate-300 font-medium">Esperando datos de la última ejecución...</p>
+            <p class="text-[10px] text-slate-500 mt-1">El archivo datos.json se generará automáticamente en el próximo ciclo.</p>
+          </div>
+        `;
+      }
+    }
+
+    function actualizarMetricas() {
+      document.getElementById('statPartidos').innerText = state.partidos.length || '--';
+      document.getElementById('syncHour').innerText = state.ultimaActualizacion ? (state.ultimaActualizacion + ' sync') : 'Sincronizado';
+
+      const activos = state.partidos.filter(p => p.estado !== 'FINISHED');
+      const finalizados = state.partidos.filter(p => p.estado === 'FINISHED');
+
+      document.getElementById('countHoy').innerText = `(${activos.length})`;
+      document.getElementById('countFinalizados').innerText = `(${finalizados.length})`;
+      document.getElementById('countAlertas').innerText = `(${state.alertas.length})`;
+
+      const finConPronostico = finalizados.filter(p => p.acertado !== null && p.acertado !== undefined);
+      
+      const alertasFin = state.alertas.filter(a => a.finalizado && a.acertado !== null);
+      const aciertosTG = alertasFin.filter(a => a.acertado === true).length;
+      const totalTG = alertasFin.length;
+      const pctTG = totalTG > 0 ? Math.round((aciertosTG / totalTG) * 100) : '--';
+
+      document.getElementById('efectividadTelegram').innerText = pctTG !== '--' ? `${pctTG}%` : '--%';
+      document.getElementById('conteoTelegram').innerText = `${aciertosTG}V - ${totalTG - aciertosTG}D TG`;
+
+      const aciertosGlobal = finConPronostico.filter(p => p.acertado === true).length;
+      const totalGlobal = finConPronostico.length;
+      const pctGlobal = totalGlobal > 0 ? Math.round((aciertosGlobal / totalGlobal) * 100) : '--';
+
+      document.getElementById('efectividadGlobal').innerText = pctGlobal !== '--' ? `${pctGlobal}%` : '--%';
+      document.getElementById('conteoGlobal').innerText = `${aciertosGlobal}V - ${totalGlobal - aciertosGlobal}D Total`;
+
+      const sinAlertaFin = finConPronostico.filter(p => !p.telegram_enviado);
+      const aciertosSin = sinAlertaFin.filter(p => p.acertado === true).length;
+      const totalSin = sinAlertaFin.length;
+      const pctSin = totalSin > 0 ? Math.round((aciertosSin / totalSin) * 100) : '--';
+
+      document.getElementById('efectividadSinAlerta').innerText = pctSin !== '--' ? `${pctSin}%` : '--%';
+      document.getElementById('conteoSinAlerta').innerText = `${aciertosSin}V - ${totalSin - aciertosSin}D No TG`;
+
+      const m = state.metricasSemana;
+      if (m && m.finalizadas > 0) {
+        const u = m.unidades_netas !== undefined ? m.unidades_netas : 0;
+        const signo = u >= 0 ? '+' : '';
+        document.getElementById('balanceNetoUnidades').innerText = `${signo}${u.toFixed(2)} U.`;
+        document.getElementById('yieldRoiSemanal').innerText = `${m.roi_pct >= 0 ? '+' : ''}${m.roi_pct}%`;
+        document.getElementById('unidadesGanadasSemanal').innerText = `${signo}${u.toFixed(2)} U.`;
+        document.getElementById('stakeApostadoSemanal').innerText = `${(m.unidades_apostadas || 0).toFixed(1)} U.`;
+        document.getElementById('totalPicksEvaluados').innerText = `${m.finalizadas} picks evaluados`;
+      }
+    }
+
+    function renderizar() {
+      const container = document.getElementById('matchesContainer');
+      const title = document.getElementById('activeSectionTitle');
+
+      let lista = [];
+
+      if (state.activeTab === 'hoy') {
+        title.innerText = 'Encuentros Programados y en Vivo';
+        lista = state.partidos.filter(p => p.estado !== 'FINISHED');
+      } else if (state.activeTab === 'finalizados') {
+        title.innerText = 'Partidos Finalizados Recientes';
+        lista = state.partidos.filter(p => p.estado === 'FINISHED');
+      } else if (state.activeTab === 'alertas') {
+        title.innerText = 'Historial de Alertas Telegram Emitidas';
+        renderizarAlertas();
+        return;
+      }
+
+      if (state.currentFilter === 'LIVE') {
+        lista = lista.filter(p => p.estado === 'IN_PLAY' || p.estado === 'PAUSED' || p.estado === 'HT');
+      } else if (state.currentFilter !== 'all') {
+        lista = lista.filter(p => p.liga_key === state.currentFilter);
+      }
+
+      if (lista.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 rounded-2xl bg-brand-card border border-brand-border text-center">
+            <p class="text-xs text-slate-300 font-medium">No hay partidos en esta sección</p>
+            <p class="text-[10px] text-slate-500 mt-1">Todos los encuentros han finalizado o están programados para más tarde.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = lista.map(p => renderizarTarjetaPartido(p)).join('');
+    }
+
+    function renderizarTarjetaPartido(p) {
+      const esEnJuego = p.estado === 'IN_PLAY' || p.estado === 'PAUSED' || p.estado === 'HT';
+      const esFinalizado = p.estado === 'FINISHED';
+      const marcador = p.marcador || (esEnJuego ? '0 - 0' : null);
+
+      let badgeEstado = '';
+      if (esEnJuego) {
+        const minStr = p.minuto_juego || 'EN JUEGO';
+        badgeEstado = `
+          <div class="flex items-center gap-2">
+            ${marcador ? `<span class="px-2 py-0.5 rounded-lg bg-slate-900 border border-slate-700 text-brand-primary text-xs font-extrabold font-mono">${marcador}</span>` : ''}
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-rose-500/15 text-rose-400 border border-rose-500/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+              EN JUEGO (${minStr})
+            </span>
+          </div>
+        `;
+      } else if (esFinalizado) {
+        const badgeAcierto = p.acertado === true 
+          ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">✓ ACERTADO</span>`
+          : (p.acertado === false 
+              ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center gap-1">✕ PERDIDO</span>` 
+              : '');
+
+        badgeEstado = `
+          <div class="flex items-center gap-2">
+            ${marcador ? `<span class="px-2 py-0.5 rounded-lg bg-slate-900 border border-slate-700 text-brand-primary text-xs font-extrabold font-mono">${marcador}</span>` : ''}
+            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700 uppercase">FINALIZADO</span>
+            ${badgeAcierto}
+          </div>
+        `;
       } else {
-        document.body.classList.remove('bg-black');
-        document.body.classList.add('bg-[#070e1d]');
-        dot.classList.replace('bg-[#00f59b]', 'bg-slate-500');
+        badgeEstado = `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800/80 text-slate-400 border border-slate-700/60 uppercase">PROGRAMADO</span>`;
       }
+
+      const rachaHtml = formatearRachaVisual(p.racha || (p.form_info && p.form_info.resumen), p.form_info);
+
+      return `
+        <div class="p-4 rounded-2xl bg-brand-card border border-brand-border hover:border-slate-700 transition space-y-3 shadow-md">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">${p.liga || 'Competición'}</span>
+              <span class="text-[11px] text-slate-400 font-mono">${p.hora || 'TBD'}</span>
+            </div>
+            <div>${badgeEstado}</div>
+          </div>
+
+          <div class="flex items-center justify-between pt-1">
+            <div class="space-y-1.5 flex-1 pr-3">
+              <div class="flex items-center gap-2">
+                ${p.escudo_local ? `<img src="${p.escudo_local}" class="w-5 h-5 object-contain" alt="">` : ''}
+                <span class="text-sm font-extrabold text-white leading-tight">${p.local}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                ${p.escudo_visitante ? `<img src="${p.escudo_visitante}" class="w-5 h-5 object-contain" alt="">` : ''}
+                <span class="text-sm font-extrabold text-white leading-tight">${p.visitante}</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-[9px] uppercase tracking-wider text-slate-500 font-bold block">CUOTA VALOR</span>
+              <span class="text-base font-extrabold text-brand-primary font-mono">@${p.cuota || '2.15'}</span>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800/90 space-y-2">
+            <div class="flex items-center justify-between">
+              ${obtenerBadgeMercado(p)}
+              <span class="text-xs font-extrabold text-amber-400 font-mono bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">${p.ev || '+25.0%'}</span>
+            </div>
+
+            <div class="text-xs font-bold text-slate-200">
+              PRONÓSTICO: <span class="text-white">${p.mercado || 'Victoria Local'}</span>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between text-[10px] mb-1">
+                <span class="text-slate-400 flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Intensidad Alfa (+EV)
+                </span>
+                <span class="text-amber-400 font-extrabold text-[9px]">VALOR ÉLITE (+25%)</span>
+              </div>
+              <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-emerald-400 via-amber-400 to-amber-500 rounded-full" style="width: 78%"></div>
+              </div>
+            </div>
+
+            ${rachaHtml}
+          </div>
+
+          <div class="grid grid-cols-4 gap-2 pt-1 text-center">
+            <div class="p-2 rounded-xl bg-slate-900/60 border border-slate-800">
+              <span class="text-[9px] text-slate-500 uppercase font-bold block">Prob. Modelo</span>
+              <span class="text-xs font-extrabold text-slate-200 font-mono">${p.prob_modelo || '60.0%'}</span>
+            </div>
+            <div class="p-2 rounded-xl bg-slate-900/60 border border-slate-800">
+              <span class="text-[9px] text-slate-500 uppercase font-bold block">Ventaja</span>
+              <span class="text-xs font-extrabold text-emerald-400 font-mono">${p.ev || '+25.0%'}</span>
+            </div>
+            <div class="p-2 rounded-xl bg-slate-900/60 border border-slate-800">
+              <span class="text-[9px] text-slate-500 uppercase font-bold block">Stake Sug.</span>
+              <span class="text-xs font-extrabold text-brand-highlight font-mono">${p.stake || '3'}/10 U.</span>
+            </div>
+            <button onclick="compartirPartido('${p.local}', '${p.visitante}', '${p.mercado}', '${p.cuota}')" class="p-2 rounded-xl bg-slate-900/60 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white transition flex flex-col items-center justify-center gap-0.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+              <span class="text-[9px] font-bold">Compartir</span>
+            </button>
+          </div>
+        </div>
+      `;
     }
 
-    function cambiarPestana(nuevaPestana) {
-      pestanaActiva = nuevaPestana;
-      const tabAct = document.getElementById('tabActivos');
-      const tabFin = document.getElementById('tabFinalizados');
-      const tabAle = document.getElementById('tabAlertas');
-      const filtrosLigas = document.getElementById('seccionFiltrosLigas');
-      const titulo = document.getElementById('tituloListado');
-
-      [tabAct, tabFin, tabAle].forEach(t => {
-        t.className = 'flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition';
-      });
-
-      if (nuevaPestana === 'activos') {
-        tabAct.className = 'flex-1 py-2 rounded-lg bg-[#00f59b] text-slate-950 transition shadow font-bold';
-        filtrosLigas.classList.remove('hidden');
-        titulo.innerText = 'ENCUENTROS PROGRAMADOS Y EN VIVO';
-      } else if (nuevaPestana === 'finalizados') {
-        tabFin.className = 'flex-1 py-2 rounded-lg bg-[#00f59b] text-slate-950 transition shadow font-bold';
-        filtrosLigas.classList.remove('hidden');
-        titulo.innerText = 'PARTIDOS FINALIZADOS RECIENTES';
-      } else {
-        tabAle.className = 'flex-1 py-2 rounded-lg bg-[#00f59b] text-slate-950 transition shadow font-bold';
-        filtrosLigas.classList.add('hidden');
-        titulo.innerText = 'HISTORIAL DE ALERTAS TELEGRAM EMITIDAS';
+    function renderizarAlertas() {
+      const container = document.getElementById('matchesContainer');
+      if (state.alertas.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 rounded-2xl bg-brand-card border border-brand-border text-center">
+            <p class="text-xs text-slate-300 font-medium">Aún no se han emitido alertas oficiales esta semana</p>
+            <p class="text-[10px] text-slate-500 mt-1">El bot emitirá alertas cuando detecte discrepancias de valor (+EV > 5%).</p>
+          </div>
+        `;
+        return;
       }
-      renderizarListado();
+
+      container.innerHTML = state.alertas.slice().reverse().map(a => {
+        return `
+          <div class="p-4 rounded-2xl bg-brand-card border border-brand-border space-y-2.5 shadow-md">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] text-brand-highlight font-mono flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-brand-highlight"></span> Enviado a Telegram • ${a.hora || 'TBD'}
+              </span>
+              <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">Alerta Real</span>
+            </div>
+            <div class="text-sm font-extrabold text-white">
+              ${a.partido} — <span class="text-brand-primary">${a.mercado}</span>
+            </div>
+            <div class="flex items-center gap-4 text-xs font-mono pt-1 text-slate-300">
+              <span>Cuota: <strong class="text-white">${a.cuota}</strong></span>
+              <span>Ventaja: <strong class="text-emerald-400">${a.ev}</strong></span>
+              <span>Stake: <strong class="text-brand-highlight">${a.stake}</strong></span>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
-    function filtrarLiga(ligaKey) {
-      ligaSeleccionada = ligaKey;
-      document.querySelectorAll('.liga-btn').forEach(btn => {
-        if (btn.getAttribute('data-liga') === ligaKey) {
-          btn.className = 'liga-btn active px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#00f59b] text-slate-950 shrink-0 transition';
-        } else {
-          btn.className = 'liga-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 border border-slate-800 text-slate-400 shrink-0 transition';
-        }
-      });
-      renderizarListado();
-    }
-
-    function toggleFiltroEnVivo() {
-      filtroEnVivoActivo = !filtroEnVivoActivo;
-      const btn = document.getElementById('filterLive');
-      if (filtroEnVivoActivo) {
-        btn.className = 'px-3 py-1.5 rounded-lg text-xs font-black bg-red-500/20 text-red-400 border border-red-500/50 flex items-center gap-1.5 shrink-0 transition';
-      } else {
-        btn.className = 'px-3 py-1.5 rounded-lg text-xs font-extrabold bg-slate-900 border border-slate-800 text-slate-400 flex items-center gap-1.5 shrink-0 transition';
-      }
-      renderizarListado();
-    }
-
-    function compartirPronostico(partido, mercado, cuota, ev, stake) {
-      const texto = `⚽ Apex Quant Pronóstico Oficial:\n🎯 ${partido}\n📌 ${mercado}\n💰 Cuota: @${cuota} | Ventaja: +${ev}% | Stake: ${stake}/10 U.\n\n📲 Canal: @apex_quant_alertas\n🌐 Web: https://franciscoserranoadt.github.io/bot-quant-futbol/`;
+    function compartirPartido(local, vis, mercado, cuota) {
+      const texto = `🎯 Pronóstico con Valor (+EV) — Apex Quant Analytics:\n⚽ ${local} vs ${vis}\n📌 Mercado: ${mercado}\n💰 Cuota: @${cuota}\n📲 Ver más en: https://franciscoserranoadt.github.io/bot-quant-futbol/`;
       if (navigator.share) {
-        navigator.share({ title: 'Apex Quant Alerta', text: texto }).catch(() => {});
+        navigator.share({ title: 'Apex Quant Pick', text: texto }).catch(() => {});
       } else {
         navigator.clipboard.writeText(texto).then(() => {
           alert('¡Pronóstico copiado al portapapeles!');
@@ -417,381 +616,80 @@
       }
     }
 
-    function normalizarTexto(txt) {
-      if (!txt) return '';
-      return txt.toLowerCase()
-        .replace(/ fc| cf| ud| sad| de fútbol| de futbol| rc| cd| ca| real | 1\. |05|07|1913|1899| sc| sv| fsv| tsg| vfb| osc/g, ' ')
-        .replace(/\s+/g, ' ').trim();
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+      cargarDatos();
 
-    function verificarAciertoFrontend(mercado, tipoMercado, gLoc, gVis, nomLoc, nomVis, eqPron) {
-      if (gLoc === null || gVis === null || gLoc === undefined || gVis === undefined) return null;
-      const gTot = gLoc + gVis;
-      const mLow = (mercado || '').toLowerCase();
+      const tabHoy = document.getElementById('tabHoy');
+      const tabFin = document.getElementById('tabFinalizados');
+      const tabAlertas = document.getElementById('tabAlertas');
 
-      if (mLow.includes('1.5')) return gTot > 1.5;
-      if (mLow.includes('2.5') || (tipoMercado && tipoMercado.includes('GOLES'))) return gTot > 2.5;
-
-      if (mLow.includes('victoria') || (tipoMercado && tipoMercado.includes('1X2')) || mLow.includes('1x2')) {
-        if (eqPron) {
-          const nPron = normalizarTexto(eqPron);
-          const nLoc = normalizarTexto(nomLoc);
-          const nVis = normalizarTexto(nomVis);
-          if (nPron.includes(nLoc) || nLoc.includes(nPron)) return gLoc > gVis;
-          if (nPron.includes(nVis) || nVis.includes(nPron)) return gVis > gLoc;
-        }
-        const nMerc = normalizarTexto(mercado);
-        const nVis = normalizarTexto(nomVis);
-        if (nVis && nMerc.includes(nVis)) return gVis > gLoc;
-        return gLoc > gVis;
-      }
-      return false;
-    }
-
-    async function recargarDatos(manual = false) {
-      try {
-        const resp = await fetch(`datos.json?t=${new Date().getTime()}`);
-        if (!resp.ok) throw new Error('Error al cargar datos.json');
-        const json = await resp.json();
-
-        partidosData = json.partidos || [];
-        alertasData = json.alertas || [];
-        semanaIdActual = json.semana_activa || '';
-
-        if (json.ultima_actualizacion) {
-          document.getElementById('horaSync').innerText = json.ultima_actualizacion;
-        }
-
-        actualizarMetricas(json);
-        renderizarListado();
-      } catch (err) {
-        console.warn('Error cargando datos:', err);
-        if (manual) alert('No se pudo sincronizar datos.json aún.');
-      }
-    }
-
-    // CÁLCULO DE RENDIMIENTO SEMANAL EXCLUSIVO SOBRE ALERTAS DE TELEGRAM
-    function actualizarMetricas(jsonCompleto) {
-      const activos = partidosData.filter(p => p.estado !== 'FINISHED');
-      const finalizados = partidosData.filter(p => p.estado === 'FINISHED');
-
-      document.getElementById('statPartidos').innerText = partidosData.length;
-      document.getElementById('countActivos').innerText = activos.length;
-      document.getElementById('countFinalizados').innerText = finalizados.length;
-      document.getElementById('countAlertas').innerText = alertasData.length;
-
-      // 1. Efectividad de Alertas Telegram
-      const alertasFin = alertasData.filter(a => a.finalizado || a.estado_partido === 'FINISHED');
-      let aciertosTG = 0;
-      let fallosTG = 0;
-      let apostadasTG = 0.0;
-      let beneficioNetoTG = 0.0;
-
-      alertasFin.forEach(a => {
-        let acertado = a.acertado;
-        if (acertado === null || acertado === undefined) {
-          acertado = verificarAciertoFrontend(a.mercado, a.tipo_mercado, a.goles_local, a.goles_visitante, a.local, a.visitante, a.equipo_pronosticado);
-        }
-        const cuotaVal = parseFloat(String(a.cuota || '2.0').replace('@', '')) || 2.0;
-        const stakeVal = parseFloat(String(a.stake || '3').split('/')[0]) || 3.0;
-
-        apostadasTG += stakeVal;
-        if (acertado) {
-          aciertosTG++;
-          beneficioNetoTG += stakeVal * (cuotaVal - 1.0);
-        } else {
-          fallosTG++;
-          beneficioNetoTG -= stakeVal;
-        }
-      });
-
-      const totalTG = aciertosTG + fallosTG;
-      const pctTG = totalTG > 0 ? Math.round((aciertosTG / totalTG) * 100) : '--';
-      document.getElementById('efectividadTG').innerText = pctTG === '--' ? '--%' : `${pctTG}%`;
-      document.getElementById('recordTG').innerText = `${aciertosTG}V - ${fallosTG}D TG`;
-
-      // Métricas financieras exclusivas de Telegram
-      const signoNeto = beneficioNetoTG >= 0 ? '+' : '';
-      const roiCalculado = apostadasTG > 0 ? ((beneficioNetoTG / apostadasTG) * 100).toFixed(1) : '0.0';
-      const signoRoi = parseFloat(roiCalculado) >= 0 ? '+' : '';
-
-      document.getElementById('statUnidadesNetas').innerText = `${signoNeto}${beneficioNetoTG.toFixed(2)} U.`;
-      document.getElementById('statUnidadesNetas').className = `text-sm font-black ${beneficioNetoTG >= 0 ? 'text-[#00f59b]' : 'text-[#ff3b5c]'}`;
-      document.getElementById('statUnidadesSub').innerText = `${signoNeto}${beneficioNetoTG.toFixed(2)} U.`;
-      document.getElementById('statUnidadesSub').className = `text-xs font-black ${beneficioNetoTG >= 0 ? 'text-[#00f59b]' : 'text-[#ff3b5c]'} mt-0.5`;
-      document.getElementById('statRoi').innerText = `${signoRoi}${roiCalculado}%`;
-      document.getElementById('statRoi').className = `text-xs font-black ${parseFloat(roiCalculado) >= 0 ? 'text-[#00f59b]' : 'text-[#ff3b5c]'} mt-0.5`;
-      document.getElementById('statStakeApostado').innerText = `${apostadasTG.toFixed(1)} U.`;
-      document.getElementById('statEvaluados').innerText = `${totalTG} picks evaluados`;
-
-      // Dibujar Curva de Equity dinámica con Alertas TG
-      dibujarCurvaEquity(alertasFin);
-
-      // 2. Efectividad Sin Alerta
-      let aciertosNoTG = 0;
-      let fallosNoTG = 0;
-      finalizados.forEach(p => {
-        if (!p.telegram_enviado) {
-          const ac = verificarAciertoFrontend(p.mercado, p.tipo_mercado, p.goles_local, p.goles_visitante, p.local, p.visitante, p.local);
-          if (ac !== null) {
-            if (ac) aciertosNoTG++;
-            else fallosNoTG++;
-          }
-        }
-      });
-      const totalNoTG = aciertosNoTG + fallosNoTG;
-      const pctNoTG = totalNoTG > 0 ? Math.round((aciertosNoTG / totalNoTG) * 100) : '--';
-      document.getElementById('efectividadNoTG').innerText = pctNoTG === '--' ? '--%' : `${pctNoTG}%`;
-      document.getElementById('recordNoTG').innerText = `${aciertosNoTG}V - ${fallosNoTG}D No TG`;
-
-      // 3. Efectividad Global Total
-      const totGlobal = totalTG + totalNoTG;
-      const acGlobal = aciertosTG + aciertosNoTG;
-      const pctGlobal = totGlobal > 0 ? Math.round((acGlobal / totGlobal) * 100) : '--';
-      document.getElementById('efectividadGlobal').innerText = pctGlobal === '--' ? '--%' : `${pctGlobal}%`;
-      document.getElementById('recordGlobal').innerText = `${acGlobal}V - ${totGlobal - acGlobal}D Total`;
-    }
-
-    function dibujarCurvaEquity(alertas) {
-      if (!alertas || alertas.length === 0) {
-        document.getElementById('equityAreaPath').setAttribute('d', 'M 0 35 L 100 35 Z');
-        document.getElementById('equityLinePath').setAttribute('d', 'M 0 35 L 100 35');
-        return;
-      }
-      let balance = 0;
-      const puntos = [0];
-      alertas.forEach(a => {
-        const cVal = parseFloat(String(a.cuota || '2.0').replace('@', '')) || 2.0;
-        const sVal = parseFloat(String(a.stake || '3').split('/')[0]) || 3.0;
-        let ac = a.acertado;
-        if (ac === null || ac === undefined) {
-          ac = verificarAciertoFrontend(a.mercado, a.tipo_mercado, a.goles_local, a.goles_visitante, a.local, a.visitante, a.equipo_pronosticado);
-        }
-        if (ac) balance += sVal * (cVal - 1.0);
-        else balance -= sVal;
-        puntos.push(balance);
-      });
-
-      const minVal = Math.min(0, ...puntos);
-      const maxVal = Math.max(1, ...puntos);
-      const rango = (maxVal - minVal) || 1;
-
-      const n = puntos.length;
-      let lineD = '';
-      let areaD = '';
-
-      puntos.forEach((p, idx) => {
-        const x = (idx / (n - 1)) * 100;
-        // Invertir Y (0 es arriba, 40 es abajo)
-        const y = 35 - ((p - minVal) / rango) * 28;
-        if (idx === 0) {
-          lineD = `M ${x.toFixed(1)} ${y.toFixed(1)}`;
-          areaD = `M ${x.toFixed(1)} ${y.toFixed(1)}`;
-        } else {
-          lineD += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
-          areaD += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
-        }
-      });
-
-      areaD += ` L 100 38 L 0 38 Z`;
-
-      document.getElementById('equityLinePath').setAttribute('d', lineD);
-      document.getElementById('equityAreaPath').setAttribute('d', areaD);
-    }
-
-    function renderizarListado() {
-      const contenedor = document.getElementById('contenedorPartidos');
-      contenedor.innerHTML = '';
-
-      if (pestanaActiva === 'alertas') {
-        if (!alertasData || alertasData.length === 0) {
-          contenedor.innerHTML = `
-            <div class="p-8 text-center bg-slate-900/40 rounded-2xl border border-slate-800">
-              <p class="text-sm font-bold text-white mb-1">Sin alertas emitidas aún</p>
-              <p class="text-xs text-slate-400">Las alertas automáticas (+EV > 5%) se acumularán aquí permanentemente.</p>
-            </div>`;
-          return;
-        }
-
-        alertasData.slice().reverse().forEach(alerta => {
-          let acertado = alerta.acertado;
-          if (acertado === null || acertado === undefined) {
-            acertado = verificarAciertoFrontend(alerta.mercado, alerta.tipo_mercado, alerta.goles_local, alerta.goles_visitante, alerta.local, alerta.visitante, alerta.equipo_pronosticado);
-          }
-          const finalizado = alerta.finalizado || alerta.estado_partido === 'FINISHED';
-          const marcador = alerta.marcador || (alerta.goles_local !== null && alerta.goles_visitante !== null ? `${alerta.goles_local} - ${alerta.goles_visitante}` : 'Final');
-
-          const badgeSettle = finalizado
-            ? (acertado
-                ? `<span class="px-2.5 py-1 rounded-lg text-xs font-black bg-[#00f59b]/20 text-[#00f59b] border border-[#00f59b]/40 flex items-center gap-1">✔ ACERTADO</span>`
-                : `<span class="px-2.5 py-1 rounded-lg text-xs font-black bg-[#ff3b5c]/20 text-[#ff3b5c] border border-[#ff3b5c]/40 flex items-center gap-1">✖ PERDIDO</span>`)
-            : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#00d2ff]/20 text-[#00d2ff] border border-[#00d2ff]/30">Alerta Real</span>`;
-
-          const badgeMercadoHTML = obtenerBadgeMercado(alerta.mercado, alerta.tipo_mercado);
-
-          const card = document.createElement('div');
-          card.className = 'p-4 rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-lg space-y-2.5';
-          card.innerHTML = `
-            <div class="flex items-center justify-between text-[11px] text-slate-400">
-              <span class="text-[#00d2ff] font-bold">Enviado a Telegram • ${alerta.hora || 'Oficial'}</span>
-              ${badgeSettle}
-            </div>
-            <div class="flex items-center justify-between">
-              <h3 class="text-sm font-bold text-white leading-tight">${alerta.partido || (alerta.local + ' vs ' + alerta.visitante)}</h3>
-              ${finalizado ? `<span class="px-2 py-0.5 rounded bg-slate-800 text-xs font-mono font-bold text-white">${marcador}</span>` : ''}
-            </div>
-            <div class="flex items-center justify-between gap-2">
-              <div class="text-xs font-bold text-[#00f59b]">${alerta.mercado}</div>
-              <div>${badgeMercadoHTML}</div>
-            </div>
-            <div class="flex items-center justify-between pt-1 border-t border-slate-800/60 text-xs font-semibold text-slate-300">
-              <span>Cuota: <b class="text-[#00f59b]">${alerta.cuota}</b></span>
-              <span>Ventaja: <b class="text-[#00f59b]">${alerta.ev || '+25.0%'}</b></span>
-              <span>Stake: <b class="text-[#00d2ff]">${alerta.stake} U.</b></span>
-            </div>
-          `;
-          contenedor.appendChild(card);
+      function resetTabs() {
+        [tabHoy, tabFin, tabAlertas].forEach(btn => {
+          btn.className = 'flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white';
+          const badge = btn.querySelector('span:last-child');
+          if (badge) badge.className = 'text-[10px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400 font-extrabold';
         });
-        return;
       }
 
-      // Pestañas Activos / Finalizados
-      let lista = partidosData.filter(p => {
-        if (pestanaActiva === 'finalizados') return p.estado === 'FINISHED';
-        return p.estado !== 'FINISHED';
+      tabHoy.addEventListener('click', () => {
+        resetTabs();
+        tabHoy.className = 'flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-brand-primary text-slate-950 shadow-md';
+        tabHoy.querySelector('span:last-child').className = 'text-[10px] px-1.5 py-0.2 rounded-full bg-slate-950/20 text-slate-950 font-extrabold';
+        state.activeTab = 'hoy';
+        renderizar();
       });
 
-      if (ligaSeleccionada !== 'all') {
-        lista = lista.filter(p => p.liga_key === ligaSeleccionada);
-      }
-
-      if (filtroEnVivoActivo) {
-        lista = lista.filter(p => p.estado === 'IN_PLAY' || p.estado === 'HT' || (p.minuto_juego && p.minuto_juego !== 'TBD'));
-      }
-
-      if (lista.length === 0) {
-        contenedor.innerHTML = `
-          <div class="p-8 text-center bg-slate-900/40 rounded-2xl border border-slate-800">
-            <p class="text-sm font-bold text-white mb-1">No hay partidos en esta sección</p>
-            <p class="text-xs text-slate-400">Todos los encuentros han finalizado o están programados para más tarde.</p>
-          </div>`;
-        return;
-      }
-
-      lista.forEach(p => {
-        const esEnJuego = (p.estado === 'IN_PLAY' || p.estado === 'HT' || p.estado === 'LIVE' || (p.minuto_juego && p.minuto_juego !== 'TBD'));
-        const esFinalizado = (p.estado === 'FINISHED');
-        const marcador = p.marcador || (p.goles_local !== null && p.goles_visitante !== null ? `${p.goles_local} - ${p.goles_visitante}` : '0 - 0');
-
-        let badgeEstado = '';
-        if (esFinalizado) {
-          const ac = verificarAciertoFrontend(p.mercado, p.tipo_mercado, p.goles_local, p.goles_visitante, p.local, p.visitante, p.local);
-          badgeEstado = ac
-            ? `<span class="px-2 py-0.5 text-[10px] font-black rounded bg-[#00f59b]/20 text-[#00f59b] border border-[#00f59b]/40">✔ ACERTADO</span>`
-            : `<span class="px-2 py-0.5 text-[10px] font-black rounded bg-[#ff3b5c]/20 text-[#ff3b5c] border border-[#ff3b5c]/40">✖ PERDIDO</span>`;
-        } else if (esEnJuego) {
-          badgeEstado = `<span class="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-red-500/20 text-red-400 border border-red-500/40 flex items-center gap-1 pulse-live"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> EN JUEGO (${p.minuto_juego || '1\''})</span>`;
-        } else {
-          badgeEstado = `<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-800 text-slate-300">PROGRAMADO</span>`;
-        }
-
-        const cuota = p.cuota ? `@${p.cuota}` : '@2.15';
-        const ev = p.ev || '+25.0%';
-        const stake = p.stake || 3;
-        const badgeMercadoHTML = obtenerBadgeMercado(p.mercado, p.tipo_mercado);
-
-        const rachaLocalStr = p.racha_local || (p.racha ? p.racha.split('vs')[0] : 'WWDWL');
-        const rachaVisitanteStr = p.racha_visitante || (p.racha ? p.racha.split('vs')[1] : 'LLDWL');
-        const tendenciaStr = p.tendencia ? `• ${p.tendencia}` : '• ⚖️ Tendencia Equilibrada';
-        const bloqueRachasHTML = formatearBloqueRachas(rachaLocalStr, rachaVisitanteStr, tendenciaStr);
-
-        const card = document.createElement('div');
-        card.className = 'p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-md space-y-3';
-        card.innerHTML = `
-          <div class="flex items-center justify-between text-xs">
-            <div class="flex items-center gap-2">
-              <span class="px-2 py-0.5 rounded bg-slate-800/80 text-[10px] font-bold text-slate-300">${p.liga}</span>
-              <span class="text-[11px] font-mono text-slate-400">${p.hora}</span>
-            </div>
-            <div class="flex items-center gap-2">
-              ${(esEnJuego || esFinalizado) ? `<span class="px-2 py-0.5 rounded text-xs font-mono font-black bg-slate-950 text-[#00f59b] border border-slate-800">${marcador}</span>` : ''}
-              ${badgeEstado}
-            </div>
-          </div>
-
-          <!-- Nombres de Equipos Completos con Escudos -->
-          <div class="space-y-1.5">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                ${p.escudo_local ? `<img src="${p.escudo_local}" class="w-5 h-5 object-contain" alt="">` : '<span class="text-xs">🛡️</span>'}
-                <span class="text-sm font-bold text-white tracking-tight">${p.local}</span>
-              </div>
-              <span class="text-[10px] text-slate-400 font-bold uppercase">VS</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                ${p.escudo_visitante ? `<img src="${p.escudo_visitante}" class="w-5 h-5 object-contain" alt="">` : '<span class="text-xs">🛡️</span>'}
-                <span class="text-sm font-bold text-white tracking-tight">${p.visitante}</span>
-              </div>
-              <span class="text-xs font-mono font-black text-[#00f59b]">${cuota}</span>
-            </div>
-          </div>
-
-          <!-- Bloque de Pronóstico -->
-          <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-2">
-            <div class="flex items-center justify-between">
-              <div>
-                ${badgeMercadoHTML}
-                <p class="text-xs font-bold text-slate-100 mt-1">${p.mercado || ('Victoria ' + p.local)}</p>
-              </div>
-              <span class="px-2 py-0.5 text-xs font-black text-[#ffb800] bg-[#ffb800]/10 border border-[#ffb800]/30 rounded-md">${ev}</span>
-            </div>
-            <div class="space-y-1">
-              <div class="flex items-center justify-between text-[10px] text-slate-400 font-medium">
-                <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[#00f59b]"></span> Intensidad Alfa (+EV)</span>
-                <span class="text-amber-400 font-bold">VALOR ÉLITE (+25%)</span>
-              </div>
-              <div class="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                <div class="h-full bg-gradient-to-r from-[#00f59b] to-[#ffb800] rounded-full" style="width: 78%"></div>
-              </div>
-            </div>
-            ${bloqueRachasHTML}
-          </div>
-
-          <!-- Métricas de Modelo y Botón Compartir -->
-          <div class="grid grid-cols-4 gap-2 pt-1 text-center">
-            <div class="p-2 rounded-xl bg-slate-950/60 border border-slate-800/60">
-              <p class="text-[8px] font-bold text-slate-400">Prob. Modelo</p>
-              <p class="text-[11px] font-extrabold text-white mt-0.5">${p.prob_modelo || '62.0%'}</p>
-            </div>
-            <div class="p-2 rounded-xl bg-slate-950/60 border border-slate-800/60">
-              <p class="text-[8px] font-bold text-slate-400">Ventaja</p>
-              <p class="text-[11px] font-extrabold text-[#00f59b] mt-0.5">${ev}</p>
-            </div>
-            <div class="p-2 rounded-xl bg-slate-950/60 border border-slate-800/60">
-              <p class="text-[8px] font-bold text-slate-400">Stake Sug.</p>
-              <p class="text-[11px] font-extrabold text-[#00d2ff] mt-0.5">${stake}/10 U.</p>
-            </div>
-            <button onclick="compartirPronostico('${p.local} vs ${p.visitante}', '${p.mercado}', '${cuota}', '${ev}', '${stake}')" class="p-2 rounded-xl bg-slate-950/60 border border-slate-800/60 hover:border-slate-600 transition flex flex-col items-center justify-center text-slate-300 active:scale-95">
-              <svg class="w-3.5 h-3.5 mb-0.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
-              <span class="text-[8px] font-bold">Compartir</span>
-            </button>
-          </div>
-        `;
-        contenedor.appendChild(card);
+      tabFin.addEventListener('click', () => {
+        resetTabs();
+        tabFin.className = 'flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-brand-primary text-slate-950 shadow-md';
+        tabFin.querySelector('span:last-child').className = 'text-[10px] px-1.5 py-0.2 rounded-full bg-slate-950/20 text-slate-950 font-extrabold';
+        state.activeTab = 'finalizados';
+        renderizar();
       });
-    }
 
-    // Inicialización y Registro Service Worker
-    window.addEventListener('DOMContentLoaded', () => {
-      recargarDatos();
-      setInterval(() => {
-        recargarDatos();
-      }, 30000);
+      tabAlertas.addEventListener('click', () => {
+        resetTabs();
+        tabAlertas.className = 'flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-brand-primary text-slate-950 shadow-md';
+        tabAlertas.querySelector('span:last-child').className = 'text-[10px] px-1.5 py-0.2 rounded-full bg-slate-950/20 text-slate-950 font-extrabold';
+        state.activeTab = 'alertas';
+        renderizar();
+      });
 
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
-      }
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.filter-btn').forEach(b => {
+            if (b.dataset.filter === 'LIVE') {
+              b.className = 'filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-rose-400 border border-rose-500/30 hover:border-rose-500 flex items-center gap-1.5 transition';
+            } else {
+              b.className = 'filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:text-white transition';
+            }
+          });
+
+          if (btn.dataset.filter === 'LIVE') {
+            btn.className = 'filter-btn active px-3.5 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-rose-500 text-white shadow-sm transition flex items-center gap-1.5';
+          } else {
+            btn.className = 'filter-btn active px-3.5 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-brand-primary text-slate-950 shadow-sm transition';
+          }
+
+          state.currentFilter = btn.dataset.filter;
+          renderizar();
+        });
+      });
+
+      document.getElementById('btnRefresh').addEventListener('click', () => {
+        const icon = document.getElementById('btnRefresh').querySelector('svg');
+        icon.classList.add('animate-spin');
+        cargarDatos().finally(() => {
+          setTimeout(() => icon.classList.remove('animate-spin'), 600);
+        });
+      });
+
+      document.getElementById('btnOled').addEventListener('click', () => {
+        document.body.classList.toggle('bg-black');
+      });
+
+      setInterval(cargarDatos, 20000);
     });
   </script>
-</body></html>
+</body>
+</html>
