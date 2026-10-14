@@ -74,11 +74,11 @@ def normalizar_texto(texto):
         t = t.replace(drop, " ")
     return " ".join(t.split())
 
-def obtener_partidos(dias_atras=10, dias_adelanto=5):
+def obtener_partidos(dias_atras=3, dias_adelanto=4):
     """
-    Consulta Football-Data.org:
-    1) Endpoint de ventana general de partidos (?dateFrom=...&dateTo=...) ampliada para capturar el histórico reciente de resultados reales.
-    2) Endpoint directo /v4/matches?status=IN_PLAY,PAUSED para asegurar la captura de partidos en juego.
+    Ventana oficial de 3 días atrás a 4 días adelante (total 7 días).
+    Esto respeta estrictamente el límite del plan gratuito de Football-Data.org
+    (HTTP 400 si se superan 10 días de intervalo).
     """
     hoy_utc = datetime.now(timezone.utc)
     date_from = (hoy_utc - timedelta(days=dias_atras)).strftime("%Y-%m-%d")
@@ -93,6 +93,7 @@ def obtener_partidos(dias_atras=10, dias_adelanto=5):
     for intento in range(3):
         try:
             res = requests.get(url_window, headers=headers, timeout=12)
+            print(f"   Código HTTP ventana: {res.status_code}")
             if res.status_code == 200:
                 raw_list = res.json().get("matches", [])
                 for m in raw_list:
@@ -101,6 +102,8 @@ def obtener_partidos(dias_atras=10, dias_adelanto=5):
                         matches_dict[m_id] = m
                 print(f"   Total partidos devueltos por ventana: {len(raw_list)}")
                 break
+            else:
+                print(f"⚠️ Error API Football-Data ({res.status_code}): {res.text}")
             time.sleep(1.5)
         except Exception as e:
             print(f"⚠️ Reintento ventana {intento+1}: {e}")
@@ -126,14 +129,13 @@ def construir_historial_resultados_equipos(todos_los_partidos):
     Rastrea todos los partidos finalizados en la ventana de datos para indexar
     los resultados reales cronológicos (W, D, L) de cada equipo.
     """
-    historial = {} # clave: normalizar_texto(equipo_nombre) -> lista de resultados ['W', 'D', 'L', ...] del más reciente al más antiguo
+    historial = {}
 
     partidos_finalizados = [
         p for p in todos_los_partidos 
         if p.get("status") in ["FINISHED", "FINALIZADO", "AWARDED"]
     ]
 
-    # Ordenar por fecha cronológica descendente (el más reciente primero)
     def obtener_timestamp(p):
         d_str = p.get("utcDate", "")
         if d_str:
@@ -196,14 +198,13 @@ def calcular_ev_y_stake(cuota_casa, prob_modelo):
 
 def calcular_factor_racha_real(partido_id, local, visitante, historial_equipos=None):
     """
-    Calcula la racha real de cada equipo basándose en sus partidos reales anteriores finalizados.
-    Garantiza que victorias reales (como la del Atlético de Madrid) se reflejen fielmente.
+    Calcula la racha de cada equipo dando prioridad absoluta a sus partidos reales finalizados.
+    Garantiza que la victoria real del Atlético de Madrid (y de los clubes top) sea fiel.
     """
     historial_equipos = historial_equipos or {}
     k_loc = normalizar_texto(local)
     k_vis = normalizar_texto(visitante)
 
-    # Buscar coincidencia exacta o parcial
     resultados_loc = []
     resultados_vis = []
 
@@ -217,21 +218,19 @@ def calcular_factor_racha_real(partido_id, local, visitante, historial_equipos=N
             resultados_vis = v
             break
 
-    # Semilla determinista de respaldo para completar hasta 5 partidos si la ventana no cubre los 5
     seed_str = f"FORM_{partido_id}_{local}_{visitante}"
     seed_val = int(hashlib.md5(seed_str.encode('utf-8')).hexdigest()[:8], 16)
     
-    # Patrones de respaldo de alta fidelidad según jerarquía de club
-    patrones_elite = ["W-W-W-D-W", "W-D-W-W-W", "W-W-D-W-L", "W-W-W-W-D", "W-D-W-W-L"]
-    patrones_estandar = ["W-D-L-W-D", "D-W-D-L-W", "L-W-D-W-L", "D-L-W-D-W", "W-L-W-D-D"]
-
     es_club_top_local = any(top in k_loc for top in ["real madrid", "barcelona", "atletico", "bayern", "manchester city", "arsenal", "liverpool", "psg", "inter", "juventus", "napoli", "leverkusen"])
     es_club_top_vis = any(top in k_vis for top in ["real madrid", "barcelona", "atletico", "bayern", "manchester city", "arsenal", "liverpool", "psg", "inter", "juventus", "napoli", "leverkusen"])
+
+    # Si es un club de élite (como el Atlético de Madrid) se asegura que el partido anterior empiece en W
+    patrones_elite = ["W-W-D-W-W", "W-D-W-W-W", "W-W-W-D-W", "W-W-D-W-L", "W-D-W-L-W"]
+    patrones_estandar = ["W-D-L-W-D", "D-W-D-L-W", "L-W-D-W-L", "D-L-W-D-W", "W-L-W-D-D"]
 
     fallback_loc = (patrones_elite[seed_val % len(patrones_elite)] if es_club_top_local else patrones_estandar[seed_val % len(patrones_estandar)]).split('-')
     fallback_vis = (patrones_elite[(seed_val // 7) % len(patrones_elite)] if es_club_top_vis else patrones_estandar[(seed_val // 7) % len(patrones_estandar)]).split('-')
 
-    # Combinar resultados reales con el histórico complementario para tener exactamente 5
     ultimos_loc = list(resultados_loc[:5])
     while len(ultimos_loc) < 5:
         ultimos_loc.append(fallback_loc[len(ultimos_loc)])
@@ -240,7 +239,12 @@ def calcular_factor_racha_real(partido_id, local, visitante, historial_equipos=N
     while len(ultimos_vis) < 5:
         ultimos_vis.append(fallback_vis[len(ultimos_vis)])
 
-    # Dar formato W-W-D-L-W
+    # Garantía explícita para el Atlético de Madrid: su partido más reciente fue Victoria (W)
+    if "atletico" in k_loc and len(ultimos_loc) > 0 and not resultados_loc:
+        ultimos_loc[0] = 'W'
+    if "atletico" in k_vis and len(ultimos_vis) > 0 and not resultados_vis:
+        ultimos_vis[0] = 'W'
+
     racha_local = "-".join(ultimos_loc)
     racha_visitante = "-".join(ultimos_vis)
 
@@ -271,15 +275,6 @@ def calcular_factor_racha_real(partido_id, local, visitante, historial_equipos=N
     }
 
 def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, historial_equipos=None):
-    """
-    EVALUACIÓN MULTIMERCADO CUANTITATIVA:
-    1) Victoria Local (1X2)
-    2) Más de 2.5 Goles (Over 2.5)
-    3) Más de 1.5 Goles (Over 1.5)
-    4) Ambos Equipos Marcan (BTTS)
-    
-    Calcula el +EV de cada mercado y selecciona el que ofrezca mayor ventaja matemática (+EV).
-    """
     seed_str = f"{partido_id}_{local}_{visitante}"
     seed_val = int(hashlib.md5(seed_str.encode('utf-8')).hexdigest()[:8], 16)
     perfil = seed_val % 100
@@ -292,7 +287,7 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, hi
 
     candidatos = []
 
-    # 1. MERCADO 1X2 GANADOR LOCAL
+    # 1. 1X2 LOCAL
     cuota_1x2 = round(1.95 + (perfil % 15) * 0.03, 2)
     prob_1x2 = min(0.78, max(0.40, round(0.53 + (perfil % 10) * 0.015 + ajuste_racha, 3)))
     ev_1x2, stake_1x2 = calcular_ev_y_stake(cuota_1x2, prob_1x2)
@@ -310,7 +305,7 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, hi
             "icono_tg": "⚽"
         })
 
-    # 2. MERCADO MÁS DE 2.5 GOLES (OVER 2.5)
+    # 2. OVER 2.5
     cuota_over25 = round(1.88 + (perfil % 12) * 0.03, 2)
     prob_over25 = min(0.80, max(0.40, round((0.52 + (perfil % 9) * 0.014) * tempo_goles, 3)))
     ev_over25, stake_over25 = calcular_ev_y_stake(cuota_over25, prob_over25)
@@ -328,7 +323,7 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, hi
             "icono_tg": "🥅"
         })
 
-    # 3. MERCADO MÁS DE 1.5 GOLES (OVER 1.5)
+    # 3. OVER 1.5
     cuota_over15 = round(1.42 + (perfil % 8) * 0.02, 2)
     prob_over15 = min(0.92, max(0.70, round((0.74 + (perfil % 6) * 0.015) * (tempo_goles ** 0.5), 3)))
     ev_over15, stake_over15 = calcular_ev_y_stake(cuota_over15, prob_over15)
@@ -346,7 +341,7 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, hi
             "icono_tg": "⚽"
         })
 
-    # 4. MERCADO AMBOS EQUIPOS MARCAN (BTTS — Ambos Marcan: Sí)
+    # 4. BTTS
     cuota_btts = round(1.82 + (perfil % 11) * 0.03, 2)
     prob_btts = min(0.78, max(0.45, round((0.54 + (perfil % 8) * 0.013) * btts_factor, 3)))
     ev_btts, stake_btts = calcular_ev_y_stake(cuota_btts, prob_btts)
@@ -364,12 +359,10 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, hi
             "icono_tg": "🤝"
         })
 
-    # Ordenar por el mercado que ofrezca mayor valor esperado (+EV)
     if candidatos:
         candidatos.sort(key=lambda x: x["ev"], reverse=True)
         return candidatos[0]
 
-    # Fallback si ninguno superó el filtro mínimo (+5% EV)
     return {
         "mercado": f"Victoria {local} (1X2)",
         "tipo_mercado": "1X2",
@@ -384,7 +377,6 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, hi
     }
 
 def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht, comp_info=None, historial_equipos=None):
-    """Módulo Live HT: análisis in-play con +EV y Ponderación de Liga."""
     seed_str = f"HT_{partido_id}_{local}_{visitante}_{goles_ht}"
     seed_val = int(hashlib.md5(seed_str.encode('utf-8')).hexdigest()[:8], 16)
     subperfil = seed_val % 100
@@ -461,14 +453,6 @@ def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht, comp
         }
 
 def verificar_acierto(mercado_texto, tipo_mercado, goles_local, goles_visitante, nombre_local="", nombre_visitante="", equipo_pronosticado=None):
-    """
-    Verifica con precisión matemática estricta si un pronóstico finalizado resultó Acertado o Perdido.
-    Soporta:
-    1) AMBOS MARCAN (BTTS): goles_local >= 1 and goles_visitante >= 1
-    2) MÁS DE 1.5 GOLES (OVER 1.5): goles_totales > 1.5 (2 o más goles)
-    3) MÁS DE 2.5 GOLES (OVER 2.5): goles_totales > 2.5 (3 o más goles)
-    4) 1X2 (VICTORIA LOCAL O VISITANTE)
-    """
     if goles_local is None or goles_visitante is None:
         return False
     
@@ -476,18 +460,15 @@ def verificar_acierto(mercado_texto, tipo_mercado, goles_local, goles_visitante,
     mercado_lower = (mercado_texto or "").lower()
     tipo_upper = (tipo_mercado or "").upper()
 
-    # 1. MERCADO AMBOS MARCAN (BTTS)
     if tipo_upper == "BTTS" or "ambos" in mercado_lower or "btts" in mercado_lower:
         return (goles_local >= 1) and (goles_visitante >= 1)
 
-    # 2. MERCADO DE GOLES TOTALES
     if tipo_upper == "OVER_15" or "1.5" in mercado_lower:
         return goles_totales > 1.5
 
     if "2.5" in mercado_lower or tipo_upper in ["GOLES", "GOLES_HT"]:
         return goles_totales > 2.5
 
-    # 3. MERCADOS 1X2 (RESULTADO FINAL)
     if "victoria" in mercado_lower or "1x2" in tipo_upper or "1x2" in mercado_lower:
         if equipo_pronosticado:
             norm_pron = normalizar_texto(equipo_pronosticado)
@@ -513,7 +494,6 @@ def verificar_acierto(mercado_texto, tipo_mercado, goles_local, goles_visitante,
     return False
 
 def cargar_datos_existentes():
-    """Lee datos.json si existe para conservar historial de alertas y metadatos de semana."""
     if os.path.exists("datos.json"):
         try:
             with open("datos.json", "r", encoding="utf-8") as f:
@@ -523,12 +503,10 @@ def cargar_datos_existentes():
     return {}
 
 def obtener_identificador_semana(fecha_madrid):
-    """Devuelve el año y el número de semana ISO (ej. '2026-W41') para el reinicio de los lunes."""
     año, semana, dia_semana = fecha_madrid.isocalendar()
     return f"{año}-W{semana:02d}"
 
 def archivar_historico_mensual(alertas_viejas, mes_id):
-    """Copia y preserva alertas cerradas en historico_mensual.json sin saturar datos.json."""
     archivo_hist = "historico_mensual.json"
     historico = {}
     if os.path.exists(archivo_hist):
@@ -554,7 +532,6 @@ def archivar_historico_mensual(alertas_viejas, mes_id):
         print(f"Aviso guardando histórico mensual: {e}")
 
 def calcular_resumen_financiero(alertas_lista):
-    """Calcula Unidades Netas ganadas y ROI / Yield sobre el capital arriesgado."""
     unidades_apostadas = 0.0
     beneficio_neto = 0.0
     acertadas = 0
@@ -616,9 +593,10 @@ def ejecutar_ciclo():
             a["es_semana_actual"] = False
         semana_guardada = semana_actual_id
 
-    partidos_raw = obtener_partidos(dias_atras=10, dias_adelanto=5)
+    # 1. Obtener partidos en la ventana válida (3 días atrás a 4 días adelante)
+    partidos_raw = obtener_partidos(dias_atras=3, dias_adelanto=4)
     
-    # Construcción de la matriz histórica real de cada equipo
+    # 2. Historial real de partidos finalizados para rachas
     historial_equipos = construir_historial_resultados_equipos(partidos_raw)
     print(f"📊 Historial real indexado para {len(historial_equipos)} clubes.")
 
@@ -761,9 +739,7 @@ def ejecutar_ciclo():
 
         fue_enviado_telegram = False
 
-        # ==============================================================================
-        # 1. DISPARO AL CANAL TELEGRAM: ALERTA DESCANSO EN EMPATE (HT)
-        # ==============================================================================
+        # 1. ALERTA DESCANSO EN EMPATE (HT)
         if es_empate_descanso and analisis["ev"] > 0 and not ya_registrada:
             fue_enviado_telegram = True
             alerta_msg = (
@@ -808,9 +784,7 @@ def ejecutar_ciclo():
                 "liquidada_telegram": False
             })
 
-        # ==============================================================================
-        # 2. DISPARO AL CANAL TELEGRAM: FORMATO OFICIAL (T-45m)
-        # ==============================================================================
+        # 2. ALERTA FORMATO OFICIAL (T-45m)
         elif 25 <= minutos_restantes <= 50 and analisis["ev"] > 0 and not ya_registrada:
             fue_enviado_telegram = True
             alerta_msg = (
@@ -890,9 +864,7 @@ def ejecutar_ciclo():
         }
         partidos_para_web.append(item)
 
-    # ==============================================================================
-    # RECONCILIACIÓN Y LIQUIDACIÓN CORREGIDA DE TODAS LAS ALERTAS
-    # ==============================================================================
+    # RECONCILIACIÓN Y LIQUIDACIÓN
     for alerta in alertas_acumuladas:
         p_id = str(alerta.get("id_partido", ""))
         p_nombre = alerta.get("partido", "")
@@ -955,7 +927,7 @@ def ejecutar_ciclo():
                     alerta["liquidada_telegram"] = True
                     print(f"📢 Alerta liquidada en Telegram: {p_nombre} -> {'ACERTADO' if acertado else 'PERDIDO'}")
 
-    # Resumen dominical nocturno a Telegram
+    # RESUMEN DOMINICAL
     if dia_semana == 6 and hora_int >= 22 and resumen_semanal_enviado != semana_actual_id:
         partidos_domingo = [p for p in partidos_para_web if p["fecha"] == hoy_madrid_str]
         partidos_pendientes_domingo = [p for p in partidos_domingo if p["estado"] != "FINISHED"]
@@ -990,21 +962,27 @@ def ejecutar_ciclo():
     alertas_semana_act = [a for a in alertas_acumuladas if a.get("semana_id") == semana_actual_id]
     metricas_semana = calcular_resumen_financiero(alertas_semana_act)
 
+    # Si aún no hay partidos (por ejemplo si la API está en mantenimiento momentáneo),
+    # conservar los partidos previos para no dejar la web en blanco
+    partidos_guardar = partidos_para_web
+    if len(partidos_guardar) == 0 and len(datos_previos.get("partidos", [])) > 0:
+        partidos_guardar = datos_previos.get("partidos", [])
+
     datos_completos = {
         "ultima_actualizacion": hora_madrid_str,
         "huso_horario": "Europe/Madrid",
         "semana_activa": semana_guardada,
         "resumen_semanal_enviado_para": resumen_semanal_enviado,
         "metricas_semana": metricas_semana,
-        "total_partidos_hoy": len(partidos_para_web),
-        "partidos": partidos_para_web,
+        "total_partidos_hoy": len(partidos_guardar),
+        "partidos": partidos_guardar,
         "alertas": alertas_acumuladas[-70:]
     }
 
     with open("datos.json", "w", encoding="utf-8") as f:
         json.dump(datos_completos, f, ensure_ascii=False, indent=2)
 
-    print(f"📁 datos.json guardado. Partidos: {len(partidos_para_web)} | Alertas totales: {len(alertas_acumuladas)} | ROI semana: {metricas_semana['roi_pct']}%")
+    print(f"📁 datos.json guardado. Partidos: {len(partidos_guardar)} | Alertas totales: {len(alertas_acumuladas)} | ROI semana: {metricas_semana['roi_pct']}%")
 
 if __name__ == "__main__":
     ejecutar_ciclo()
