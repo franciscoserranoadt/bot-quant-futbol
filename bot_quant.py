@@ -31,9 +31,6 @@ LEAGUES_MAP = {
 }
 
 def enviar_telegram(mensaje, url_accion=None, texto_boton="📱 Abrir en Web App"):
-    """
-    Envía la alerta en formato HTML al canal oficial de Telegram con botón interactivo.
-    """
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         return False
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -66,7 +63,6 @@ def enviar_telegram(mensaje, url_accion=None, texto_boton="📱 Abrir en Web App
     return False
 
 def normalizar_texto(texto):
-    """Normaliza cadenas eliminando sufijos comunes y puntuación para emparejamientos infalibles."""
     if not texto:
         return ""
     t = texto.lower()
@@ -74,47 +70,64 @@ def normalizar_texto(texto):
         t = t.replace(drop, " ")
     return " ".join(t.split())
 
-def obtener_partidos(dias_atras=3, dias_adelanto=4):
-    """
-    Ventana oficial de 3 días atrás a 4 días adelante (total 7 días).
-    Esto respeta estrictamente el límite del plan gratuito de Football-Data.org
-    (HTTP 400 si se superan 10 días de intervalo).
-    """
-    hoy_utc = datetime.now(timezone.utc)
-    date_from = (hoy_utc - timedelta(days=dias_atras)).strftime("%Y-%m-%d")
-    date_to = (hoy_utc + timedelta(days=dias_adelanto)).strftime("%Y-%m-%d")
-    
+def obtener_partidos_por_rango(date_from, date_to):
     headers = {"X-Auth-Token": FOOTBALL_DATA_TOKEN}
-    matches_dict = {}
-
-    url_window = f"https://api.football-data.org/v4/matches?dateFrom={date_from}&dateTo={date_to}"
-    print(f"📡 [Football-Data.org] Consultando ventana: {date_from} hasta {date_to}")
-
+    url = f"https://api.football-data.org/v4/matches?dateFrom={date_from}&dateTo={date_to}"
+    print(f"📡 [Football-Data.org] Petición intervalo: {date_from} al {date_to}")
     for intento in range(3):
         try:
-            res = requests.get(url_window, headers=headers, timeout=12)
-            print(f"   Código HTTP ventana: {res.status_code}")
+            res = requests.get(url, headers=headers, timeout=12)
+            print(f"   Código HTTP ({date_from}..{date_to}): {res.status_code}")
             if res.status_code == 200:
-                raw_list = res.json().get("matches", [])
-                for m in raw_list:
-                    m_id = m.get("id")
-                    if m_id:
-                        matches_dict[m_id] = m
-                print(f"   Total partidos devueltos por ventana: {len(raw_list)}")
-                break
+                return res.json().get("matches", [])
+            elif res.status_code == 429:
+                print("   Aviso: Rate limit. Esperando 3s...")
+                time.sleep(3)
             else:
-                print(f"⚠️ Error API Football-Data ({res.status_code}): {res.text}")
+                print(f"⚠️ Error API ({res.status_code}): {res.text}")
             time.sleep(1.5)
         except Exception as e:
-            print(f"⚠️ Reintento ventana {intento+1}: {e}")
+            print(f"⚠️ Reintento {intento+1}: {e}")
             time.sleep(1.5)
+    return []
 
+def obtener_partidos_completos(lunes_semana_str, domingo_semana_str):
+    """
+    Obtiene los partidos de la semana oficial (de lunes a domingo) y los futuros próximos.
+    Respeta intervalos menores a 10 días para no superar el límite de la API gratuita.
+    """
+    hoy_utc = datetime.now(timezone.utc)
+    date_hoy = hoy_utc.strftime("%Y-%m-%d")
+    date_futuro_to = (hoy_utc + timedelta(days=5)).strftime("%Y-%m-%d")
+
+    matches_dict = {}
+
+    # Petición 1: Partidos desde el lunes de la semana actual hasta hoy
+    lista_semana_hasta_hoy = obtener_partidos_por_rango(lunes_semana_str, date_hoy)
+    for m in lista_semana_hasta_hoy:
+        m_id = m.get("id")
+        if m_id:
+            matches_dict[m_id] = m
+    print(f"   Partidos obtenidos (desde lunes {lunes_semana_str} a hoy): {len(lista_semana_hasta_hoy)}")
+
+    time.sleep(1.2) # Pausa cortés para respetar el rate-limit de la API gratuita
+
+    # Petición 2: Partidos de hoy y próximos 5 días de la jornada
+    lista_futuros = obtener_partidos_por_rango(date_hoy, date_futuro_to)
+    for m in lista_futuros:
+        m_id = m.get("id")
+        if m_id:
+            matches_dict[m_id] = m
+    print(f"   Partidos obtenidos (futuros hasta {date_futuro_to}): {len(lista_futuros)}")
+
+    # Petición 3: En vivo (IN_PLAY, PAUSED) para marcadores al segundo
     url_live = "https://api.football-data.org/v4/matches?status=IN_PLAY,PAUSED"
+    headers = {"X-Auth-Token": FOOTBALL_DATA_TOKEN}
     try:
         res_live = requests.get(url_live, headers=headers, timeout=10)
         if res_live.status_code == 200:
             live_list = res_live.json().get("matches", [])
-            print(f"📡 [Football-Data.org] Partidos en vivo reportados: {len(live_list)}")
+            print(f"📡 Partidos en vivo reportados: {len(live_list)}")
             for lm in live_list:
                 lm_id = lm.get("id")
                 if lm_id:
@@ -125,10 +138,6 @@ def obtener_partidos(dias_atras=3, dias_adelanto=4):
     return list(matches_dict.values())
 
 def construir_historial_resultados_equipos(todos_los_partidos):
-    """
-    Rastrea todos los partidos finalizados en la ventana de datos para indexar
-    los resultados reales cronológicos (W, D, L) de cada equipo.
-    """
     historial = {}
 
     partidos_finalizados = [
@@ -185,7 +194,6 @@ def construir_historial_resultados_equipos(todos_los_partidos):
     return historial
 
 def calcular_ev_y_stake(cuota_casa, prob_modelo):
-    """Cálculo de Valor Esperado (+EV) y Kelly Fraccional (1/4)."""
     ev = (prob_modelo * cuota_casa) - 1.0
     if ev <= 0.05:
         return 0.0, 0
@@ -197,10 +205,6 @@ def calcular_ev_y_stake(cuota_casa, prob_modelo):
     return round(ev * 100, 1), stake
 
 def calcular_factor_racha_real(partido_id, local, visitante, historial_equipos=None):
-    """
-    Calcula la racha de cada equipo dando prioridad absoluta a sus partidos reales finalizados.
-    Garantiza que la victoria real del Atlético de Madrid (y de los clubes top) sea fiel.
-    """
     historial_equipos = historial_equipos or {}
     k_loc = normalizar_texto(local)
     k_vis = normalizar_texto(visitante)
@@ -224,7 +228,6 @@ def calcular_factor_racha_real(partido_id, local, visitante, historial_equipos=N
     es_club_top_local = any(top in k_loc for top in ["real madrid", "barcelona", "atletico", "bayern", "manchester city", "arsenal", "liverpool", "psg", "inter", "juventus", "napoli", "leverkusen"])
     es_club_top_vis = any(top in k_vis for top in ["real madrid", "barcelona", "atletico", "bayern", "manchester city", "arsenal", "liverpool", "psg", "inter", "juventus", "napoli", "leverkusen"])
 
-    # Si es un club de élite (como el Atlético de Madrid) se asegura que el partido anterior empiece en W
     patrones_elite = ["W-W-D-W-W", "W-D-W-W-W", "W-W-W-D-W", "W-W-D-W-L", "W-D-W-L-W"]
     patrones_estandar = ["W-D-L-W-D", "D-W-D-L-W", "L-W-D-W-L", "D-L-W-D-W", "W-L-W-D-D"]
 
@@ -239,7 +242,6 @@ def calcular_factor_racha_real(partido_id, local, visitante, historial_equipos=N
     while len(ultimos_vis) < 5:
         ultimos_vis.append(fallback_vis[len(ultimos_vis)])
 
-    # Garantía explícita para el Atlético de Madrid: su partido más reciente fue Victoria (W)
     if "atletico" in k_loc and len(ultimos_loc) > 0 and not resultados_loc:
         ultimos_loc[0] = 'W'
     if "atletico" in k_vis and len(ultimos_vis) > 0 and not resultados_vis:
@@ -506,6 +508,16 @@ def obtener_identificador_semana(fecha_madrid):
     año, semana, dia_semana = fecha_madrid.isocalendar()
     return f"{año}-W{semana:02d}"
 
+def obtener_fechas_limite_semana(fecha_madrid):
+    """
+    Calcula la fecha del lunes (inicio de semana 00:00)
+    y del domingo (fin de semana 23:59) en formato YYYY-MM-DD.
+    """
+    dia_semana_idx = fecha_madrid.weekday() # 0 = Lunes, 6 = Domingo
+    lunes_dt = fecha_madrid - timedelta(days=dia_semana_idx)
+    domingo_dt = lunes_dt + timedelta(days=6)
+    return lunes_dt.strftime("%Y-%m-%d"), domingo_dt.strftime("%Y-%m-%d")
+
 def archivar_historico_mensual(alertas_viejas, mes_id):
     archivo_hist = "historico_mensual.json"
     historico = {}
@@ -579,22 +591,34 @@ def ejecutar_ciclo():
     dia_semana = ahora_madrid.weekday()
     hora_int = ahora_madrid.hour
 
-    print(f"[{hora_madrid_str}] Iniciando ciclo Apex Quant Pro Multimercado (Semana {semana_actual_id}, Día {dia_semana})...")
+    lunes_semana_str, domingo_semana_str = obtener_fechas_limite_semana(ahora_madrid)
+
+    print(f"[{hora_madrid_str}] Iniciando ciclo Apex Quant Pro Multimercado (Semana {semana_actual_id}: {lunes_semana_str} al {domingo_semana_str})...")
 
     datos_previos = cargar_datos_existentes()
     alertas_acumuladas = datos_previos.get("alertas", [])
+    partidos_previos = datos_previos.get("partidos", [])
     semana_guardada = datos_previos.get("semana_activa", semana_actual_id)
     resumen_semanal_enviado = datos_previos.get("resumen_semanal_enviado_para", "")
 
-    if semana_actual_id != semana_guardada:
-        print(f"🔄 ¡LUNES DETECTADO! Reiniciando contadores semanales ({semana_guardada} -> {semana_actual_id})...")
+    # ==============================================================================
+    # REINICIO AUTOMÁTICO CADA LUNES A LAS 00:00 (DE LUNES A DOMINGO)
+    # ==============================================================================
+    es_reinicio_lunes = (semana_actual_id != semana_guardada)
+    if es_reinicio_lunes:
+        print(f"🔄 ¡LUNES A LAS 00:00 DETECTADO! Reiniciando ciclo semanal ({semana_guardada} -> {semana_actual_id})...")
         archivar_historico_mensual([a for a in alertas_acumuladas if not a.get("es_semana_actual", True)], mes_actual_id)
+        
+        # 1. Marcar alertas anteriores como no pertenecientes a la semana actual
         for a in alertas_acumuladas:
             a["es_semana_actual"] = False
+        
+        # 2. Reiniciar la lista de partidos de la semana anterior: los finalizados antiguos se limpian para empezar la nueva semana de cero
+        partidos_previos = []
         semana_guardada = semana_actual_id
 
-    # 1. Obtener partidos en la ventana válida (3 días atrás a 4 días adelante)
-    partidos_raw = obtener_partidos(dias_atras=3, dias_adelanto=4)
+    # 1. Obtener partidos en la ventana de la semana (desde el lunes hasta los próximos días)
+    partidos_raw = obtener_partidos_completos(lunes_semana_str, domingo_semana_str)
     
     # 2. Historial real de partidos finalizados para rachas
     historial_equipos = construir_historial_resultados_equipos(partidos_raw)
@@ -773,8 +797,8 @@ def ejecutar_ciclo():
                 "stake": f"{analisis['stake']}/10",
                 "hora": hora_madrid_partido,
                 "fecha": fecha_madrid_partido,
-                "es_ht": True,
                 "semana_id": semana_actual_id,
+                "es_ht": True,
                 "es_semana_actual": True,
                 "estado_partido": estado_normalizado,
                 "marcador": marcador_str,
@@ -818,8 +842,8 @@ def ejecutar_ciclo():
                 "stake": f"{analisis['stake']}/10",
                 "hora": hora_madrid_partido,
                 "fecha": fecha_madrid_partido,
-                "es_ht": False,
                 "semana_id": semana_actual_id,
+                "es_ht": False,
                 "es_semana_actual": True,
                 "estado_partido": estado_normalizado,
                 "marcador": marcador_str,
@@ -857,6 +881,7 @@ def ejecutar_ciclo():
             "ev_numero": analisis["ev"],
             "stake": analisis["stake"],
             "tiene_pronostico": True,
+            "semana_id": semana_actual_id,
             "telegram_enviado": fue_enviado_telegram or ya_registrada,
             "es_empate_ht": es_empate_descanso,
             "acertado": acertado_partido,
@@ -927,7 +952,7 @@ def ejecutar_ciclo():
                     alerta["liquidada_telegram"] = True
                     print(f"📢 Alerta liquidada en Telegram: {p_nombre} -> {'ACERTADO' if acertado else 'PERDIDO'}")
 
-    # RESUMEN DOMINICAL
+    # RESUMEN DOMINICAL NOCTURNO
     if dia_semana == 6 and hora_int >= 22 and resumen_semanal_enviado != semana_actual_id:
         partidos_domingo = [p for p in partidos_para_web if p["fecha"] == hoy_madrid_str]
         partidos_pendientes_domingo = [p for p in partidos_domingo if p["estado"] != "FINISHED"]
@@ -952,7 +977,7 @@ def ejecutar_ciclo():
                     f"🎯 <b>Efectividad Oficial:</b> <b>{pct_acierto}%</b>\n\n"
                     f"💰 <b>Rendimiento Neto:</b> <b>{signo_u}{resumen_fin['unidades_netas']} Unidades</b>\n"
                     f"📈 <b>Yield / ROI Semanal:</b> <b>{signo_u}{resumen_fin['roi_pct']}%</b>\n\n"
-                    f"🔄 <i>Las estadísticas se reiniciarán automáticamente a las 00:00 del lunes para la nueva semana.</i>\n"
+                    f"🔄 <i>Las estadísticas y partidos se reiniciarán automáticamente a las 00:00 del lunes para la nueva semana.</i>\n"
                     f"⚡ <i>Apex Quant Engine • Máxima Transparencia y Disciplina</i>"
                 )
                 enviar_telegram(msg_resumen_domingo, url_accion=APP_URL, texto_boton="📱 Abrir Balance Completo en la App")
@@ -962,16 +987,28 @@ def ejecutar_ciclo():
     alertas_semana_act = [a for a in alertas_acumuladas if a.get("semana_id") == semana_actual_id]
     metricas_semana = calcular_resumen_financiero(alertas_semana_act)
 
-    # Si aún no hay partidos (por ejemplo si la API está en mantenimiento momentáneo),
-    # conservar los partidos previos para no dejar la web en blanco
-    partidos_guardar = partidos_para_web
-    if len(partidos_guardar) == 0 and len(datos_previos.get("partidos", [])) > 0:
-        partidos_guardar = datos_previos.get("partidos", [])
+    # ==============================================================================
+    # FUSIÓN INTELIGENTE DE PARTIDOS: ACUMULACIÓN DE LUNES A DOMINGO
+    # ==============================================================================
+    partidos_guardar = list(partidos_para_web)
+    ids_guardados = {p["id"] for p in partidos_guardar}
+
+    # Conservar los partidos finalizados previos pertenecientes a la semana activa (entre el lunes y el domingo)
+    for prev_p in partidos_previos:
+        p_id = prev_p.get("id")
+        p_fecha = prev_p.get("fecha", "")
+        # Si no está ya en la lista y pertenece a la semana en curso (fecha >= lunes de la semana)
+        if p_id not in ids_guardados:
+            if p_fecha >= lunes_semana_str:
+                partidos_guardar.append(prev_p)
+                ids_guardados.add(p_id)
 
     datos_completos = {
         "ultima_actualizacion": hora_madrid_str,
         "huso_horario": "Europe/Madrid",
         "semana_activa": semana_guardada,
+        "lunes_semana": lunes_semana_str,
+        "domingo_semana": domingo_semana_str,
         "resumen_semanal_enviado_para": resumen_semanal_enviado,
         "metricas_semana": metricas_semana,
         "total_partidos_hoy": len(partidos_guardar),
@@ -982,7 +1019,8 @@ def ejecutar_ciclo():
     with open("datos.json", "w", encoding="utf-8") as f:
         json.dump(datos_completos, f, ensure_ascii=False, indent=2)
 
-    print(f"📁 datos.json guardado. Partidos: {len(partidos_guardar)} | Alertas totales: {len(alertas_acumuladas)} | ROI semana: {metricas_semana['roi_pct']}%")
+    total_fin = sum(1 for p in partidos_guardar if p.get("estado") == "FINISHED")
+    print(f"📁 datos.json guardado. Partidos semana: {len(partidos_guardar)} (Finalizados: {total_fin}) | Alertas: {len(alertas_acumuladas)} | Semana: {semana_guardada}")
 
 if __name__ == "__main__":
     ejecutar_ciclo()
