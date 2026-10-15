@@ -185,6 +185,7 @@
         <span class="text-[10px] text-slate-400 font-mono">Reinicio oficial cada lunes 00:00h</span>
       </div>
       <div class="grid grid-cols-3 gap-2 text-center">
+        <!-- 1. TELEGRAM -->
         <div class="p-3 rounded-2xl bg-brand-card border border-brand-primary/40 shadow-sm relative overflow-hidden">
           <div class="absolute top-0 right-0 w-8 h-8 bg-brand-primary/10 rounded-bl-full pointer-events-none"></div>
           <span class="text-[10px] font-bold text-brand-primary uppercase tracking-wide flex items-center justify-center gap-1">
@@ -194,12 +195,14 @@
           <span id="conteoTelegram" class="text-[9px] text-slate-400 font-mono">0V - 0D TG</span>
         </div>
 
+        <!-- 2. SIN ALERTA -->
         <div class="p-3 rounded-2xl bg-brand-card border border-brand-border shadow-sm">
           <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">Sin Alerta</span>
           <span id="efectividadSinAlerta" class="text-base font-extrabold text-slate-300 font-mono mt-0.5 block">--%</span>
           <span id="conteoSinAlerta" class="text-[9px] text-slate-400 font-mono">0V - 0D No TG</span>
         </div>
 
+        <!-- 3. GLOBAL TOTAL (SUMA EXACTA DE TELEGRAM + SIN ALERTA) -->
         <div class="p-3 rounded-2xl bg-brand-card border border-brand-border shadow-sm">
           <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">Global Total</span>
           <span id="efectividadGlobal" class="text-base font-extrabold text-white font-mono mt-0.5 block">--%</span>
@@ -365,9 +368,6 @@
       }
     }
 
-    // =========================================================================
-    // CÁLCULO INMEDIATO DE UNIDADES, ROI Y CURVA DE CRECIMIENTO
-    // =========================================================================
     function calcularRendimientoAlertasTelegram() {
       let unidadesApostadas = 0.0;
       let beneficioNeto = 0.0;
@@ -442,6 +442,9 @@
       pathEl.setAttribute('stroke', ultimoPunto >= 0 ? '#00f59b' : '#ff4b4b');
     }
 
+    // =========================================================================
+    // ACTUALIZACIÓN DE MÉTRICAS CON SUMA EXACTA DE GLOBAL TOTAL (TELEGRAM + SIN ALERTA)
+    // =========================================================================
     function actualizarMetricas() {
       document.getElementById('statPartidos').innerText = state.partidos.length || '--';
       document.getElementById('syncHour').innerText = state.ultimaActualizacion ? (state.ultimaActualizacion + ' sync') : 'Sincronizado';
@@ -453,32 +456,37 @@
       document.getElementById('countFinalizados').innerText = `(${finalizados.length})`;
       document.getElementById('countAlertas').innerText = `(${state.alertas.length})`;
 
-      const finConPronostico = finalizados.filter(p => p.acertado !== null && p.acertado !== undefined);
-      
+      // 1. ALERTAS OFICIALES TELEGRAM (FINALIZADAS)
       const alertasFin = state.alertas.filter(a => a.finalizado || (a.acertado !== null && a.acertado !== undefined));
       const aciertosTG = alertasFin.filter(a => a.acertado === true).length;
       const totalTG = alertasFin.length;
+      const derrotasTG = totalTG - aciertosTG;
       const pctTG = totalTG > 0 ? Math.round((aciertosTG / totalTG) * 100) : '--';
 
       document.getElementById('efectividadTelegram').innerText = pctTG !== '--' ? `${pctTG}%` : '--%';
-      document.getElementById('conteoTelegram').innerText = `${aciertosTG}V - ${totalTG - aciertosTG}D TG`;
+      document.getElementById('conteoTelegram').innerText = `${aciertosTG}V - ${derrotasTG}D TG`;
 
-      const aciertosGlobal = finConPronostico.filter(p => p.acertado === true).length;
-      const totalGlobal = finConPronostico.length;
-      const pctGlobal = totalGlobal > 0 ? Math.round((aciertosGlobal / totalGlobal) * 100) : '--';
-
-      document.getElementById('efectividadGlobal').innerText = pctGlobal !== '--' ? `${pctGlobal}%` : '--%';
-      document.getElementById('conteoGlobal').innerText = `${aciertosGlobal}V - ${totalGlobal - aciertosGlobal}D Total`;
-
+      // 2. PRONÓSTICOS SIN ALERTA TELEGRAM (FINALIZADOS)
+      const finConPronostico = finalizados.filter(p => p.acertado !== null && p.acertado !== undefined);
       const sinAlertaFin = finConPronostico.filter(p => !p.telegram_enviado);
       const aciertosSin = sinAlertaFin.filter(p => p.acertado === true).length;
       const totalSin = sinAlertaFin.length;
+      const derrotasSin = totalSin - aciertosSin;
       const pctSin = totalSin > 0 ? Math.round((aciertosSin / totalSin) * 100) : '--';
 
       document.getElementById('efectividadSinAlerta').innerText = pctSin !== '--' ? `${pctSin}%` : '--%';
-      document.getElementById('conteoSinAlerta').innerText = `${aciertosSin}V - ${totalSin - aciertosSin}D No TG`;
+      document.getElementById('conteoSinAlerta').innerText = `${aciertosSin}V - ${derrotasSin}D No TG`;
 
-      // CÁLCULO INMEDIATO Y GARANTIZADO DE RENDIMIENTO SEMANAL
+      // 3. GLOBAL TOTAL: SUMA MATEMÁTICA EXACTA DE (TELEGRAM + SIN ALERTA)
+      const victoriasGlobal = aciertosTG + aciertosSin;
+      const derrotasGlobal = derrotasTG + derrotasSin;
+      const totalGlobal = totalTG + totalSin;
+      const pctGlobal = totalGlobal > 0 ? Math.round((victoriasGlobal / totalGlobal) * 100) : '--';
+
+      document.getElementById('efectividadGlobal').innerText = pctGlobal !== '--' ? `${pctGlobal}%` : '--%';
+      document.getElementById('conteoGlobal').innerText = `${victoriasGlobal}V - ${derrotasGlobal}D Total`;
+
+      // 4. RENDIMIENTO SEMANAL TELEGRAM
       const calculo = calcularRendimientoAlertasTelegram();
       
       const uNetas = (state.metricasSemana && state.metricasSemana.finalizadas > 0 && state.metricasSemana.unidades_netas !== 0)
@@ -655,9 +663,6 @@
       `;
     }
 
-    // =========================================================================
-    // RENDERIZADO CORREGIDO DE ALERTAS: CON MARCADOR FINAL Y ESTADO DE LIQUIDACIÓN
-    // =========================================================================
     function renderizarAlertas() {
       const container = document.getElementById('matchesContainer');
       if (state.alertas.length === 0) {
@@ -671,17 +676,14 @@
       }
 
       container.innerHTML = state.alertas.slice().reverse().map(a => {
-        // 1. Determinar si el partido ha finalizado o está liquidado
         const esFinalizado = a.finalizado === true || a.estado_partido === 'FINISHED' || (a.acertado !== null && a.acertado !== undefined);
         const esEnJuego = a.estado_partido === 'IN_PLAY' || a.estado_partido === 'PAUSED' || a.estado_partido === 'HT';
 
-        // 2. Extraer el marcador final o en vivo
         let marcadorTexto = a.marcador_final || a.marcador || a.resultado_final || null;
         if (!marcadorTexto && (a.goles_local !== undefined && a.goles_local !== null) && (a.goles_visitante !== undefined && a.goles_visitante !== null)) {
           marcadorTexto = `${a.goles_local} - ${a.goles_visitante}`;
         }
 
-        // 3. Badge oficial de liquidación (Acertado / Perdido / Pendiente)
         let badgeLiquidacion = '';
         if (a.acertado === true) {
           badgeLiquidacion = `
@@ -721,7 +723,6 @@
           badgeLiquidacion = `<span class="px-2 py-0.5 rounded text-[9px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">Alerta Real</span>`;
         }
 
-        // 4. Escudos si están disponibles
         const escudosHtml = (a.escudo_local || a.escudo_visitante) ? `
           <div class="flex items-center gap-2 mb-1">
             ${a.escudo_local ? `<img src="${a.escudo_local}" class="w-4 h-4 object-contain" alt="">` : ''}
