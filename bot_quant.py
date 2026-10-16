@@ -424,8 +424,6 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, hi
         })
 
     if candidatos:
-        # Si la cuota de 1X2 era >= 2.20 y existe opción de Doble Oportunidad con valor,
-        # la ordenación por puntuacion_seleccion asegura priorizar la protección de Doble Oportunidad
         candidatos.sort(key=lambda x: x["puntuacion_seleccion"], reverse=True)
         return candidatos[0]
 
@@ -1034,6 +1032,7 @@ def ejecutar_ciclo():
                     if acertado:
                         msg_settle = (
                             f"({alerta['mercado']})\n"
+                            f"✅ <b>Resultado:</b> ACERTADO\n"
                             f"💰 <b>Cuota Cobrada:</b> {alerta['cuota']}\n"
                             f"💡 <b>Stake:</b> {alerta['stake']}\n\n"
                             f"🎉 <i>¡Verificado y sumado a la Efectividad Oficial en la App!</i>\n"
@@ -1042,6 +1041,7 @@ def ejecutar_ciclo():
                     else:
                         msg_settle = (
                             f"({alerta['mercado']})\n"
+                            f"❌ <b>Resultado:</b> PERDIDO\n"
                             f"🏁 <b>Resultado Final:</b> {marcador_fin or 'Final'}\n"
                             f"💡 <b>Stake:</b> {alerta['stake']} (Control estricto de banca)\n\n"
                             f"⚡ <i>Apex Quant Engine • Disciplina a Largo Plazo</i>"
