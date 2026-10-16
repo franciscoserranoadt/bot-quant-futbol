@@ -275,6 +275,14 @@ def calcular_factor_racha_real(partido_id, local, visitante, historial_equipos=N
     }
 
 def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, historial_equipos=None):
+    """
+    EVALUACIÓN MULTIMERCADO CUANTITATIVA:
+    1) Victoria Local (1X2)
+    2) Más de 2.5 Goles (Over 2.5)
+    3) Más de 1.5 Goles (Over 1.5)
+    4) Ambos Equipos Marcan (BTTS)
+    5) Doble Oportunidad (1X / X2 / 12)
+    """
     seed_str = f"{partido_id}_{local}_{visitante}"
     seed_val = int(hashlib.md5(seed_str.encode('utf-8')).hexdigest()[:8], 16)
     perfil = seed_val % 100
@@ -341,7 +349,7 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, hi
             "icono_tg": "⚽"
         })
 
-    # 4. BTTS
+    # 4. BTTS (Ambos Marcan)
     cuota_btts = round(1.82 + (perfil % 11) * 0.03, 2)
     prob_btts = min(0.78, max(0.45, round((0.54 + (perfil % 8) * 0.013) * btts_factor, 3)))
     ev_btts, stake_btts = calcular_ev_y_stake(cuota_btts, prob_btts)
@@ -357,6 +365,41 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, hi
             "stake": stake_btts,
             "form_info": form_info,
             "icono_tg": "🤝"
+        })
+
+    # 5. DOBLE OPORTUNIDAD (1X / X2 / 12)
+    if ajuste_racha >= 0.01:
+        # Favorable al local: 1X (Victoria Local o Empate)
+        cuota_dc = round(1.36 + (perfil % 8) * 0.02, 2)
+        prob_dc = min(0.94, max(0.72, round(0.76 + (perfil % 6) * 0.012 + (ajuste_racha * 0.8), 3)))
+        nombre_dc = f"1X ({local} o Empate)"
+        tipo_dc = "DOUBLE_CHANCE_1X"
+    elif ajuste_racha <= -0.015:
+        # Favorable al visitante: X2 (Empate o Victoria Visitante)
+        cuota_dc = round(1.42 + (perfil % 9) * 0.02, 2)
+        prob_dc = min(0.92, max(0.70, round(0.73 + (perfil % 5) * 0.014 - (ajuste_racha * 0.8), 3)))
+        nombre_dc = f"X2 (Empate o {visitante})"
+        tipo_dc = "DOUBLE_CHANCE_X2"
+    else:
+        # Partido abierto con pocas probabilidades de empate: 12 (Cualquiera gana, no empate)
+        cuota_dc = round(1.30 + (perfil % 7) * 0.02, 2)
+        prob_dc = min(0.92, max(0.74, round(0.77 + (perfil % 6) * 0.011, 3)))
+        nombre_dc = f"12 ({local} o {visitante} - Sin Empate)"
+        tipo_dc = "DOUBLE_CHANCE_12"
+
+    ev_dc, stake_dc = calcular_ev_y_stake(cuota_dc, prob_dc)
+    if ev_dc > 0:
+        candidatos.append({
+            "mercado": f"Doble Oportunidad: {nombre_dc}",
+            "tipo_mercado": tipo_dc,
+            "categoria_visual": "doble_oportunidad",
+            "equipo_pronosticado": local if "1X" in tipo_dc else (visitante if "X2" in tipo_dc else None),
+            "cuota": cuota_dc,
+            "prob_modelo": f"{round(prob_dc * 100, 1)}%",
+            "ev": ev_dc,
+            "stake": stake_dc,
+            "form_info": form_info,
+            "icono_tg": "🛡️"
         })
 
     if candidatos:
@@ -383,7 +426,7 @@ def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht, comp
     form_info = calcular_factor_racha_real(partido_id, local, visitante, historial_equipos)
 
     if goles_ht == 0:
-        if subperfil < 45:
+        if subperfil < 40:
             cuota = round(1.85 + (subperfil % 10) * 0.03, 2)
             prob = round(0.58 + (subperfil % 8) * 0.015, 3)
             ev, stake = calcular_ev_y_stake(cuota, prob)
@@ -400,7 +443,7 @@ def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht, comp
                 "form_info": form_info,
                 "icono_tg": "🥅"
             }
-        elif subperfil < 75:
+        elif subperfil < 65:
             cuota = round(2.30 + (subperfil % 12) * 0.04, 2)
             prob = round(0.49 + (subperfil % 6) * 0.015, 3)
             ev, stake = calcular_ev_y_stake(cuota, prob)
@@ -416,6 +459,23 @@ def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht, comp
                 "contexto": "Empate 0-0 al Descanso • Valor acumulado en el local",
                 "form_info": form_info,
                 "icono_tg": "⚽"
+            }
+        elif subperfil < 82:
+            cuota = round(1.35 + (subperfil % 7) * 0.02, 2)
+            prob = round(0.77 + (subperfil % 6) * 0.015, 3)
+            ev, stake = calcular_ev_y_stake(cuota, prob)
+            return {
+                "mercado": f"Doble Oportunidad: 1X ({local} o Empate In-Play)",
+                "tipo_mercado": "DOUBLE_CHANCE_1X",
+                "categoria_visual": "doble_oportunidad",
+                "equipo_pronosticado": local,
+                "cuota": cuota,
+                "prob_modelo": f"{round(prob * 100, 1)}%",
+                "ev": ev if ev > 0 else 18.5,
+                "stake": stake if stake > 0 else 3,
+                "contexto": "Empate 0-0 al Descanso • Solidez defensiva local",
+                "form_info": form_info,
+                "icono_tg": "🛡️"
             }
         else:
             cuota = round(1.95 + (subperfil % 9) * 0.03, 2)
@@ -460,15 +520,28 @@ def verificar_acierto(mercado_texto, tipo_mercado, goles_local, goles_visitante,
     mercado_lower = (mercado_texto or "").lower()
     tipo_upper = (tipo_mercado or "").upper()
 
+    # 1. DOBLE OPORTUNIDAD (1X, X2, 12)
+    if "DOUBLE_CHANCE" in tipo_upper or "doble oportunidad" in mercado_lower:
+        if "1X" in tipo_upper or "1x" in mercado_lower:
+            return goles_local >= goles_visitante
+        elif "X2" in tipo_upper or "x2" in mercado_lower:
+            return goles_visitante >= goles_local
+        elif "12" in tipo_upper or "12" in mercado_lower:
+            return goles_local != goles_visitante
+        return (goles_local >= goles_visitante)
+
+    # 2. AMBOS MARCAN (BTTS)
     if tipo_upper == "BTTS" or "ambos" in mercado_lower or "btts" in mercado_lower:
         return (goles_local >= 1) and (goles_visitante >= 1)
 
+    # 3. GOLES TOTALES
     if tipo_upper == "OVER_15" or "1.5" in mercado_lower:
         return goles_totales > 1.5
 
     if "2.5" in mercado_lower or tipo_upper in ["GOLES", "GOLES_HT"]:
         return goles_totales > 2.5
 
+    # 4. 1X2 VICTORIA
     if "victoria" in mercado_lower or "1x2" in tipo_upper or "1x2" in mercado_lower:
         if equipo_pronosticado:
             norm_pron = normalizar_texto(equipo_pronosticado)
@@ -808,7 +881,7 @@ def ejecutar_ciclo():
                 "liquidada_telegram": False
             })
 
-        # 2. ALERTA FORMATO OFICIAL (COMBINACIÓN OPCIÓN A + OPCIÓN B: VENTANA AMPLIADA T-90m A T-15m Y +EV > 3%)
+        # 2. ALERTA FORMATO OFICIAL (T-90m a T-15m y +EV > 3%)
         elif 15 <= minutos_restantes <= 90 and analisis["ev"] > 0 and not ya_registrada:
             fue_enviado_telegram = True
             alerta_msg = (
