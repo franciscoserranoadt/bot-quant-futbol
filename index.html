@@ -1,456 +1,785 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#c85a32">
-  <title>TPV LA PIRULETA</title>
-  <link rel="manifest" href="./manifest.json">
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <!-- Firebase App & Firestore SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
-  <script>
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>Apex Quant Analytics</title>
+<link href="manifest.json" rel="manifest"/>
+<meta content="#070e1d" name="theme-color"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
-          fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-            display: ['"Space Grotesk"', 'sans-serif']
-          },
           colors: {
             brand: {
-              DEFAULT: '#c85a32',
-              dark: '#a84520',
-              light: '#fff8f1'
+              primary: '#00f59b',
+              secondary: '#00d4ff',
+              surface: '#070e1d',
+              card: '#0c1527',
+              border: '#16233b',
+              accent: '#ffb703'
             }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
           }
         }
       }
     }
   </script>
-
-  <style>
-    * { -webkit-tap-highlight-color: transparent; user-select: none; }
-    input, textarea, select { user-select: text; }
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #fff8f1; color: #2c1a14; }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+<style>
+    body {
+      background-color: #070e1d;
+      color: #e2e8f0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.75; transform: scale(1.04); }
+    }
+    .pulse-live { animation: pulseGlow 2s infinite ease-in-out; }
   </style>
 </head>
-<body class="min-h-screen bg-[#fff8f1] flex flex-col text-slate-800 select-none pb-4">
-
-  <!-- CABECERA PRINCIPAL TPV -->
-  <header class="bg-white/95 backdrop-blur border-b border-orange-100 px-4 py-2.5 sticky top-0 z-30 flex items-center justify-between shadow-xs">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-2xl bg-orange-100 flex items-center justify-center text-xl shadow-inner cursor-pointer" onclick="cambiarSeccion('tpv')">
-        🍭
-      </div>
-      <div>
-        <div class="flex items-center gap-2">
-          <span class="font-extrabold text-base tracking-tight font-display text-slate-900" id="headerNombreComercial">LA PIRULETA</span>
-          <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-orange-100 text-orange-800">TERMINAL TÁCTIL</span>
-          <span class="text-xs text-slate-500 font-medium flex items-center gap-1.5 ml-2">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
-            <span id="txtEstadoCloud">Cloud Conectado</span>
-            <span class="text-slate-300">•</span>
-            <span id="headerCajaNum">Caja 1</span>
-            <span class="text-slate-300">•</span>
-            <span class="text-slate-400 font-semibold" id="headerTarifa">Tarifa Estándar</span>
-          </span>
+<body class="min-h-screen pb-12 antialiased selection:bg-brand-primary selection:text-black">
+<div class="max-w-md mx-auto px-4 pt-4 sm:pt-6 space-y-4">
+<!-- Header Principal -->
+<header class="flex items-center justify-between pb-1">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400/20 to-teal-500/10 border border-emerald-400/30 flex items-center justify-center font-bold text-brand-primary font-mono text-base shadow-lg shadow-emerald-950/40">
+          AQ
         </div>
-      </div>
-    </div>
-
-    <!-- Acciones Cabecera: Pendientes, Lupa, Editor Carta, Fiscales, Caja -->
-    <div class="flex items-center gap-2">
-      <button onclick="abrirModalPendientes()" class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition active:scale-95 cursor-pointer">
-        <i class="fa-solid fa-paperclip"></i>
-        <span>Pendientes</span>
-        <span id="badgeNumPendientes" class="w-4 h-4 rounded-full bg-white text-amber-800 text-[10px] flex items-center justify-center font-black">0</span>
-      </button>
-      <button onclick="toggleBuscador()" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition active:scale-95 cursor-pointer" title="Buscar producto">
-        <i class="fa-solid fa-magnifying-glass text-xs"></i>
-      </button>
-      <button onclick="abrirModalEditorCarta()" class="w-9 h-9 rounded-xl bg-orange-600 hover:bg-orange-700 text-white flex items-center justify-center shadow-xs transition active:scale-95 cursor-pointer" title="Editor de Carta e IVA en la nube">
-        <i class="fa-solid fa-pen-to-square text-xs"></i>
-      </button>
-      <button onclick="toggleAjustesModal()" class="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 hover:bg-amber-200 flex items-center justify-center transition active:scale-95 cursor-pointer" title="Datos fiscales">
-        <i class="fa-solid fa-sliders text-xs"></i>
-      </button>
-      <button onclick="abrirModalCaja()" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition active:scale-95 cursor-pointer">
-        <i class="fa-solid fa-cash-register"></i>
-        <span>Caja</span>
-      </button>
-    </div>
-  </header>
-
-  <!-- BARRA DE BÚSQUEDA RÁPIDA -->
-  <div id="barraBuscador" class="hidden bg-white border-b border-orange-100 px-4 py-2 transition-all">
-    <div class="relative flex items-center">
-      <i class="fa-solid fa-search absolute left-3 text-slate-400 text-xs"></i>
-      <input type="text" id="inputBuscar" oninput="filtrarProductos()" placeholder="Buscar café, pan, bollería..." class="w-full pl-8 pr-8 py-1.5 rounded-xl bg-slate-100 border border-slate-200 text-xs focus:outline-none focus:border-orange-400">
-      <button onclick="toggleBuscador()" class="absolute right-2.5 text-slate-400 hover:text-slate-600 p-1">
-        <i class="fa-solid fa-xmark text-xs"></i>
-      </button>
-    </div>
-  </div>
-
-  <!-- AVISO VISUAL DE MESA ACTIVA SI ESTÁ CARGADA -->
-  <div id="bannerMesaCargada" class="hidden bg-orange-600 text-white px-4 py-2 text-xs font-bold flex items-center justify-between shadow-sm">
-    <div class="flex items-center gap-2">
-      <i class="fa-solid fa-chair"></i>
-      <span>Comanda asignada a: <span id="txtNombreMesaEnComanda" class="underline">Mesa 1</span></span>
-    </div>
-    <button onclick="desvincularMesaComanda()" class="px-2 py-0.5 bg-black/20 hover:bg-black/30 rounded text-[11px] font-semibold cursor-pointer">
-      Desvincular a Barra
-    </button>
-  </div>
-
-  <!-- CONTENIDO PRINCIPAL: MOSTRADOR TÁCTIL (DIVIDIDO EN 2 COLUMNAS) -->
-  <main class="flex-1 p-3 grid grid-cols-12 gap-3 overflow-hidden">
-
-    <!-- COLUMNA IZQUIERDA: TICKET CONTABLE EN TIEMPO REAL & TECLADO FÍSICO -->
-    <div class="col-span-12 lg:col-span-4 bg-white rounded-2xl border border-orange-100/90 shadow-sm flex flex-col justify-between p-3.5">
-      <div>
-        <!-- Cabecera del Ticket -->
-        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-          <div>
-            <span class="text-xs font-extrabold text-slate-900 uppercase tracking-wider" id="ticketServicioTitulo">BARRA #T-001</span>
-            <span class="block text-[11px] text-slate-400 font-medium" id="ticketClienteSub">Cliente General</span>
-          </div>
-          <button onclick="vaciarTicket()" class="px-2.5 py-1 rounded-lg text-rose-500 hover:bg-rose-50 border border-rose-200 text-[11px] font-bold flex items-center gap-1 transition active:scale-95 cursor-pointer">
-            <i class="fa-solid fa-trash-can text-[10px]"></i> Limpiar
-          </button>
-        </div>
-
-        <!-- Encabezado de Columnas del Ticket -->
-        <div class="grid grid-cols-12 text-[10px] uppercase font-bold text-slate-400 py-1.5 border-b border-slate-100">
-          <span class="col-span-6">ARTÍCULO</span>
-          <span class="col-span-2 text-center">CANT</span>
-          <span class="col-span-2 text-right">PRECIO</span>
-          <span class="col-span-2 text-right">TOTAL</span>
-        </div>
-
-        <!-- Lista de Productos en el Ticket -->
-        <div id="listaItemsTicket" class="divide-y divide-slate-50 overflow-y-auto max-h-[220px] min-h-[140px] pr-1">
-          <div class="text-center text-xs text-slate-300 py-12 flex flex-col items-center gap-2">
-            <i class="fa-solid fa-receipt text-2xl text-slate-200"></i>
-            <span>Ticket vacío.<br>Toca los productos de la derecha para sumar.</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Totales y Teclado Táctil de Cobro -->
-      <div class="pt-2 border-t border-slate-100 space-y-2">
-        <div class="bg-amber-50/50 p-2.5 rounded-xl border border-amber-100/80 flex items-center justify-between">
-          <div>
-            <span class="text-[11px] font-bold text-amber-900 block uppercase tracking-wider">TOTAL A PAGAR</span>
-            <span class="text-[10px] text-slate-400 font-semibold" id="desgloseIvaTicket">IVA inc. (0.00 €)</span>
-          </div>
-          <span class="text-2xl font-black font-display text-orange-600" id="txtTotalPagar">0.00 €</span>
-        </div>
-
-        <!-- Teclado Numérico y Botonera Directa de Comanda -->
-        <div class="grid grid-cols-4 gap-1.5 text-slate-700 font-extrabold text-sm">
-          <button onclick="pulsarTeclaNum('7')" class="py-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/70 active:scale-95 transition">7</button>
-          <button onclick="pulsarTeclaNum('8')" class="py-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/70 active:scale-95 transition">8</button>
-          <button onclick="pulsarTeclaNum('9')" class="py-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/70 active:scale-95 transition">9</button>
-          <button onclick="abrirModalCobroFinal()" class="col-span-1 row-span-2 py-2.5 bg-[#c85a32] hover:bg-[#b04a25] text-white rounded-xl shadow-md flex flex-col items-center justify-center gap-0.5 active:scale-95 transition cursor-pointer">
-            <i class="fa-solid fa-cash-register text-xs"></i>
-            <span class="text-[11px] leading-tight">Finalizar Venta</span>
-            <span class="text-[9px] opacity-75 font-mono">F1</span>
-          </button>
-
-          <button onclick="pulsarTeclaNum('4')" class="py-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/70 active:scale-95 transition">4</button>
-          <button onclick="pulsarTeclaNum('5')" class="py-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/70 active:scale-95 transition">5</button>
-          <button onclick="pulsarTeclaNum('6')" class="py-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/70 active:scale-95 transition">6</button>
-
-          <button onclick="pulsarTeclaNum('1')" class="py-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/70 active:scale-95 transition">1</button>
-          <button onclick="pulsarTeclaNum('2')" class="py-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/70 active:scale-95 transition">2</button>
-          <button onclick="pulsarTeclaNum('3')" class="py-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/70 active:scale-95 transition">3</button>
-          <button onclick="dejarTicketPendiente()" class="py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-xs text-xs font-bold flex items-center justify-center gap-1 active:scale-95 transition cursor-pointer" title="Aparcar ticket">
-            <i class="fa-solid fa-paperclip text-[10px]"></i>
-            <span class="text-[11px]">Dejar Pendiente</span>
-          </button>
-
-          <button onclick="pulsarTeclaNum('0')" class="py-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/70 active:scale-95 transition">0</button>
-          <button onclick="pulsarTeclaNum(',')" class="py-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/70 active:scale-95 transition">,</button>
-          <button onclick="pulsarTeclaNum('C')" class="py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl border border-rose-200 active:scale-95 transition">C</button>
-          <button onclick="abrirPlanoMesas()" class="py-2.5 bg-orange-50 hover:bg-orange-100 text-orange-800 rounded-xl border border-orange-200 text-xs font-bold flex items-center justify-center gap-1 active:scale-95 transition cursor-pointer">
-            <i class="fa-solid fa-chair text-[10px]"></i>
-            <span class="text-[11px]">Asignar a Mesa</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- COLUMNA DERECHA: CATEGORÍAS & BOTONES TÁCTILES DE PRODUCTOS -->
-    <div class="col-span-12 lg:col-span-8 flex flex-col gap-3">
-      <!-- Selector de Categorías Horizontal -->
-      <div class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar" id="barraCategoriasMostrador">
-        <button onclick="abrirPlanoMesas()" class="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs shrink-0 active:scale-95 transition cursor-pointer">
-          <i class="fa-solid fa-chair"></i> Mesas
-        </button>
-        <button onclick="filtrarCategoria('todos', this)" class="btn-cat-tab px-4 py-2 rounded-xl bg-[#c85a32] text-white font-bold text-xs shadow-xs shrink-0 transition cursor-pointer">
-          ⭐ FAVORITOS / TODOS
-        </button>
-      </div>
-
-      <!-- Cuadrícula de Artículos Táctiles -->
-      <div id="gridArticulosMostrador" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2.5 overflow-y-auto max-h-[calc(100vh-140px)] pr-1"></div>
-    </div>
-  </main>
-
-  <!-- MODAL 1: SELECTOR DE 3 OPCIONES DE COBRO (EFECTIVO, TARJETA, BIZUM) -->
-  <div id="modalCobroOpciones" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in duration-150">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-        <div>
-          <h3 class="font-black text-slate-900 text-base">Finalizar Venta</h3>
-          <p class="text-xs text-slate-400" id="subtituloModalCobro">Selecciona la forma de pago</p>
-        </div>
-        <button onclick="cerrarModalCobro()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition cursor-pointer">
-          <i class="fa-solid fa-xmark text-sm"></i>
-        </button>
-      </div>
-
-      <!-- Total Destacado -->
-      <div class="bg-amber-50/70 border border-amber-200/60 rounded-2xl p-4 text-center">
-        <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider block">Importe a Cobrar</span>
-        <span class="text-3xl font-black text-slate-900 font-display block mt-1" id="txtTotalModalCobro">0.00 €</span>
-        <span class="text-[10px] text-slate-500 font-medium" id="txtArtsModalCobro">0 artículos</span>
-      </div>
-
-      <!-- Las 3 Opciones Solicitadas: Efectivo, Tarjeta, Bizum -->
-      <div class="grid grid-cols-1 gap-2.5 font-bold text-sm">
-        <button onclick="confirmarPagoMetodo('efectivo')" class="w-full py-3.5 px-4 rounded-2xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 flex items-center justify-between shadow-xs active:scale-98 transition cursor-pointer">
-          <div class="flex items-center gap-3">
-            <span class="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-base shadow-xs">
-              <i class="fa-solid fa-money-bill-wave"></i>
+<div>
+<div class="flex items-center gap-2">
+<h1 class="text-xl font-extrabold tracking-tight text-white">Apex Quant</h1>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 border border-emerald-500/30 text-brand-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-brand-primary animate-ping"></span>
+              24/7 ONLINE
             </span>
-            <div class="text-left">
-              <span class="block leading-tight">Efectivo</span>
-              <span class="text-[11px] font-semibold text-emerald-600">Abre cajón y suma a efectivo</span>
+</div>
+<p class="text-xs text-slate-400 font-medium">Motor Predictivo Just-In-Time (+EV)</p>
+</div>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-[11px] font-semibold text-slate-300 font-mono flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-slate-400"></span> OLED
+        </span>
+<button class="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition active:scale-95" id="btnRecargar" onclick="cargarDatos(true)">
+<svg class="w-4 h-4 transition-transform duration-500" fill="none" id="iconRefresh" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</header>
+<!-- Tarjeta Canal Telegram Oficial -->
+<a class="block group relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0088cc]/20 via-[#0088cc]/10 to-transparent border border-[#0088cc]/30 p-3.5 transition-all hover:border-[#0088cc]/60 active:scale-[0.99] shadow-lg shadow-sky-950/20" href="https://t.me/apex_quant_alertas" rel="noopener noreferrer" target="_blank">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-[#0088cc]/30 border border-[#0088cc]/50 flex items-center justify-center text-white shadow-inner">
+<svg class="w-5 h-5 fill-current" viewbox="0 0 24 24">
+<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"></path>
+</svg>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="text-sm font-bold text-white group-hover:text-sky-300 transition">Canal Telegram Oficial</h2>
+<span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+</div>
+<p class="text-xs text-slate-300 font-mono mt-0.5">Alertas automáticas en <span class="text-sky-400 font-semibold">@apex_quant_alertas</span></p>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-lg bg-[#0088cc]/20 border border-[#0088cc]/40 text-xs font-bold text-sky-300 flex items-center gap-1 group-hover:bg-[#0088cc]/30 transition">
+          ACTIVO <span class="text-xs">›</span>
+</span>
+</div>
+</a>
+<!-- Fila 3 Tarjetas de Métricas Fijas (Filtro EV a +3.0%) -->
+<div class="grid grid-cols-3 gap-2 text-center">
+<div class="bg-brand-card rounded-2xl border border-brand-border p-3">
+<span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block">PARTIDOS</span>
+<span class="text-xl font-extrabold text-white font-mono mt-0.5 block" id="numPartidosMonitoreo">--</span>
+<span class="text-[10px] text-slate-500 font-medium">Monitoreo</span>
+</div>
+<div class="bg-brand-card rounded-2xl border border-brand-border p-3">
+<span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block">FILTRO EV</span>
+<span class="text-xl font-extrabold text-brand-primary font-mono mt-0.5 block">+3.0%</span>
+<span class="text-[10px] text-slate-500 font-medium">Ventaja</span>
+</div>
+<div class="bg-brand-card rounded-2xl border border-brand-border p-3">
+<span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block">GESTIÓN</span>
+<span class="text-xl font-extrabold text-sky-400 font-mono mt-0.5 block">1/4</span>
+<span class="text-[10px] text-slate-500 font-medium">Kelly</span>
+</div>
+</div>
+<!-- Tarjeta Rendimiento Semanal (Exclusivo Telegram con Curva de Equity) -->
+<div class="bg-brand-card rounded-2xl border border-brand-border p-4 space-y-3 relative overflow-hidden shadow-xl shadow-black/40">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-brand-primary">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="text-xs font-bold text-white uppercase tracking-wider">RENDIMIENTO SEMANAL</h3>
+<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">EXCLUSIVO TELEGRAM</span>
+</div>
+<p class="text-[11px] text-slate-400 font-medium">Curva de Equity &amp; Balance de Unidades</p>
+</div>
+</div>
+<div class="text-right">
+<span class="text-[10px] font-bold text-slate-400 tracking-wider uppercase block">BALANCE NETO</span>
+<span class="text-lg font-extrabold text-brand-primary font-mono block" id="txtBalanceNeto">+0.00 U.</span>
+</div>
+</div>
+<div class="bg-slate-900/60 rounded-xl border border-slate-800/80 p-2.5 text-xs text-slate-300 font-medium flex items-center gap-2">
+<svg class="w-4 h-4 text-sky-400 shrink-0" fill="currentColor" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" fill-rule="evenodd"></path>
+</svg>
+<span>Métricas calculadas <strong>exclusivamente</strong> sobre las alertas oficiales emitidas al <a class="text-sky-400 underline font-semibold" href="https://t.me/apex_quant_alertas" target="_blank">canal de Telegram</a>.</span>
+</div>
+<div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-800/80 text-center">
+<div>
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">YIELD / ROI</span>
+<span class="text-sm font-extrabold text-brand-primary font-mono mt-0.5 block" id="txtRoi">+0.0%</span>
+</div>
+<div>
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">UNIDADES GANADAS</span>
+<span class="text-sm font-extrabold text-brand-primary font-mono mt-0.5 block" id="txtUnidadesGanadas">+0.00 U.</span>
+</div>
+<div>
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">STAKE APOSTADO</span>
+<span class="text-sm font-extrabold text-white font-mono mt-0.5 block" id="txtStakeApostado">0.0 U.</span>
+</div>
+</div>
+<!-- Curva de Crecimiento Bankroll (SVG Dinámico) -->
+<div class="pt-2">
+<div class="flex items-center justify-between text-[10px] text-slate-400 font-mono mb-1">
+<span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-brand-primary"></span> Curva de Crecimiento Bankroll (Alertas TG)</span>
+<span id="txtPicksEvaluados">0 picks evaluados</span>
+</div>
+<div class="w-full h-12 bg-slate-900/80 rounded-xl border border-slate-800/60 p-1 flex items-center relative overflow-hidden">
+<svg class="w-full h-full overflow-visible" id="svgCurvaEquity" preserveaspectratio="none" viewbox="0 0 100 40">
+<polyline fill="none" points="0,20 100,20" stroke="#00f59b" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></polyline>
+</svg>
+</div>
+</div>
+</div>
+<!-- Fila 3 Tarjetas de Efectividad (Semana Actual) -->
+<div>
+<div class="flex items-center justify-between px-1 mb-1.5 text-[11px] font-medium text-slate-400">
+<span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> Semana actual</span>
+<span class="font-mono text-slate-500">Reinicio oficial cada lunes 00:00h</span>
+</div>
+<div class="grid grid-cols-3 gap-2 text-center">
+<!-- Telegram -->
+<div class="bg-brand-card rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-emerald-500/5 to-transparent p-3 relative overflow-hidden shadow-lg shadow-emerald-950/20">
+<div class="text-[10px] font-extrabold text-brand-primary flex items-center justify-center gap-1 uppercase tracking-wider">
+<span class="w-1.5 h-1.5 rounded-full bg-brand-primary"></span> TELEGRAM
+          </div>
+<span class="text-lg font-extrabold text-white font-mono mt-0.5 block" id="pctEfectividadTg">--%</span>
+<span class="text-[10px] text-slate-400 font-mono font-medium block" id="txtBalanceTg">0V - 0D TG</span>
+</div>
+<!-- Sin Alerta -->
+<div class="bg-brand-card rounded-2xl border border-brand-border p-3">
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">SIN ALERTA</span>
+<span class="text-lg font-extrabold text-white font-mono mt-0.5 block" id="pctEfectividadNoTg">--%</span>
+<span class="text-[10px] text-slate-500 font-mono font-medium block" id="txtBalanceNoTg">0V - 0D No TG</span>
+</div>
+<!-- Global Total (Suma Unificada Exacta) -->
+<div class="bg-brand-card rounded-2xl border border-brand-border p-3">
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">GLOBAL TOTAL</span>
+<span class="text-lg font-extrabold text-white font-mono mt-0.5 block" id="pctEfectividadGlobal">--%</span>
+<span class="text-[10px] text-slate-500 font-mono font-medium block" id="txtBalanceGlobal">0V - 0D Total</span>
+</div>
+</div>
+</div>
+<!-- Pestañas Principales: En Juego / Hoy, Finalizados y Alertas -->
+<div class="bg-slate-900/90 rounded-2xl p-1.5 border border-slate-800 grid grid-cols-3 gap-1 text-center text-xs font-bold shadow-inner">
+<button class="py-2.5 rounded-xl bg-brand-primary text-black transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20" id="tabEnJuego" onclick="cambiarPestañaPrincipal('en_juego')">
+<span>En Juego / Hoy</span>
+<span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-extrabold bg-black/20 text-black" id="badgeEnJuego">0</span>
+</button>
+<button class="py-2.5 rounded-xl text-slate-400 hover:text-white transition-all flex items-center justify-center gap-1.5" id="tabFinalizados" onclick="cambiarPestañaPrincipal('finalizados')">
+<span>Finalizados</span>
+<span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-slate-800 text-slate-300" id="badgeFinalizados">0</span>
+</button>
+<button class="py-2.5 rounded-xl text-slate-400 hover:text-white transition-all flex items-center justify-center gap-1.5" id="tabAlertas" onclick="cambiarPestañaPrincipal('alertas')">
+<span>Alertas</span>
+<span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-slate-800 text-slate-300" id="badgeAlertas">0</span>
+</button>
+</div>
+<!-- Filtros de Competiciones (Píldoras horizontales) -->
+<div class="space-y-1.5" id="seccionFiltroLigas">
+<div class="flex items-center justify-between px-1 text-xs text-slate-400 font-semibold">
+<span class="tracking-wider uppercase text-[10px]">COMPETICIONES</span>
+<span class="font-mono text-[10px] text-slate-500" id="horaSincroTop">Sincronizando...</span>
+</div>
+<div class="flex gap-1.5 overflow-x-auto pb-1 hide-scrollbar">
+<button class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 bg-rose-500/10 border-rose-500/30 text-rose-400 hover:border-rose-400" onclick="filtrarLiga('LIVE', this)">
+<span class="w-2 h-2 rounded-full bg-rose-500 pulse-live"></span> EN VIVO
+        </button>
+<button class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-brand-primary text-black border-brand-primary" onclick="filtrarLiga('all', this)">
+          Todas
+        </button>
+<button class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700" onclick="filtrarLiga('laliga', this)">
+          LaLiga (ESP)
+        </button>
+<button class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700" onclick="filtrarLiga('laliga2', this)">
+          LaLiga 2 (ESP)
+        </button>
+<button class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700" onclick="filtrarLiga('premier', this)">
+          Premier (ENG)
+        </button>
+<button class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700" onclick="filtrarLiga('bundesliga', this)">
+          Bundesliga
+        </button>
+<button class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700" onclick="filtrarLiga('seriea', this)">
+          Serie A
+        </button>
+<button class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700" onclick="filtrarLiga('ligue1', this)">
+          Ligue 1
+        </button>
+<button class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700" onclick="filtrarLiga('champions', this)">
+          Champions
+        </button>
+</div>
+</div>
+<!-- Título de sección activa -->
+<div class="flex items-center justify-between px-1 pt-1">
+<h2 class="text-xs font-extrabold uppercase tracking-wider text-slate-300" id="tituloLista">
+        ENCUENTROS PROGRAMADOS Y EN VIVO
+      </h2>
+<span class="text-[11px] text-brand-primary font-mono flex items-center gap-1 font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-brand-primary"></span> hora peninsular (madrid)
+      </span>
+</div>
+<!-- Contenedor dinámico de tarjetas -->
+<div class="space-y-3" id="contenedorTarjetas">
+<div class="bg-brand-card rounded-2xl border border-brand-border p-6 text-center text-slate-400 space-y-2">
+<p class="text-sm font-semibold text-slate-300">Esperando datos de la última ejecución...</p>
+<p class="text-xs text-slate-500">El archivo datos.json se generará automáticamente en el próximo ciclo.</p>
+</div>
+</div>
+</div>
+<!-- Lógica JavaScript Principal -->
+<script>
+    let PARTIDOS_GLOBAL = [];
+    let ALERTAS_GLOBAL = [];
+    let PESTAÑA_ACTIVA = 'en_juego'; // 'en_juego' | 'finalizados' | 'alertas'
+    let LIGA_ACTIVA = 'all';
+
+    function formatearRachaHTML(cadenaRacha) {
+      if (!cadenaRacha) return '';
+      const partes = cadenaRacha.split('-');
+      return partes.map(letra => {
+        let l = letra.trim().toUpperCase();
+        if (l === 'W') {
+          return '<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500/20 border border-emerald-400 text-emerald-300 text-[9px] font-extrabold font-mono shadow-sm shadow-emerald-950/40">W</span>';
+        } else if (l === 'D') {
+          return '<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-400 text-amber-300 text-[9px] font-extrabold font-mono shadow-sm shadow-amber-950/40">D</span>';
+        } else if (l === 'L') {
+          return '<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-rose-500/20 border border-rose-400 text-rose-300 text-[9px] font-extrabold font-mono shadow-sm shadow-rose-950/40">L</span>';
+        }
+        return `<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-slate-800 border border-slate-700 text-slate-300 text-[9px] font-extrabold font-mono">${l}</span>`;
+      }).join(' ');
+    }
+
+    function cambiarPestañaPrincipal(pestaña) {
+      PESTAÑA_ACTIVA = pestaña;
+      const tabEnJuego = document.getElementById('tabEnJuego');
+      const tabFinalizados = document.getElementById('tabFinalizados');
+      const tabAlertas = document.getElementById('tabAlertas');
+      const secFiltro = document.getElementById('seccionFiltroLigas');
+      const tituloLista = document.getElementById('tituloLista');
+
+      [tabEnJuego, tabFinalizados, tabAlertas].forEach(btn => {
+        btn.className = 'py-2.5 rounded-xl text-slate-400 hover:text-white transition-all flex items-center justify-center gap-1.5';
+      });
+
+      if (pestaña === 'en_juego') {
+        tabEnJuego.className = 'py-2.5 rounded-xl bg-brand-primary text-black transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 font-bold';
+        secFiltro.style.display = 'block';
+        tituloLista.innerText = 'ENCUENTROS PROGRAMADOS Y EN VIVO';
+      } else if (pestaña === 'finalizados') {
+        tabFinalizados.className = 'py-2.5 rounded-xl bg-brand-primary text-black transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 font-bold';
+        secFiltro.style.display = 'block';
+        tituloLista.innerText = 'PARTIDOS FINALIZADOS RECIENTES';
+      } else {
+        tabAlertas.className = 'py-2.5 rounded-xl bg-brand-primary text-black transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 font-bold';
+        secFiltro.style.display = 'none';
+        tituloLista.innerText = 'HISTORIAL DE ALERTAS TELEGRAM EMITIDAS';
+      }
+
+      renderizarContenido();
+    }
+
+    function filtrarLiga(liga, btnElement) {
+      LIGA_ACTIVA = liga;
+      document.querySelectorAll('.btn-liga').forEach(b => {
+        b.className = 'btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700';
+      });
+      if (btnElement) {
+        if (liga === 'LIVE') {
+          btnElement.className = 'btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-950/40 flex items-center gap-1.5';
+        } else {
+          btnElement.className = 'btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-brand-primary text-black border-brand-primary shadow-md shadow-emerald-950/30';
+        }
+      }
+      renderizarContenido();
+    }
+
+    function calcularResumenFinanciero(listaAlertas) {
+      let unidadesApostadas = 0.0;
+      let beneficioNeto = 0.0;
+      let acertadas = 0;
+      let finalizadas = 0;
+      let historialPuntos = [0.0];
+
+      listaAlertas.forEach(a => {
+        if (a.finalizado) {
+          finalizadas++;
+          let stk = 3.0;
+          if (a.stake) {
+            const raw = a.stake.toString().split('/')[0].replace('U', '').trim();
+            const parsed = parseFloat(raw);
+            if (!isNaN(parsed)) stk = parsed;
+          }
+          let cuota = 2.0;
+          if (a.cuota) {
+            const rawC = a.cuota.toString().replace('@', '').trim();
+            const parsedC = parseFloat(rawC);
+            if (!isNaN(parsedC)) cuota = parsedC;
+          }
+
+          unidadesApostadas += stk;
+          if (a.acertado === true) {
+            acertadas++;
+            beneficioNeto += stk * (cuota - 1.0);
+          } else {
+            beneficioNeto -= stk;
+          }
+          historialPuntos.push(parseFloat(beneficioNeto.toFixed(2)));
+        }
+      });
+
+      const roi = unidadesApostadas > 0 ? ((beneficioNeto / unidadesApostadas) * 100).toFixed(1) : '0.0';
+      return {
+        finalizadas,
+        acertadas,
+        falladas: finalizadas - acertadas,
+        unidadesApostadas: unidadesApostadas.toFixed(1),
+        beneficioNeto: beneficioNeto.toFixed(2),
+        roi: (beneficioNeto >= 0 ? '+' : '') + roi + '%',
+        historialPuntos
+      };
+    }
+
+    function dibujarCurvaEquity(puntos) {
+      const svg = document.getElementById('svgCurvaEquity');
+      if (!svg) return;
+      if (!puntos || puntos.length <= 1) {
+        svg.innerHTML = '<polyline fill="none" stroke="#00f59b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="0,20 100,20" />';
+        return;
+      }
+
+      const minVal = Math.min(...puntos, 0);
+      const maxVal = Math.max(...puntos, 2);
+      const rango = (maxVal - minVal) === 0 ? 1 : (maxVal - minVal);
+
+      const pasoX = 100 / (puntos.length - 1);
+      const coords = puntos.map((p, idx) => {
+        const x = (idx * pasoX).toFixed(1);
+        const y = (36 - ((p - minVal) / rango) * 30).toFixed(1);
+        return `${x},${y}`;
+      });
+
+      const colorStroke = puntos[puntos.length - 1] >= 0 ? '#00f59b' : '#ff4d6d';
+      svg.innerHTML = `
+        <defs>
+          <linearGradient id="gradEquity" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${colorStroke}" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="${colorStroke}" stop-opacity="0.0"/>
+          </linearGradient>
+        </defs>
+        <polygon fill="url(#gradEquity)" points="0,40 ${coords.join(' ')} 100,40" />
+        <polyline fill="none" stroke="${colorStroke}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="${coords.join(' ')}" />
+      `;
+    }
+
+    function actualizarEstadisticas(partidos, alertas) {
+      // 1. Número de partidos monitoreados
+      const numPartidosEl = document.getElementById('numPartidosMonitoreo');
+      if (numPartidosEl) numPartidosEl.innerText = partidos.length || '0';
+
+      // 2. Conteo de pestañas
+      const enJuego = partidos.filter(p => p.estado !== 'FINISHED');
+      const finalizados = partidos.filter(p => p.estado === 'FINISHED');
+      document.getElementById('badgeEnJuego').innerText = enJuego.length;
+      document.getElementById('badgeFinalizados').innerText = finalizados.length;
+      document.getElementById('badgeAlertas').innerText = alertas.length;
+
+      // 3. Resumen Financiero Telegram
+      const fin = calcularResumenFinanciero(alertas);
+      const balanceSigno = parseFloat(fin.beneficioNeto) >= 0 ? '+' : '';
+      document.getElementById('txtBalanceNeto').innerText = `${balanceSigno}${fin.beneficioNeto} U.`;
+      document.getElementById('txtBalanceNeto').className = `text-lg font-extrabold font-mono block ${parseFloat(fin.beneficioNeto) >= 0 ? 'text-brand-primary' : 'text-rose-400'}`;
+      document.getElementById('txtRoi').innerText = fin.roi;
+      document.getElementById('txtRoi').className = `text-sm font-extrabold font-mono mt-0.5 block ${parseFloat(fin.beneficioNeto) >= 0 ? 'text-brand-primary' : 'text-rose-400'}`;
+      document.getElementById('txtUnidadesGanadas').innerText = `${balanceSigno}${fin.beneficioNeto} U.`;
+      document.getElementById('txtStakeApostado').innerText = `${fin.unidadesApostadas} U.`;
+      document.getElementById('txtPicksEvaluados').innerText = `${fin.finalizadas} picks evaluados`;
+      dibujarCurvaEquity(fin.historialPuntos);
+
+      // 4. Cajas de Efectividad
+      // A) Telegram
+      const pctTgEl = document.getElementById('pctEfectividadTg');
+      const txtBalTgEl = document.getElementById('txtBalanceTg');
+      if (fin.finalizadas > 0) {
+        const pctTg = Math.round((fin.acertadas / fin.finalizadas) * 100);
+        pctTgEl.innerText = `${pctTg}%`;
+        txtBalTgEl.innerText = `${fin.acertadas}V - ${fin.falladas}D TG`;
+      } else {
+        pctTgEl.innerText = '--%';
+        txtBalTgEl.innerText = '0V - 0D TG';
+      }
+
+      // B) Sin Alerta
+      const finalizadosSinAlerta = finalizados.filter(p => !p.telegram_enviado);
+      const acertadosNoTg = finalizadosSinAlerta.filter(p => p.acertado === true).length;
+      const totalNoTg = finalizadosSinAlerta.length;
+      const pctNoTgEl = document.getElementById('pctEfectividadNoTg');
+      const txtBalNoTgEl = document.getElementById('txtBalanceNoTg');
+      if (totalNoTg > 0) {
+        const pctNoTg = Math.round((acertadosNoTg / totalNoTg) * 100);
+        pctNoTgEl.innerText = `${pctNoTg}%`;
+        txtBalNoTgEl.innerText = `${acertadosNoTg}V - ${totalNoTg - acertadosNoTg}D No TG`;
+      } else {
+        pctNoTgEl.innerText = '--%';
+        txtBalNoTgEl.innerText = '0V - 0D No TG';
+      }
+
+      // C) Global Total (Suma Unificada Exacta)
+      const totalGlobalEvaluados = fin.finalizadas + totalNoTg;
+      const totalGlobalAciertos = fin.acertadas + acertadosNoTg;
+      const totalGlobalFallos = totalGlobalEvaluados - totalGlobalAciertos;
+      const pctGlobalEl = document.getElementById('pctEfectividadGlobal');
+      const txtBalGlobalEl = document.getElementById('txtBalanceGlobal');
+      if (totalGlobalEvaluados > 0) {
+        const pctGlobal = Math.round((totalGlobalAciertos / totalGlobalEvaluados) * 100);
+        pctGlobalEl.innerText = `${pctGlobal}%`;
+        txtBalGlobalEl.innerText = `${totalGlobalAciertos}V - ${totalGlobalFallos}D Total`;
+      } else {
+        pctGlobalEl.innerText = '--%';
+        txtBalGlobalEl.innerText = '0V - 0D Total';
+      }
+    }
+
+    function renderizarContenido() {
+      const contenedor = document.getElementById('contenedorTarjetas');
+      if (!contenedor) return;
+
+      if (PESTAÑA_ACTIVA === 'alertas') {
+        renderizarHistorialAlertas(contenedor);
+        return;
+      }
+
+      let lista = PARTIDOS_GLOBAL.filter(p => {
+        if (PESTAÑA_ACTIVA === 'finalizados') return p.estado === 'FINISHED';
+        return p.estado !== 'FINISHED';
+      });
+
+      if (LIGA_ACTIVA === 'LIVE') {
+        lista = lista.filter(p => p.estado === 'IN_PLAY' || p.estado === 'HT' || p.estado === 'LIVE' || p.estado === 'PAUSED' || p.estado_original === 'IN_PLAY' || p.estado_original === 'PAUSED' || Boolean(p.minuto_juego) || (p.minutos_restantes !== undefined && p.minutos_restantes <= 0 && p.estado !== 'FINISHED' && p.estado !== 'FINALIZADO' && p.estado !== 'AWARDED' && p.estado !== 'POSTPONED' && p.estado !== 'CANCELLED'));
+      } else if (LIGA_ACTIVA !== 'all') {
+        lista = lista.filter(p => p.liga_key === LIGA_ACTIVA);
+      }
+
+      if (lista.length === 0) {
+        contenedor.innerHTML = `
+          <div class="bg-brand-card rounded-2xl border border-brand-border p-8 text-center text-slate-400 space-y-2">
+            <p class="text-sm font-semibold text-slate-300">No hay partidos en esta sección</p>
+            <p class="text-xs text-slate-500">Todos los encuentros han finalizado o están programados para más tarde.</p>
+          </div>
+        `;
+        return;
+      }
+
+      contenedor.innerHTML = lista.map(p => crearTarjetaPartidoHTML(p)).join('');
+    }
+
+    function crearTarjetaPartidoHTML(p) {
+      const esFinalizado = p.estado === 'FINISHED';
+      const esEnJuego = (p.estado === 'IN_PLAY' || p.estado === 'HT') && !esFinalizado;
+
+      // Formato limpio de fecha y hora: "15/10 • 20:30" (sin la palabra "Madrid")
+      let displayFechaHora = '';
+      if (p.fecha_hora_display) {
+        displayFechaHora = p.fecha_hora_display.replace(/madrid/gi, '').trim();
+      } else if (p.hora) {
+        let hLimpia = p.hora.replace(/madrid/gi, '').trim();
+        let fLimpia = '';
+        if (p.fecha && p.fecha.includes('-')) {
+          const partes = p.fecha.split('-');
+          if (partes.length === 3) fLimpia = `${partes[2]}/${partes[1]} • `;
+        }
+        displayFechaHora = `${fLimpia}${hLimpia}`;
+      } else {
+        displayFechaHora = '15/10 • 20:30';
+      }
+
+      // Estado Badge
+      let badgeEstado = '';
+      if (esFinalizado) {
+        badgeEstado = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700 font-mono">FINALIZADO</span>';
+      } else if (esEnJuego) {
+        const txtMinuto = p.minuto_juego || 'EN JUEGO';
+        badgeEstado = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono flex items-center gap-1 pulse-live"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> ${txtMinuto}</span>`;
+      } else {
+        badgeEstado = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800/80 text-slate-400 border border-slate-700/60 font-mono">PROGRAMADO</span>';
+      }
+
+      // Marcador
+      let marcadorHTML = '';
+      if (p.marcador) {
+        marcadorHTML = `<div class="px-3 py-1 rounded-xl bg-slate-900 border border-slate-700/80 text-white font-mono font-extrabold text-sm shadow-inner">${p.marcador}</div>`;
+      } else if (esEnJuego) {
+        marcadorHTML = `<div class="px-3 py-1 rounded-xl bg-slate-900 border border-slate-700/80 text-white font-mono font-extrabold text-sm shadow-inner">0 - 0</div>`;
+      }
+
+      // Insignia Acertado / Perdido (para finalizados)
+      let insigniaLiquidacion = '';
+      if (esFinalizado && p.acertado !== undefined && p.acertado !== null) {
+        if (p.acertado) {
+          insigniaLiquidacion = '<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-500/20 border border-emerald-500/50 text-brand-primary flex items-center gap-1 font-mono">✓ ACERTADO</span>';
+        } else {
+          insigniaLiquidacion = '<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-rose-500/20 border border-rose-500/50 text-rose-400 flex items-center gap-1 font-mono">✕ PERDIDO</span>';
+        }
+      }
+
+      // Mercado Badge Dinámico
+      let badgeMercado = '';
+      const tipo = (p.tipo_mercado || '').toUpperCase();
+      const cat = (p.categoria_visual || '').toLowerCase();
+      const mText = (p.mercado || '').toLowerCase();
+
+      if (tipo.includes('DOUBLE_CHANCE') || cat.includes('doble') || mText.includes('doble')) {
+        badgeMercado = '<span class="px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-sky-500/20 border border-sky-400/40 text-sky-300 font-mono">🛡️ DOBLE OPORTUNIDAD</span>';
+      } else if (tipo === 'BTTS' || cat === 'btts' || mText.includes('ambos')) {
+        badgeMercado = '<span class="px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-amber-500/20 border border-amber-400/40 text-amber-300 font-mono">AMBOS MARCAN</span>';
+      } else if (tipo === 'OVER_15' || cat === 'over15' || mText.includes('1.5')) {
+        badgeMercado = '<span class="px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-500/20 border border-emerald-400/40 text-brand-primary font-mono">+1.5 GOLES</span>';
+      } else if (tipo.includes('GOLES') || cat === 'goles' || mText.includes('2.5')) {
+        badgeMercado = '<span class="px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-500/20 border border-emerald-400/40 text-brand-primary font-mono">GOLES TOTALES</span>';
+      } else {
+        badgeMercado = '<span class="px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-indigo-500/20 border border-indigo-400/40 text-indigo-300 font-mono">1X2 GANADOR</span>';
+      }
+
+      // Racha formateada con círculos
+      let rachaHTML = '';
+      if (p.form_info && (p.form_info.racha_local || p.form_info.racha_visitante)) {
+        const rlHTML = formatearRachaHTML(p.form_info.racha_local);
+        const rvHTML = formatearRachaHTML(p.form_info.racha_visitante);
+        const tendencia = p.form_info.tendencia || '⚖️ Tendencia Equilibrada';
+        rachaHTML = `
+          <div class="pt-2 text-[11px] text-slate-400 space-y-1">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="font-bold text-slate-500 font-mono uppercase text-[10px]">RACHA:</span>
+              <div class="flex items-center gap-1">${rlHTML}</div>
+              <span class="text-slate-600 font-bold text-[10px]">vs</span>
+              <div class="flex items-center gap-1">${rvHTML}</div>
+            </div>
+            <div class="text-[11px] font-medium text-slate-300 flex items-center gap-1.5">
+              <span>${tendencia}</span>
             </div>
           </div>
-          <i class="fa-solid fa-chevron-right text-xs text-emerald-400"></i>
-        </button>
+        `;
+      }
 
-        <button onclick="confirmarPagoMetodo('tarjeta')" class="w-full py-3.5 px-4 rounded-2xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 flex items-center justify-between shadow-xs active:scale-98 transition cursor-pointer">
-          <div class="flex items-center gap-3">
-            <span class="w-9 h-9 rounded-xl bg-blue-500 text-white flex items-center justify-center text-base shadow-xs">
-              <i class="fa-regular fa-credit-card"></i>
-            </span>
-            <div class="text-left">
-              <span class="block leading-tight">Tarjeta / Datáfono</span>
-              <span class="text-[11px] font-semibold text-blue-600">Registro en arqueo de datáfono</span>
+      const escudoLoc = p.escudo_local ? `<img src="${p.escudo_local}" alt="" class="w-5 h-5 object-contain shrink-0">` : '';
+      const escudoVis = p.escudo_visitante ? `<img src="${p.escudo_visitante}" alt="" class="w-5 h-5 object-contain shrink-0">` : '';
+
+      return `
+        <div class="bg-brand-card rounded-2xl border border-brand-border p-4 space-y-3 shadow-md hover:border-slate-700 transition">
+          <div class="flex items-center justify-between text-xs text-slate-400 pb-1 border-b border-slate-800/80">
+            <span class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 font-semibold text-slate-300">${p.liga || 'Competición Oficial'}</span>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-slate-400 font-medium">${displayFechaHora}</span>
+              ${marcadorHTML}
+              ${badgeEstado}
+              ${insigniaLiquidacion}
             </div>
           </div>
-          <i class="fa-solid fa-chevron-right text-xs text-blue-400"></i>
-        </button>
 
-        <button onclick="confirmarPagoMetodo('bizum')" class="w-full py-3.5 px-4 rounded-2xl bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-800 flex items-center justify-between shadow-xs active:scale-98 transition cursor-pointer">
-          <div class="flex items-center gap-3">
-            <span class="w-9 h-9 rounded-xl bg-sky-500 text-white flex items-center justify-center text-base shadow-xs">
-              <i class="fa-solid fa-mobile-screen-button"></i>
-            </span>
-            <div class="text-left">
-              <span class="block leading-tight">Bizum</span>
-              <span class="text-[11px] font-semibold text-sky-600">Pago móvil directo en cuenta</span>
-            </div>
-          </div>
-          <i class="fa-solid fa-chevron-right text-xs text-sky-400"></i>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL 2: GESTOR DE CARTA EN LA NUBE & SELECTOR DE IVA (BASE 5.4) -->
-  <div id="modalEditorCarta" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl w-full max-w-md p-5 space-y-4 shadow-2xl max-h-[90vh] flex flex-col">
-      <div class="flex items-center justify-between pb-2 border-b border-slate-100 shrink-0">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-pen-to-square text-orange-600"></i>
-          <h3 class="font-extrabold text-slate-900 text-sm">Gestor de Carta en la Nube</h3>
-        </div>
-        <button onclick="cerrarModalEditorCarta()" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
-          <i class="fa-solid fa-xmark text-sm"></i>
-        </button>
-      </div>
-
-      <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl text-xs font-bold text-center shrink-0">
-        <button onclick="cambiarTabEditor('articulos', this)" class="btn-tab-editor py-1.5 rounded-lg bg-white shadow-xs text-orange-600 cursor-pointer">📦 Artículos</button>
-        <button onclick="cambiarTabEditor('categorias', this)" class="btn-tab-editor py-1.5 rounded-lg text-slate-600 cursor-pointer">🏷️ Categorías</button>
-      </div>
-
-      <div id="editorTabArticulos" class="space-y-3 flex-1 flex flex-col overflow-hidden">
-        <div class="bg-orange-50/70 p-3 rounded-2xl border border-orange-100 space-y-2 text-xs shrink-0">
           <div class="flex items-center justify-between">
-            <span class="font-bold text-orange-950 block" id="tituloFormArticulo">Añadir Nuevo Producto</span>
-            <button id="btnCancelarEdicionProd" onclick="cancelarEdicionProducto()" class="hidden text-[11px] text-rose-600 font-bold underline cursor-pointer">Cancelar</button>
+            <div class="space-y-1.5 flex-1 pr-2">
+              <div class="flex items-center gap-2">
+                ${escudoLoc}
+                <span class="text-sm font-bold text-white tracking-wide">${p.local}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                ${escudoVis}
+                <span class="text-sm font-bold text-slate-300 tracking-wide">${p.visitante}</span>
+              </div>
+            </div>
+            <div class="text-right shrink-0">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">CUOTA VALOR</span>
+              <span class="text-base font-extrabold text-brand-primary font-mono block">@${p.cuota || '2.00'}</span>
+            </div>
           </div>
-          <input type="hidden" id="editandoProdId" value="">
-          <div class="grid grid-cols-2 gap-2">
-            <input type="text" id="nuevoProdNombre" placeholder="Nombre (ej. Batido)" class="px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs">
-            <input type="number" step="0.05" id="nuevoProdPrecio" placeholder="Precio € (ej. 2.50)" class="px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs">
-          </div>
-          <div class="grid grid-cols-3 gap-2">
-            <select id="nuevoProdCat" class="px-2 py-1.5 rounded-xl border border-slate-200 bg-white text-xs col-span-1"></select>
-            <input type="text" id="nuevoProdIcono" placeholder="Emoji (🥤)" class="px-2 py-1.5 rounded-xl border border-slate-200 bg-white text-xs col-span-1 text-center">
-            <select id="nuevoProdIVA" class="px-2 py-1.5 rounded-xl border border-slate-200 bg-white text-xs col-span-1 font-bold text-slate-700">
-              <option value="10">IVA 10%</option>
-              <option value="4">IVA 4%</option>
-              <option value="21">IVA 21%</option>
-            </select>
-          </div>
-          <button id="btnGuardarProd" onclick="guardarNuevoProducto()" class="w-full py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold text-xs shadow-xs cursor-pointer">
-            Guardar en la Nube
-          </button>
-        </div>
-        <div class="flex-1 overflow-y-auto divide-y divide-slate-100 text-xs pr-1" id="listaEditorProductos"></div>
-      </div>
 
-      <div id="editorTabCategorias" class="hidden space-y-3 flex-1 flex flex-col overflow-hidden">
-        <div class="bg-amber-50/70 p-3 rounded-2xl border border-amber-100 space-y-2 text-xs shrink-0">
-          <div class="flex items-center justify-between">
-            <span class="font-bold text-amber-950 block" id="tituloFormCategoria">Nueva Categoría</span>
-            <button id="btnCancelarEdicionCat" onclick="cancelarEdicionCategoria()" class="hidden text-[11px] text-rose-600 font-bold underline cursor-pointer">Cancelar</button>
+          <div class="bg-slate-900/90 rounded-xl p-3 border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              ${badgeMercado}
+              <span class="text-xs font-mono font-extrabold text-amber-400">${p.ev || '+5.0%'}</span>
+            </div>
+            <div class="text-sm font-extrabold text-white tracking-tight">
+              PRONÓSTICO: <span class="text-slate-200">${p.mercado}</span>
+            </div>
+            <div class="space-y-1 pt-1">
+              <div class="flex items-center justify-between text-[10px] font-mono">
+                <span class="text-slate-400 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-brand-primary"></span> Intensidad Alfa (+EV)</span>
+                <span class="text-amber-400 font-bold">VALOR ÉLITE (+25%)</span>
+              </div>
+              <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-emerald-400 to-amber-400 rounded-full" style="width: 78%"></div>
+              </div>
+            </div>
+            ${rachaHTML}
           </div>
-          <input type="hidden" id="editandoCatId" value="">
-          <div class="grid grid-cols-2 gap-2">
-            <input type="text" id="nuevaCatNombre" placeholder="Nombre (ej. Zumos)" class="px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs">
-            <input type="text" id="nuevaCatIcono" placeholder="Emoji (ej. 🧃)" class="px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs">
-          </div>
-          <button id="btnGuardarCat" onclick="guardarCategoria()" class="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-xs shadow-xs cursor-pointer">
-            Guardar Categoría
-          </button>
-        </div>
-        <div class="flex-1 overflow-y-auto divide-y divide-slate-100 text-xs pr-1" id="listaEditorCategorias"></div>
-      </div>
-    </div>
-  </div>
 
-  <!-- MODAL 3: MAPA DE SALA & MESAS ARRASTRABLES (BASE 5.4) -->
-  <div id="modalPlanoMesas" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3">
-    <div class="bg-white rounded-3xl w-full max-w-4xl p-5 space-y-3 shadow-2xl flex flex-col h-[88vh]">
-      <div class="flex items-center justify-between pb-2 border-b border-slate-100 shrink-0">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-chair text-orange-600"></i>
-          <div>
-            <h3 class="font-extrabold text-slate-900 text-sm">Plano de Sala & Mesas</h3>
-            <p class="text-[11px] text-slate-400">Arrastra las mesas libremente o selecciónalas para comanda</p>
+          <div class="grid grid-cols-4 gap-2 pt-1 text-center font-mono">
+            <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-800/80">
+              <span class="text-[9px] text-slate-400 block font-sans">PROB. MODELO</span>
+              <span class="text-xs font-bold text-white">${p.prob_modelo || '60.0%'}</span>
+            </div>
+            <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-800/80">
+              <span class="text-[9px] text-slate-400 block font-sans">VENTAJA</span>
+              <span class="text-xs font-bold text-brand-primary">${p.ev || '+5.0%'}</span>
+            </div>
+            <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-800/80">
+              <span class="text-[9px] text-slate-400 block font-sans">STAKE SUG.</span>
+              <span class="text-xs font-bold text-sky-400">${p.stake ? p.stake + '/10 U.' : '3/10 U.'}</span>
+            </div>
+            <button onclick="compartirPronostico('${p.local}', '${p.visitante}', '${p.mercado}', '${p.cuota}')" class="bg-slate-900/60 hover:bg-slate-800/80 p-2 rounded-xl border border-slate-800/80 text-slate-300 hover:text-white transition flex flex-col items-center justify-center">
+              <svg class="w-3.5 h-3.5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+              </svg>
+              <span class="text-[9px] font-sans">Compartir</span>
+            </button>
           </div>
         </div>
-        <div class="flex items-center gap-2">
-          <button onclick="toggleModoMoverMesas()" id="btnModoMoverMesas" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer">
-            🖐️ Mover: OFF
-          </button>
-          <button onclick="crearNuevaMesaPrompt()" class="px-3 py-1.5 rounded-xl bg-orange-600 text-white text-xs font-bold shadow-xs transition hover:bg-orange-700 cursor-pointer">
-            + Crear Mesa
-          </button>
-          <button onclick="cerrarPlanoMesas()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 ml-1 cursor-pointer">
-            <i class="fa-solid fa-xmark text-sm"></i>
-          </button>
-        </div>
-      </div>
-      <div id="canvasPlanoMesas" class="flex-1 bg-stone-100/60 rounded-2xl border-2 border-dashed border-stone-200 relative overflow-hidden select-none"></div>
-    </div>
-  </div>
+      `;
+    }
 
-  <!-- MODAL 4: VENTAS PENDIENTES (APARCADAS) -->
-  <div id="modalPendientes" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl w-full max-w-sm p-5 space-y-3 shadow-2xl">
-      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-paperclip text-amber-600"></i>
-          <h3 class="font-bold text-slate-900 text-sm">Ventas Pendientes</h3>
-        </div>
-        <button onclick="cerrarModalPendientes()" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
-          <i class="fa-solid fa-xmark text-sm"></i>
-        </button>
-      </div>
-      <div id="listaPendientes" class="divide-y divide-slate-100 max-h-[300px] overflow-y-auto text-xs"></div>
-    </div>
-  </div>
+    function renderizarHistorialAlertas(contenedor) {
+      if (ALERTAS_GLOBAL.length === 0) {
+        contenedor.innerHTML = `
+          <div class="bg-brand-card rounded-2xl border border-brand-border p-8 text-center text-slate-400 space-y-2">
+            <p class="text-sm font-semibold text-slate-300">No hay alertas en el historial todavía</p>
+            <p class="text-xs text-slate-500">Las alertas emitidas a Telegram se archivarán aquí automáticamente.</p>
+          </div>
+        `;
+        return;
+      }
 
-  <!-- MODAL 5: ARQUEO DE CAJA Y CIERRE Z -->
-  <div id="modalCajaArqueo" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
-      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-        <div>
-          <h3 class="font-black text-slate-900 text-sm">Arqueo de Turno</h3>
-          <p class="text-[11px] text-slate-400">Cierre Diario - Caja 1</p>
-        </div>
-        <button onclick="cerrarModalCaja()" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
-          <i class="fa-solid fa-xmark text-sm"></i>
-        </button>
-      </div>
-      <div class="grid grid-cols-2 gap-2 text-xs">
-        <div class="bg-emerald-50/60 p-3 rounded-2xl border border-emerald-100">
-          <span class="text-[10px] text-emerald-800 font-bold block uppercase">Efectivo en Cajón</span>
-          <span id="cajaEfectivoTxt" class="text-lg font-black text-emerald-700 block mt-0.5">0.00 €</span>
-        </div>
-        <div class="bg-blue-50/60 p-3 rounded-2xl border border-blue-100">
-          <span class="text-[10px] text-blue-800 font-bold block uppercase">Datáfono / Tarjeta</span>
-          <span id="cajaTarjetaTxt" class="text-lg font-black text-blue-700 block mt-0.5">0.00 €</span>
-        </div>
-        <div class="bg-sky-50/60 p-3 rounded-2xl border border-sky-100">
-          <span class="text-[10px] text-sky-800 font-bold block uppercase">Bizum Recibidos</span>
-          <span id="cajaBizumTxt" class="text-lg font-black text-sky-700 block mt-0.5">0.00 €</span>
-        </div>
-        <div class="bg-amber-50/60 p-3 rounded-2xl border border-amber-200">
-          <span class="text-[10px] text-amber-900 font-bold block uppercase">Total Ventas</span>
-          <span id="cajaTotalTxt" class="text-lg font-black text-amber-950 block mt-0.5">0.00 €</span>
-        </div>
-      </div>
-      <button onclick="confirmarCierreZ()" class="w-full py-3 bg-[#c85a32] hover:bg-[#b04a25] text-white rounded-xl font-bold text-xs shadow-md flex items-center justify-center gap-2 active:scale-98 transition cursor-pointer">
-        <i class="fa-solid fa-lock text-xs"></i>
-        <span>Cerrar Caja y Descargar Resumen Z</span>
-      </button>
-    </div>
-  </div>
+      contenedor.innerHTML = ALERTAS_GLOBAL.slice().reverse().map(a => {
+        let badgeLiquidacion = '';
+        if (a.finalizado) {
+          if (a.acertado === true) {
+            badgeLiquidacion = '<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-500/20 border border-emerald-500/50 text-brand-primary font-mono">✓ ACERTADO</span>';
+          } else {
+            badgeLiquidacion = '<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-rose-500/20 border border-rose-500/50 text-rose-400 font-mono">✕ PERDIDO</span>';
+          }
+        } else {
+          badgeLiquidacion = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-500/20 border border-sky-500/40 text-sky-300 font-mono">Alerta Real</span>';
+        }
 
-  <!-- MODAL 6: AJUSTES & DATOS FISCALES -->
-  <div id="modalAjustes" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl w-full max-w-sm p-5 space-y-3 shadow-2xl max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-        <h3 class="font-extrabold text-slate-900 text-sm">Datos Fiscales y Ticket</h3>
-        <button onclick="toggleAjustesModal()" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
-          <i class="fa-solid fa-xmark text-sm"></i>
-        </button>
-      </div>
-      <div class="space-y-2 text-xs">
-        <div>
-          <label class="font-semibold text-slate-700 block mb-0.5">Nombre Comercial</label>
-          <input type="text" id="cfgNombre" value="LA PIRULETA" class="w-full px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-        </div>
-        <div>
-          <label class="font-semibold text-slate-700 block mb-0.5">CIF / NIF</label>
-          <input type="text" id="cfgCIF" placeholder="B-12345678" class="w-full px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-        </div>
-        <div>
-          <label class="font-semibold text-slate-700 block mb-0.5">Nombre Fiscal / Razón Social</label>
-          <input type="text" id="cfgRazonSocial" placeholder="Cafetería La Piruleta S.L." class="w-full px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-        </div>
-        <div>
-          <label class="font-semibold text-slate-700 block mb-0.5">Dirección y Código Postal</label>
-          <input type="text" id="cfgDireccion" placeholder="Calle Mayor 12, 28001 Madrid" class="w-full px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-        </div>
-        <div>
-          <label class="font-semibold text-slate-700 block mb-0.5">Teléfono / WhatsApp</label>
-          <input type="text" id="cfgTelefono" placeholder="600 000 000" class="w-full px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-        </div>
-        <div>
-          <label class="font-semibold text-slate-700 block mb-0.5">Pie del Ticket (Agradecimiento)</label>
-          <textarea id="cfgPieTicket" rows="2" placeholder="¡Muchas gracias por su visita! Vuelva pronto" class="w-full px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+        const marcadorFinal = a.marcador_final ? `<div class="px-2.5 py-0.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono font-bold text-xs">${a.marcador_final}</div>` : '';
+
+        // Formato limpio de fecha y hora
+        let horaLimpia = (a.fecha_hora_display || a.hora || '20:45').replace(/madrid/gi, '').trim();
+
+        return `
+          <div class="bg-brand-card rounded-2xl border border-brand-border p-4 space-y-2.5 shadow-md">
+            <div class="flex items-center justify-between text-xs text-slate-400">
+              <span class="text-sky-400 font-semibold font-mono flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> Enviado a Telegram • ${horaLimpia}
+              </span>
+              <div class="flex items-center gap-1.5">
+                ${marcadorFinal}
+                ${badgeLiquidacion}
+              </div>
+            </div>
+            <div class="text-sm font-bold text-white tracking-wide">
+              ${a.partido} — <span class="text-brand-primary">${a.mercado}</span>
+            </div>
+            <div class="flex items-center gap-4 text-xs font-mono text-slate-300 pt-1 border-t border-slate-800">
+              <span>Cuota: <strong class="text-brand-primary">${a.cuota}</strong></span>
+              <span>Ventaja: <strong class="text-amber-400">${a.ev}</strong></span>
+              <span>Stake: <strong class="text-sky-400">${a.stake}</strong></span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function compartirPronostico(local, visitante, mercado, cuota) {
+      const texto = `🎯 Pronóstico Cuantitativo (+EV) en Apex Quant:\n⚽ ${local} vs ${visitante}\n📌 Mercado: ${mercado}\n💰 Cuota: @${cuota}\n📱 Ver análisis en: https://t.me/apex_quant_alertas`;
+      if (navigator.share) {
+        navigator.share({ title: 'Apex Quant Analytics', text: texto }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(texto).then(() => {
+          alert('¡Pronóstico copiado al portapapeles!');
+        });
+      }
+    }
+
+    async function cargarDatos(forzar = false) {
+      const icon = document.getElementById('iconRefresh');
+      if (icon) icon.classList.add('rotate-180');
+      try {
+        const url = 'datos.json?t=' + new Date().getTime();
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('No se pudo cargar datos.json');
+        const data = await res.json();
+
+        PARTIDOS_GLOBAL = data.partidos || [];
+        ALERTAS_GLOBAL = data.alertas || [];
+
+        const horaTop = document.getElementById('horaSincroTop');
+        if (horaTop) {
+          const h = (data.ultima_actualizacion || '').replace(/madrid/gi, '').trim();
+          horaTop.innerText = h ? `${h} sync` : 'Sincronizado';
+        }
+
+        actualizarEstadisticas(PARTIDOS_GLOBAL, ALERTAS_GLOBAL);
+        renderizarContenido();
+      } catch (err) {
+        console.warn('Aviso cargando datos.json:', err);
+      } finally {
+        if (icon) setTimeout(() => icon.classList.remove('rotate-180'), 500);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      cargarDatos();
+      setInterval(() => {
+        if (PESTAÑA_ACTIVA !== 'alertas') {
+          cargarDatos();
+        }
+      }, 30000);
+    });
+  </script>
+</body></html>
