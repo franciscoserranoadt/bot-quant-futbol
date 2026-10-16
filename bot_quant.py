@@ -92,17 +92,12 @@ def obtener_partidos_por_rango(date_from, date_to):
     return []
 
 def obtener_partidos_completos(lunes_semana_str, domingo_semana_str):
-    """
-    Obtiene los partidos de la semana oficial (de lunes a domingo) y los futuros próximos.
-    Respeta intervalos menores a 10 días para no superar el límite de la API gratuita.
-    """
     hoy_utc = datetime.now(timezone.utc)
     date_hoy = hoy_utc.strftime("%Y-%m-%d")
     date_futuro_to = (hoy_utc + timedelta(days=5)).strftime("%Y-%m-%d")
 
     matches_dict = {}
 
-    # Petición 1: Partidos desde el lunes de la semana actual hasta hoy
     lista_semana_hasta_hoy = obtener_partidos_por_rango(lunes_semana_str, date_hoy)
     for m in lista_semana_hasta_hoy:
         m_id = m.get("id")
@@ -110,9 +105,8 @@ def obtener_partidos_completos(lunes_semana_str, domingo_semana_str):
             matches_dict[m_id] = m
     print(f"   Partidos obtenidos (desde lunes {lunes_semana_str} a hoy): {len(lista_semana_hasta_hoy)}")
 
-    time.sleep(1.2) # Pausa cortés para respetar el rate-limit de la API gratuita
+    time.sleep(1.2)
 
-    # Petición 2: Partidos de hoy y próximos 5 días de la jornada
     lista_futuros = obtener_partidos_por_rango(date_hoy, date_futuro_to)
     for m in lista_futuros:
         m_id = m.get("id")
@@ -120,7 +114,6 @@ def obtener_partidos_completos(lunes_semana_str, domingo_semana_str):
             matches_dict[m_id] = m
     print(f"   Partidos obtenidos (futuros hasta {date_futuro_to}): {len(lista_futuros)}")
 
-    # Petición 3: En vivo (IN_PLAY, PAUSED) para marcadores al segundo
     url_live = "https://api.football-data.org/v4/matches?status=IN_PLAY,PAUSED"
     headers = {"X-Auth-Token": FOOTBALL_DATA_TOKEN}
     try:
@@ -194,8 +187,13 @@ def construir_historial_resultados_equipos(todos_los_partidos):
     return historial
 
 def calcular_ev_y_stake(cuota_casa, prob_modelo):
+    """
+    Cálculo de Valor Esperado (+EV) y Kelly Fraccional (1/4).
+    Opción B: Umbral flexibilizado a partir de +3.0% de valor esperado
+    para permitir capturar más oportunidades rentables de la jornada.
+    """
     ev = (prob_modelo * cuota_casa) - 1.0
-    if ev <= 0.05:
+    if ev <= 0.03:
         return 0.0, 0
     b = cuota_casa - 1.0
     q = 1.0 - prob_modelo
@@ -509,11 +507,7 @@ def obtener_identificador_semana(fecha_madrid):
     return f"{año}-W{semana:02d}"
 
 def obtener_fechas_limite_semana(fecha_madrid):
-    """
-    Calcula la fecha del lunes (inicio de semana 00:00)
-    y del domingo (fin de semana 23:59) en formato YYYY-MM-DD.
-    """
-    dia_semana_idx = fecha_madrid.weekday() # 0 = Lunes, 6 = Domingo
+    dia_semana_idx = fecha_madrid.weekday()
     lunes_dt = fecha_madrid - timedelta(days=dia_semana_idx)
     domingo_dt = lunes_dt + timedelta(days=6)
     return lunes_dt.strftime("%Y-%m-%d"), domingo_dt.strftime("%Y-%m-%d")
@@ -581,10 +575,19 @@ def calcular_resumen_financiero(alertas_lista):
         "roi_pct": roi
     }
 
+def formatear_fecha_corta(fecha_str):
+    if not fecha_str:
+        return ""
+    if "-" in fecha_str:
+        partes = fecha_str.split("-")
+        if len(partes) == 3:
+            return f"{partes[2]}/{partes[1]}"
+    return fecha_str
+
 def ejecutar_ciclo():
     ahora_utc = datetime.now(timezone.utc)
     ahora_madrid = ahora_utc.astimezone(TZ_MADRID)
-    hora_madrid_str = ahora_madrid.strftime('%H:%M Madrid')
+    hora_madrid_str = ahora_madrid.strftime('%H:%M')
     hoy_madrid_str = ahora_madrid.strftime('%Y-%m-%d')
     semana_actual_id = obtener_identificador_semana(ahora_madrid)
     mes_actual_id = ahora_madrid.strftime('%Y-%m')
@@ -601,26 +604,18 @@ def ejecutar_ciclo():
     semana_guardada = datos_previos.get("semana_activa", semana_actual_id)
     resumen_semanal_enviado = datos_previos.get("resumen_semanal_enviado_para", "")
 
-    # ==============================================================================
-    # REINICIO AUTOMÁTICO CADA LUNES A LAS 00:00 (DE LUNES A DOMINGO)
-    # ==============================================================================
     es_reinicio_lunes = (semana_actual_id != semana_guardada)
     if es_reinicio_lunes:
         print(f"🔄 ¡LUNES A LAS 00:00 DETECTADO! Reiniciando ciclo semanal ({semana_guardada} -> {semana_actual_id})...")
         archivar_historico_mensual([a for a in alertas_acumuladas if not a.get("es_semana_actual", True)], mes_actual_id)
         
-        # 1. Marcar alertas anteriores como no pertenecientes a la semana actual
         for a in alertas_acumuladas:
             a["es_semana_actual"] = False
         
-        # 2. Reiniciar la lista de partidos de la semana anterior: los finalizados antiguos se limpian para empezar la nueva semana de cero
         partidos_previos = []
         semana_guardada = semana_actual_id
 
-    # 1. Obtener partidos en la ventana de la semana (desde el lunes hasta los próximos días)
     partidos_raw = obtener_partidos_completos(lunes_semana_str, domingo_semana_str)
-    
-    # 2. Historial real de partidos finalizados para rachas
     historial_equipos = construir_historial_resultados_equipos(partidos_raw)
     print(f"📊 Historial real indexado para {len(historial_equipos)} clubes.")
 
@@ -645,9 +640,12 @@ def ejecutar_ciclo():
             inicio_utc = datetime.fromisoformat(hora_utc_raw.replace("Z", "+00:00"))
             timestamp_inicio_ms = int(inicio_utc.timestamp() * 1000)
             inicio_madrid = inicio_utc.astimezone(TZ_MADRID)
-            hora_madrid_partido = inicio_madrid.strftime('%H:%M Madrid')
+            hora_madrid_partido = inicio_madrid.strftime('%H:%M')
             fecha_madrid_partido = inicio_madrid.strftime('%Y-%m-%d')
             minutos_restantes = round((inicio_utc - ahora_utc).total_seconds() / 60.0)
+
+        fecha_corta_display = formatear_fecha_corta(fecha_madrid_partido)
+        fecha_hora_display = f"{fecha_corta_display} • {hora_madrid_partido}"
 
         home_team_data = p.get("homeTeam", {})
         away_team_data = p.get("awayTeam", {})
@@ -730,6 +728,7 @@ def ejecutar_ciclo():
             "marcador": marcador_str,
             "fecha": fecha_madrid_partido,
             "hora": hora_madrid_partido,
+            "fecha_hora_display": fecha_hora_display,
             "escudo_local": escudo_local,
             "escudo_visitante": escudo_visitante
         }
@@ -797,6 +796,7 @@ def ejecutar_ciclo():
                 "stake": f"{analisis['stake']}/10",
                 "hora": hora_madrid_partido,
                 "fecha": fecha_madrid_partido,
+                "fecha_hora_display": fecha_hora_display,
                 "semana_id": semana_actual_id,
                 "es_ht": True,
                 "es_semana_actual": True,
@@ -808,14 +808,14 @@ def ejecutar_ciclo():
                 "liquidada_telegram": False
             })
 
-        # 2. ALERTA FORMATO OFICIAL (T-45m)
-        elif 25 <= minutos_restantes <= 50 and analisis["ev"] > 0 and not ya_registrada:
+        # 2. ALERTA FORMATO OFICIAL (COMBINACIÓN OPCIÓN A + OPCIÓN B: VENTANA AMPLIADA T-90m A T-15m Y +EV > 3%)
+        elif 15 <= minutos_restantes <= 90 and analisis["ev"] > 0 and not ya_registrada:
             fue_enviado_telegram = True
             alerta_msg = (
-                f"🎯 <b>ALERTA CUANTITATIVA (+EV) — [T-45m]</b>\n\n"
+                f"🎯 <b>ALERTA CUANTITATIVA (+EV) — [PRE-PARTIDO]</b>\n\n"
                 f"🏆 <b>Competición:</b> {comp_info['name']}\n"
                 f"⚽ <b>Partido:</b> {partido_nombre}\n"
-                f"⏰ <b>Inicio:</b> {hora_madrid_partido} (en {minutos_restantes} min)\n"
+                f"⏰ <b>Inicio:</b> {fecha_hora_display} (en {minutos_restantes} min)\n"
                 f"{analisis.get('icono_tg', '⚽')} <b>Mercado:</b> {analisis['mercado']}\n"
                 f"💰 <b>Cuota de Valor:</b> @{analisis['cuota']}\n"
                 f"📈 <b>Ventaja Algorítmica (+EV):</b> +{analisis['ev']}%\n"
@@ -842,6 +842,7 @@ def ejecutar_ciclo():
                 "stake": f"{analisis['stake']}/10",
                 "hora": hora_madrid_partido,
                 "fecha": fecha_madrid_partido,
+                "fecha_hora_display": fecha_hora_display,
                 "semana_id": semana_actual_id,
                 "es_ht": False,
                 "es_semana_actual": True,
@@ -863,6 +864,7 @@ def ejecutar_ciclo():
             "liga_key": comp_info["key"],
             "fecha": fecha_madrid_partido,
             "hora": hora_madrid_partido,
+            "fecha_hora_display": fecha_hora_display,
             "hora_utc": hora_utc_raw,
             "utcDate": hora_utc_raw,
             "timestamp_ms": timestamp_inicio_ms,
@@ -987,17 +989,13 @@ def ejecutar_ciclo():
     alertas_semana_act = [a for a in alertas_acumuladas if a.get("semana_id") == semana_actual_id]
     metricas_semana = calcular_resumen_financiero(alertas_semana_act)
 
-    # ==============================================================================
     # FUSIÓN INTELIGENTE DE PARTIDOS: ACUMULACIÓN DE LUNES A DOMINGO
-    # ==============================================================================
     partidos_guardar = list(partidos_para_web)
     ids_guardados = {p["id"] for p in partidos_guardar}
 
-    # Conservar los partidos finalizados previos pertenecientes a la semana activa (entre el lunes y el domingo)
     for prev_p in partidos_previos:
         p_id = prev_p.get("id")
         p_fecha = prev_p.get("fecha", "")
-        # Si no está ya en la lista y pertenece a la semana en curso (fecha >= lunes de la semana)
         if p_id not in ids_guardados:
             if p_fecha >= lunes_semana_str:
                 partidos_guardar.append(prev_p)
