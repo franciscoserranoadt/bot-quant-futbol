@@ -114,6 +114,7 @@ def obtener_partidos_completos(lunes_semana_str, domingo_semana_str):
             matches_dict[m_id] = m
     print(f"   Partidos obtenidos (futuros hasta {date_futuro_to}): {len(lista_futuros)}")
 
+    # Petición específica de partidos en vivo para que status y marcador se actualicen con prioridad
     url_live = "https://api.football-data.org/v4/matches?status=IN_PLAY,PAUSED"
     headers = {"X-Auth-Token": FOOTBALL_DATA_TOKEN}
     try:
@@ -369,19 +370,16 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, hi
 
     # 5. DOBLE OPORTUNIDAD (1X / X2 / 12)
     if ajuste_racha >= 0.01:
-        # Favorable al local: 1X (Victoria Local o Empate)
         cuota_dc = round(1.36 + (perfil % 8) * 0.02, 2)
         prob_dc = min(0.94, max(0.72, round(0.76 + (perfil % 6) * 0.012 + (ajuste_racha * 0.8), 3)))
         nombre_dc = f"1X ({local} o Empate)"
         tipo_dc = "DOUBLE_CHANCE_1X"
     elif ajuste_racha <= -0.015:
-        # Favorable al visitante: X2 (Empate o Victoria Visitante)
         cuota_dc = round(1.42 + (perfil % 9) * 0.02, 2)
         prob_dc = min(0.92, max(0.70, round(0.73 + (perfil % 5) * 0.014 - (ajuste_racha * 0.8), 3)))
         nombre_dc = f"X2 (Empate o {visitante})"
         tipo_dc = "DOUBLE_CHANCE_X2"
     else:
-        # Partido abierto con pocas probabilidades de empate: 12 (Cualquiera gana, no empate)
         cuota_dc = round(1.30 + (perfil % 7) * 0.02, 2)
         prob_dc = min(0.92, max(0.74, round(0.77 + (perfil % 6) * 0.011, 3)))
         nombre_dc = f"12 ({local} o {visitante} - Sin Empate)"
@@ -757,7 +755,7 @@ def ejecutar_ciclo():
         if not es_finalizado:
             if estado_api in ["IN_PLAY", "PAUSED", "HT", "LIVE"]:
                 es_en_juego = True
-            elif 0 <= minutos_desde_inicio <= 125 and estado_api not in ["CANCELLED", "POSTPONED", "TIMED"]:
+            elif 0 <= minutos_desde_inicio <= 135 and estado_api not in ["CANCELLED", "POSTPONED", "TIMED", "SUSPENDED"]:
                 es_en_juego = True
 
         if es_en_juego and (goles_local is None or goles_visitante is None):
@@ -773,16 +771,16 @@ def ejecutar_ciclo():
 
         if es_finalizado:
             estado_normalizado = "FINISHED"
-        elif estado_api in ["PAUSED", "HT"] or (45 <= minutos_desde_inicio <= 60 and es_en_juego):
+        elif estado_api in ["PAUSED", "HT"] or (45 <= minutos_desde_inicio <= 65 and es_en_juego):
             estado_normalizado = "HT"
             minuto_en_juego_str = "Descanso"
         elif es_en_juego:
             estado_normalizado = "IN_PLAY"
             if minutos_desde_inicio <= 45:
                 minuto_en_juego_str = f"{max(1, minutos_desde_inicio)}'"
-            elif minutos_desde_inicio <= 60:
+            elif minutos_desde_inicio <= 65:
                 minuto_en_juego_str = "Descanso"
-            elif minutos_desde_inicio <= 105:
+            elif minutos_desde_inicio <= 110:
                 m2t = min(90, max(46, minutos_desde_inicio - 15))
                 minuto_en_juego_str = f"{m2t}'"
             else:
