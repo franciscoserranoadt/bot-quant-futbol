@@ -1013,7 +1013,6 @@ def ejecutar_ciclo():
         # ======================================================================
         if hora_utc_raw:
             try:
-                # Soporte para formato ISO de Football-Data.org (ej. '2026-10-18T16:30:00Z')
                 utc_clean = hora_utc_raw.replace("Z", "+00:00")
                 inicio_utc = datetime.fromisoformat(utc_clean)
                 timestamp_inicio_ms = int(inicio_utc.timestamp() * 1000)
@@ -1023,7 +1022,6 @@ def ejecutar_ciclo():
                 minutos_restantes = round((inicio_utc - ahora_utc).total_seconds() / 60.0)
             except Exception as e:
                 print(f"Aviso parseando fecha UTC ({hora_utc_raw}): {e}")
-                # Fallback seguro extrayendo directamente del string 'YYYY-MM-DD' de la API
                 if len(hora_utc_raw) >= 10:
                     fecha_madrid_partido = hora_utc_raw[:10]
                 if len(hora_utc_raw) >= 16:
@@ -1276,7 +1274,7 @@ def ejecutar_ciclo():
         }
         partidos_para_web.append(item)
 
-    # RECONCILIACIÓN Y LIQUIDACIÓN
+    # RECONCILIACIÓN Y LIQUIDACIÓN CON PARTIDO COMPLETO VISIBLE
     for alerta in alertas_acumuladas:
         p_id = str(alerta.get("id_partido", ""))
         p_nombre = alerta.get("partido", "")
@@ -1320,10 +1318,13 @@ def ejecutar_ciclo():
                 alerta["acertado"] = acertado
 
                 if not alerta.get("liquidada_telegram"):
+                    nombre_partido_display = p_nombre or f"{partido_encontrado['local']} vs {partido_encontrado['visitante']}"
                     if acertado:
                         msg_settle = (
-                            f"({alerta['mercado']})\n"
+                            f"⚽ <b>{nombre_partido_display}</b>\n"
+                            f"📌 <b>Pronóstico:</b> {alerta['mercado']}\n"
                             f"✅ <b>Resultado:</b> ACERTADO\n"
+                            f"🏁 <b>Marcador Final:</b> {marcador_fin or 'Final'}\n"
                             f"💰 <b>Cuota Cobrada:</b> {alerta['cuota']}\n"
                             f"💡 <b>Stake:</b> {alerta['stake']}\n\n"
                             f"🎉 <i>¡Verificado y sumado a la Efectividad Oficial en la App!</i>\n"
@@ -1331,7 +1332,8 @@ def ejecutar_ciclo():
                         )
                     else:
                         msg_settle = (
-                            f"({alerta['mercado']})\n"
+                            f"⚽ <b>{nombre_partido_display}</b>\n"
+                            f"📌 <b>Pronóstico:</b> {alerta['mercado']}\n"
                             f"❌ <b>Resultado:</b> PERDIDO\n"
                             f"🏁 <b>Resultado Final:</b> {marcador_fin or 'Final'}\n"
                             f"💡 <b>Stake:</b> {alerta['stake']} (Control estricto de banca)\n\n"
@@ -1339,7 +1341,7 @@ def ejecutar_ciclo():
                         )
                     enviar_telegram(msg_settle, url_accion=APP_URL, texto_boton="📱 Ver en la Web App")
                     alerta["liquidada_telegram"] = True
-                    print(f"📢 Alerta liquidada en Telegram: {p_nombre} -> {'ACERTADO' if acertado else 'PERDIDO'}")
+                    print(f"📢 Alerta liquidada en Telegram: {nombre_partido_display} -> {'ACERTADO' if acertado else 'PERDIDO'}")
 
     # RESUMEN DOMINICAL NOCTURNO
     if dia_semana == 6 and hora_int >= 22 and resumen_semanal_enviado != semana_actual_id:
