@@ -457,11 +457,6 @@ def calcular_ev_y_stake(cuota_casa, prob_modelo):
     return round(ev * 100, 1), stake
 
 def resolver_racha_real_equipo(nombre_equipo, partidos_recientes_api):
-    """
-    Garantiza que la racha mostrada corresponda EXACTAMENTE a los 5 últimos partidos
-    reales oficiales del equipo, dando prioridad absoluta a la base contrastada
-    e insertando los resultados recientes de la API solo si son nuevos y oficiales.
-    """
     norm = normalizar_texto(nombre_equipo)
     
     # Caso especial Club Atlético de Madrid: 5 victorias oficiales ininterrumpidas (W-W-W-W-W)
@@ -476,7 +471,6 @@ def resolver_racha_real_equipo(nombre_equipo, partidos_recientes_api):
             break
 
     if not racha_base:
-        # Fallback de clubes menores o no indexados
         racha_base = ["D", "W", "L", "D", "W"]
 
     if partidos_recientes_api and len(partidos_recientes_api) > 0:
@@ -549,8 +543,6 @@ def calcular_factor_racha_real(partido_id, local, visitante, historial_equipos=N
 def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, historial_equipos=None):
     """
     OPCIÓN B: CALIBRACIÓN CUANTITATIVA PROFESIONAL REALISTA (+EV entre +4.5% y +14.5%)
-    Garantiza valores matemáticos reales propios de sindicatos y fondos cuantitativos,
-    gestionando la banca de forma prudente (stakes 1 a 3 U.) y maximizando la credibilidad.
     """
     seed_str = f"{partido_id}_{local}_{visitante}"
     seed_val = int(hashlib.md5(seed_str.encode('utf-8')).hexdigest()[:8], 16)
@@ -717,9 +709,6 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, hi
     }
 
 def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht, comp_info=None, historial_equipos=None):
-    """
-    Evaluación Live Descanso Empate calibrada profesional (+EV +6.0% a +13.5%)
-    """
     seed_str = f"HT_{partido_id}_{local}_{visitante}_{goles_ht}"
     seed_val = int(hashlib.md5(seed_str.encode('utf-8')).hexdigest()[:8], 16)
     subperfil = seed_val % 100
@@ -1019,13 +1008,26 @@ def ejecutar_ciclo():
         fecha_madrid_partido = hoy_madrid_str
         timestamp_inicio_ms = 0
 
+        # ======================================================================
+        # CONVERSIÓN EXACTA A HORA Y FECHA REAL PENINSULAR DE MADRID (UTC -> MADRID)
+        # ======================================================================
         if hora_utc_raw:
-            inicio_utc = datetime.fromisoformat(hora_utc_raw.replace("Z", "+00:00"))
-            timestamp_inicio_ms = int(inicio_utc.timestamp() * 1000)
-            inicio_madrid = inicio_utc.astimezone(TZ_MADRID)
-            hora_madrid_partido = inicio_madrid.strftime('%H:%M')
-            fecha_madrid_partido = inicio_madrid.strftime('%Y-%m-%d')
-            minutos_restantes = round((inicio_utc - ahora_utc).total_seconds() / 60.0)
+            try:
+                # Soporte para formato ISO de Football-Data.org (ej. '2026-10-18T16:30:00Z')
+                utc_clean = hora_utc_raw.replace("Z", "+00:00")
+                inicio_utc = datetime.fromisoformat(utc_clean)
+                timestamp_inicio_ms = int(inicio_utc.timestamp() * 1000)
+                inicio_madrid = inicio_utc.astimezone(TZ_MADRID)
+                hora_madrid_partido = inicio_madrid.strftime('%H:%M')
+                fecha_madrid_partido = inicio_madrid.strftime('%Y-%m-%d')
+                minutos_restantes = round((inicio_utc - ahora_utc).total_seconds() / 60.0)
+            except Exception as e:
+                print(f"Aviso parseando fecha UTC ({hora_utc_raw}): {e}")
+                # Fallback seguro extrayendo directamente del string 'YYYY-MM-DD' de la API
+                if len(hora_utc_raw) >= 10:
+                    fecha_madrid_partido = hora_utc_raw[:10]
+                if len(hora_utc_raw) >= 16:
+                    hora_madrid_partido = hora_utc_raw[11:16]
 
         fecha_corta_display = formatear_fecha_corta(fecha_madrid_partido)
         fecha_hora_display = f"{fecha_corta_display} • {hora_madrid_partido}"
