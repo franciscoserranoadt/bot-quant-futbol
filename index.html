@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-
-<html class="dark" lang="es"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
-<title>Apex Quant Analytics</title>
-<link href="manifest.json" rel="manifest"/>
-<meta content="#070e1d" name="theme-color"/>
-<meta content="yes" name="apple-mobile-web-app-capable"/>
-<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Apex Quant Analytics</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#070e1d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
@@ -35,7 +35,7 @@
       }
     }
   </script>
-<style>
+  <style>
     body {
       background-color: #070e1d;
       color: #e2e8f0;
@@ -52,229 +52,369 @@
   </style>
 </head>
 <body class="min-h-screen pb-12 antialiased selection:bg-brand-primary selection:text-black">
-<div class="max-w-md mx-auto px-4 pt-4 sm:pt-6 space-y-4">
-<!-- Header Principal -->
-<header class="flex items-center justify-between pb-1">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400/20 to-teal-500/10 border border-emerald-400/30 flex items-center justify-center font-bold text-brand-primary font-mono text-base shadow-lg shadow-emerald-950/40">
+  <div class="max-w-md mx-auto px-4 pt-4 sm:pt-6 space-y-4">
+
+    <!-- Header Principal -->
+    <header class="flex items-center justify-between pb-1">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400/20 to-teal-500/10 border border-emerald-400/30 flex items-center justify-center font-bold text-brand-primary font-mono text-base shadow-lg shadow-emerald-950/40">
           AQ
         </div>
-<div>
-<div class="flex items-center gap-2">
-<h1 class="text-xl font-extrabold tracking-tight text-white">Apex Quant</h1>
-<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 border border-emerald-500/30 text-brand-primary">
-<span class="w-1.5 h-1.5 rounded-full bg-brand-primary animate-ping"></span>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-extrabold tracking-tight text-white">Apex Quant</h1>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 border border-emerald-500/30 text-brand-primary">
+              <span class="w-1.5 h-1.5 rounded-full bg-brand-primary animate-ping"></span>
               24/7 ONLINE
             </span>
-</div>
-<p class="text-xs text-slate-400 font-medium">Motor Predictivo Just-In-Time (+EV)</p>
-</div>
-</div>
-<div class="flex items-center gap-1.5">
-<span class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-[11px] font-semibold text-slate-300 font-mono flex items-center gap-1.5">
-<span class="w-2 h-2 rounded-full bg-slate-400"></span> OLED
-        </span>
-<button class="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition active:scale-95" id="btnRecargar" onclick="cargarDatos(true)">
-<svg class="w-4 h-4 transition-transform duration-500" fill="none" id="iconRefresh" stroke="currentColor" viewbox="0 0 24 24">
-<path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-</svg>
-</button>
-</div>
-</header>
-<!-- Tarjeta Canal Telegram Oficial -->
-<a class="block group relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0088cc]/20 via-[#0088cc]/10 to-transparent border border-[#0088cc]/30 p-3.5 transition-all hover:border-[#0088cc]/60 active:scale-[0.99] shadow-lg shadow-sky-950/20" href="https://t.me/apex_quant_alertas" rel="noopener noreferrer" target="_blank">
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-xl bg-[#0088cc]/30 border border-[#0088cc]/50 flex items-center justify-center text-white shadow-inner">
-<svg class="w-5 h-5 fill-current" viewbox="0 0 24 24">
-<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"></path>
-</svg>
-</div>
-<div>
-<div class="flex items-center gap-2">
-<h2 class="text-sm font-bold text-white group-hover:text-sky-300 transition">Canal Telegram Oficial</h2>
-<span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-</div>
-<p class="text-xs text-slate-300 font-mono mt-0.5">Alertas automáticas en <span class="text-sky-400 font-semibold">@apex_quant_alertas</span></p>
-</div>
-</div>
-<span class="px-2.5 py-1 rounded-lg bg-[#0088cc]/20 border border-[#0088cc]/40 text-xs font-bold text-sky-300 flex items-center gap-1 group-hover:bg-[#0088cc]/30 transition">
-          ACTIVO <span class="text-xs">›</span>
-</span>
-</div>
-</a>
-<!-- Fila 3 Tarjetas de Métricas Fijas (Filtro EV a +3.0%) -->
-<div class="grid grid-cols-3 gap-2 text-center">
-<div class="bg-brand-card rounded-2xl border border-brand-border p-3">
-<span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block">PARTIDOS</span>
-<span class="text-xl font-extrabold text-white font-mono mt-0.5 block" id="numPartidosMonitoreo">--</span>
-<span class="text-[10px] text-slate-500 font-medium">Monitoreo</span>
-</div>
-<div class="bg-brand-card rounded-2xl border border-brand-border p-3">
-<span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block">FILTRO EV</span>
-<span class="text-xl font-extrabold text-brand-primary font-mono mt-0.5 block">+3.0%</span>
-<span class="text-[10px] text-slate-500 font-medium">Ventaja</span>
-</div>
-<div class="bg-brand-card rounded-2xl border border-brand-border p-3">
-<span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block">GESTIÓN</span>
-<span class="text-xl font-extrabold text-sky-400 font-mono mt-0.5 block">1/4</span>
-<span class="text-[10px] text-slate-500 font-medium">Kelly</span>
-</div>
-</div>
-<!-- Tarjeta Rendimiento Semanal (Exclusivo Telegram con Curva de Equity) -->
-<div class="bg-brand-card rounded-2xl border border-brand-border p-4 space-y-3 relative overflow-hidden shadow-xl shadow-black/40">
-<div class="flex items-start justify-between">
-<div class="flex items-center gap-2.5">
-<div class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-brand-primary">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-<path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-</svg>
-</div>
-<div>
-<div class="flex items-center gap-2">
-<h3 class="text-xs font-bold text-white uppercase tracking-wider">RENDIMIENTO SEMANAL</h3>
-<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">EXCLUSIVO TELEGRAM</span>
-</div>
-<p class="text-[11px] text-slate-400 font-medium">Curva de Equity &amp; Balance de Unidades</p>
-</div>
-</div>
-<div class="text-right">
-<span class="text-[10px] font-bold text-slate-400 tracking-wider uppercase block">BALANCE NETO</span>
-<span class="text-lg font-extrabold text-brand-primary font-mono block" id="txtBalanceNeto">+0.00 U.</span>
-</div>
-</div>
-<div class="bg-slate-900/60 rounded-xl border border-slate-800/80 p-2.5 text-xs text-slate-300 font-medium flex items-center gap-2">
-<svg class="w-4 h-4 text-sky-400 shrink-0" fill="currentColor" viewbox="0 0 20 20">
-<path clip-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" fill-rule="evenodd"></path>
-</svg>
-<span>Métricas calculadas <strong>exclusivamente</strong> sobre las alertas oficiales emitidas al <a class="text-sky-400 underline font-semibold" href="https://t.me/apex_quant_alertas" target="_blank">canal de Telegram</a>.</span>
-</div>
-<div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-800/80 text-center">
-<div>
-<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">YIELD / ROI</span>
-<span class="text-sm font-extrabold text-brand-primary font-mono mt-0.5 block" id="txtRoi">+0.0%</span>
-</div>
-<div>
-<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">UNIDADES GANADAS</span>
-<span class="text-sm font-extrabold text-brand-primary font-mono mt-0.5 block" id="txtUnidadesGanadas">+0.00 U.</span>
-</div>
-<div>
-<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">STAKE APOSTADO</span>
-<span class="text-sm font-extrabold text-white font-mono mt-0.5 block" id="txtStakeApostado">0.0 U.</span>
-</div>
-</div>
-<!-- Curva de Crecimiento Bankroll (SVG Dinámico) -->
-<div class="pt-2">
-<div class="flex items-center justify-between text-[10px] text-slate-400 font-mono mb-1">
-<span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-brand-primary"></span> Curva de Crecimiento Bankroll (Alertas TG)</span>
-<span id="txtPicksEvaluados">0 picks evaluados</span>
-</div>
-<div class="w-full h-12 bg-slate-900/80 rounded-xl border border-slate-800/60 p-1 flex items-center relative overflow-hidden">
-<svg class="w-full h-full overflow-visible" id="svgCurvaEquity" preserveaspectratio="none" viewbox="0 0 100 40">
-<polyline fill="none" points="0,20 100,20" stroke="#00f59b" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></polyline>
-</svg>
-</div>
-</div>
-</div>
-<!-- Fila 3 Tarjetas de Efectividad (Semana Actual) -->
-<div>
-<div class="flex items-center justify-between px-1 mb-1.5 text-[11px] font-medium text-slate-400">
-<span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> Semana actual</span>
-<span class="font-mono text-slate-500">Reinicio oficial cada lunes 00:00h</span>
-</div>
-<div class="grid grid-cols-3 gap-2 text-center">
-<!-- Telegram -->
-<div class="bg-brand-card rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-emerald-500/5 to-transparent p-3 relative overflow-hidden shadow-lg shadow-emerald-950/20">
-<div class="text-[10px] font-extrabold text-brand-primary flex items-center justify-center gap-1 uppercase tracking-wider">
-<span class="w-1.5 h-1.5 rounded-full bg-brand-primary"></span> TELEGRAM
           </div>
-<span class="text-lg font-extrabold text-white font-mono mt-0.5 block" id="pctEfectividadTg">--%</span>
-<span class="text-[10px] text-slate-400 font-mono font-medium block" id="txtBalanceTg">0V - 0D TG</span>
-</div>
-<!-- Sin Alerta -->
-<div class="bg-brand-card rounded-2xl border border-brand-border p-3">
-<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">SIN ALERTA</span>
-<span class="text-lg font-extrabold text-white font-mono mt-0.5 block" id="pctEfectividadNoTg">--%</span>
-<span class="text-[10px] text-slate-500 font-mono font-medium block" id="txtBalanceNoTg">0V - 0D No TG</span>
-</div>
-<!-- Global Total (Suma Unificada Exacta) -->
-<div class="bg-brand-card rounded-2xl border border-brand-border p-3">
-<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">GLOBAL TOTAL</span>
-<span class="text-lg font-extrabold text-white font-mono mt-0.5 block" id="pctEfectividadGlobal">--%</span>
-<span class="text-[10px] text-slate-500 font-mono font-medium block" id="txtBalanceGlobal">0V - 0D Total</span>
-</div>
-</div>
-</div>
-<!-- Pestañas Principales: En Juego / Hoy, Finalizados y Alertas -->
-<div class="bg-slate-900/90 rounded-2xl p-1.5 border border-slate-800 grid grid-cols-3 gap-1 text-center text-xs font-bold shadow-inner">
-<button class="py-2.5 rounded-xl bg-brand-primary text-black transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20" id="tabEnJuego" onclick="cambiarPestañaPrincipal('en_juego')">
-<span>En Juego / Hoy</span>
-<span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-extrabold bg-black/20 text-black" id="badgeEnJuego">0</span>
-</button>
-<button class="py-2.5 rounded-xl text-slate-400 hover:text-white transition-all flex items-center justify-center gap-1.5" id="tabFinalizados" onclick="cambiarPestañaPrincipal('finalizados')">
-<span>Finalizados</span>
-<span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-slate-800 text-slate-300" id="badgeFinalizados">0</span>
-</button>
-<button class="py-2.5 rounded-xl text-slate-400 hover:text-white transition-all flex items-center justify-center gap-1.5" id="tabAlertas" onclick="cambiarPestañaPrincipal('alertas')">
-<span>Alertas</span>
-<span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-slate-800 text-slate-300" id="badgeAlertas">0</span>
-</button>
-</div>
-<!-- Filtros de Competiciones (Píldoras horizontales) -->
-<div class="space-y-1.5" id="seccionFiltroLigas">
-<div class="flex items-center justify-between px-1 text-xs text-slate-400 font-semibold">
-<span class="tracking-wider uppercase text-[10px]">COMPETICIONES</span>
-<span class="font-mono text-[10px] text-slate-500" id="horaSincroTop">Sincronizando...</span>
-</div>
-<div class="flex gap-1.5 overflow-x-auto pb-1 hide-scrollbar">
-<button class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 bg-rose-500/10 border-rose-500/30 text-rose-400 hover:border-rose-400" onclick="filtrarLiga('LIVE', this)">
-<span class="w-2 h-2 rounded-full bg-rose-500 pulse-live"></span> EN VIVO
+          <p class="text-xs text-slate-400 font-medium">Motor Predictivo Just-In-Time (+EV)</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-[11px] font-semibold text-slate-300 font-mono flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-slate-400"></span> OLED
+        </span>
+        <button id="btnRecargar" onclick="cargarDatos(true)" class="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition active:scale-95">
+          <svg id="iconRefresh" class="w-4 h-4 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
         </button>
-<button class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-brand-primary text-black border-brand-primary" onclick="filtrarLiga('all', this)">
+      </div>
+    </header>
+
+    <!-- Tarjeta Canal Telegram Oficial -->
+    <a href="https://t.me/apex_quant_alertas" target="_blank" rel="noopener noreferrer" class="block group relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0088cc]/20 via-[#0088cc]/10 to-transparent border border-[#0088cc]/30 p-3.5 transition-all hover:border-[#0088cc]/60 active:scale-[0.99] shadow-lg shadow-sky-950/20">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-[#0088cc]/30 border border-[#0088cc]/50 flex items-center justify-center text-white shadow-inner">
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-sm font-bold text-white group-hover:text-sky-300 transition">Canal Telegram Oficial</h2>
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            </div>
+            <p class="text-xs text-slate-300 font-mono mt-0.5">Alertas automáticas en <span class="text-sky-400 font-semibold">@apex_quant_alertas</span></p>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 rounded-lg bg-[#0088cc]/20 border border-[#0088cc]/40 text-xs font-bold text-sky-300 flex items-center gap-1 group-hover:bg-[#0088cc]/30 transition">
+          ACTIVO <span class="text-xs">›</span>
+        </span>
+      </div>
+    </a>
+
+    <!-- Fila 3 Tarjetas de Métricas Fijas (Filtro EV a +3.0%) -->
+    <div class="grid grid-cols-3 gap-2 text-center">
+      <div class="bg-brand-card rounded-2xl border border-brand-border p-3">
+        <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block">PARTIDOS</span>
+        <span id="numPartidosMonitoreo" class="text-xl font-extrabold text-white font-mono mt-0.5 block">--</span>
+        <span class="text-[10px] text-slate-500 font-medium">Monitoreo</span>
+      </div>
+      <div class="bg-brand-card rounded-2xl border border-brand-border p-3">
+        <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block">FILTRO EV</span>
+        <span class="text-xl font-extrabold text-brand-primary font-mono mt-0.5 block">+3.0%</span>
+        <span class="text-[10px] text-slate-500 font-medium">Ventaja</span>
+      </div>
+      <div class="bg-brand-card rounded-2xl border border-brand-border p-3">
+        <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block">GESTIÓN</span>
+        <span class="text-xl font-extrabold text-sky-400 font-mono mt-0.5 block">1/4</span>
+        <span class="text-[10px] text-slate-500 font-medium">Kelly</span>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- 1. TARJETA RENDIMIENTO SEMANAL: EXCLUSIVO TELEGRAM              -->
+    <!-- ============================================================== -->
+    <div class="bg-brand-card rounded-2xl border border-emerald-500/30 p-4 space-y-3 relative overflow-hidden shadow-xl shadow-black/40">
+      <div class="flex items-start justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-brand-primary">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-xs font-bold text-white uppercase tracking-wider">RENDIMIENTO SEMANAL</h3>
+              <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">EXCLUSIVO TELEGRAM</span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-medium">Curva de Equity & Balance de Unidades</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="text-[10px] font-bold text-slate-400 tracking-wider uppercase block">BALANCE NETO</span>
+          <span id="txtBalanceNeto" class="text-lg font-extrabold text-brand-primary font-mono block">+0.00 U.</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/60 rounded-xl border border-slate-800/80 p-2.5 text-xs text-slate-300 font-medium flex items-center gap-2">
+        <svg class="w-4 h-4 text-sky-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+        </svg>
+        <span>Métricas calculadas <strong>exclusivamente</strong> sobre las alertas oficiales emitidas al <a href="https://t.me/apex_quant_alertas" target="_blank" class="text-sky-400 underline font-semibold">canal de Telegram</a>.</span>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-800/80 text-center">
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">YIELD / ROI</span>
+          <span id="txtRoi" class="text-sm font-extrabold text-brand-primary font-mono mt-0.5 block">+0.0%</span>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">UNIDADES GANADAS</span>
+          <span id="txtUnidadesGanadas" class="text-sm font-extrabold text-brand-primary font-mono mt-0.5 block">+0.00 U.</span>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">STAKE APOSTADO</span>
+          <span id="txtStakeApostado" class="text-sm font-extrabold text-white font-mono mt-0.5 block">0.0 U.</span>
+        </div>
+      </div>
+
+      <!-- Curva de Crecimiento Bankroll (SVG Dinámico Telegram) -->
+      <div class="pt-2">
+        <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono mb-1">
+          <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-brand-primary"></span> Curva de Crecimiento Bankroll (Alertas TG)</span>
+          <span id="txtPicksEvaluados">0 picks evaluados</span>
+        </div>
+        <div class="w-full h-12 bg-slate-900/80 rounded-xl border border-slate-800/60 p-1 flex items-center relative overflow-hidden">
+          <svg id="svgCurvaEquity" class="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 40">
+            <polyline fill="none" stroke="#00f59b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="0,20 100,20" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- 2. TARJETA RENDIMIENTO SEMANAL: PRONÓSTICOS NO ENVIADOS        -->
+    <!-- ============================================================== -->
+    <div class="bg-brand-card rounded-2xl border border-slate-700/70 p-4 space-y-3 relative overflow-hidden shadow-xl shadow-black/40">
+      <div class="flex items-start justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-xs font-bold text-white uppercase tracking-wider">RENDIMIENTO SEMANAL</h3>
+              <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-800 border border-slate-700 text-slate-300">SIN ALERTA</span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-medium">Curva de Equity & Balance de Unidades</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="text-[10px] font-bold text-slate-400 tracking-wider uppercase block">BALANCE NETO</span>
+          <span id="txtBalanceNetoNoTg" class="text-lg font-extrabold text-white font-mono block">+0.00 U.</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/60 rounded-xl border border-slate-800/80 p-2.5 text-xs text-slate-300 font-medium flex items-center gap-2">
+        <svg class="w-4 h-4 text-slate-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+        </svg>
+        <span>Métricas calculadas sobre los pronósticos evaluados que <strong>no se enviaron</strong> a Telegram.</span>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-800/80 text-center">
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">YIELD / ROI</span>
+          <span id="txtRoiNoTg" class="text-sm font-extrabold text-white font-mono mt-0.5 block">+0.0%</span>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">UNIDADES GANADAS</span>
+          <span id="txtUnidadesGanadasNoTg" class="text-sm font-extrabold text-white font-mono mt-0.5 block">+0.00 U.</span>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">STAKE APOSTADO</span>
+          <span id="txtStakeApostadoNoTg" class="text-sm font-extrabold text-white font-mono mt-0.5 block">0.0 U.</span>
+        </div>
+      </div>
+
+      <!-- Curva de Crecimiento Bankroll (SVG Dinámico Sin Alerta) -->
+      <div class="pt-2">
+        <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono mb-1">
+          <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Curva de Crecimiento Bankroll (Sin Alerta)</span>
+          <span id="txtPicksEvaluadosNoTg">0 picks evaluados</span>
+        </div>
+        <div class="w-full h-12 bg-slate-900/80 rounded-xl border border-slate-800/60 p-1 flex items-center relative overflow-hidden">
+          <svg id="svgCurvaEquityNoTg" class="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 40">
+            <polyline fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="0,20 100,20" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- 3. TARJETA RENDIMIENTO SEMANAL: GLOBAL TOTAL (ENVIADOS + NO)    -->
+    <!-- ============================================================== -->
+    <div class="bg-brand-card rounded-2xl border border-sky-500/30 p-4 space-y-3 relative overflow-hidden shadow-xl shadow-black/40">
+      <div class="flex items-start justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-xs font-bold text-white uppercase tracking-wider">RENDIMIENTO SEMANAL</h3>
+              <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-sky-500/10 border border-sky-500/30 text-sky-400">GLOBAL TOTAL</span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-medium">Curva de Equity & Balance de Unidades</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="text-[10px] font-bold text-slate-400 tracking-wider uppercase block">BALANCE NETO</span>
+          <span id="txtBalanceNetoGlobal" class="text-lg font-extrabold text-sky-400 font-mono block">+0.00 U.</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/60 rounded-xl border border-slate-800/80 p-2.5 text-xs text-slate-300 font-medium flex items-center gap-2">
+        <svg class="w-4 h-4 text-sky-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+        </svg>
+        <span>Métricas consolidadas del <strong>universo total</strong> (suma unificada de Telegram + Sin Alerta).</span>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-800/80 text-center">
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">YIELD / ROI</span>
+          <span id="txtRoiGlobal" class="text-sm font-extrabold text-sky-400 font-mono mt-0.5 block">+0.0%</span>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">UNIDADES GANADAS</span>
+          <span id="txtUnidadesGanadasGlobal" class="text-sm font-extrabold text-sky-400 font-mono mt-0.5 block">+0.00 U.</span>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">STAKE APOSTADO</span>
+          <span id="txtStakeApostadoGlobal" class="text-sm font-extrabold text-white font-mono mt-0.5 block">0.0 U.</span>
+        </div>
+      </div>
+
+      <!-- Curva de Crecimiento Bankroll (SVG Dinámico Global Total) -->
+      <div class="pt-2">
+        <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono mb-1">
+          <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> Curva de Crecimiento Bankroll (Global Total)</span>
+          <span id="txtPicksEvaluadosGlobal">0 picks evaluados</span>
+        </div>
+        <div class="w-full h-12 bg-slate-900/80 rounded-xl border border-slate-800/60 p-1 flex items-center relative overflow-hidden">
+          <svg id="svgCurvaEquityGlobal" class="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 40">
+            <polyline fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="0,20 100,20" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fila 3 Tarjetas de Efectividad (Semana Actual) -->
+    <div>
+      <div class="flex items-center justify-between px-1 mb-1.5 text-[11px] font-medium text-slate-400">
+        <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> Semana actual</span>
+        <span class="font-mono text-slate-500">Reinicio oficial cada lunes 00:00h</span>
+      </div>
+      <div class="grid grid-cols-3 gap-2 text-center">
+        <!-- Telegram -->
+        <div class="bg-brand-card rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-emerald-500/5 to-transparent p-3 relative overflow-hidden shadow-lg shadow-emerald-950/20">
+          <div class="text-[10px] font-extrabold text-brand-primary flex items-center justify-center gap-1 uppercase tracking-wider">
+            <span class="w-1.5 h-1.5 rounded-full bg-brand-primary"></span> TELEGRAM
+          </div>
+          <span id="pctEfectividadTg" class="text-lg font-extrabold text-white font-mono mt-0.5 block">--%</span>
+          <span id="txtBalanceTg" class="text-[10px] text-slate-400 font-mono font-medium block">0V - 0D TG</span>
+        </div>
+
+        <!-- Sin Alerta -->
+        <div class="bg-brand-card rounded-2xl border border-brand-border p-3">
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">SIN ALERTA</span>
+          <span id="pctEfectividadNoTg" class="text-lg font-extrabold text-white font-mono mt-0.5 block">--%</span>
+          <span id="txtBalanceNoTg" class="text-[10px] text-slate-500 font-mono font-medium block">0V - 0D No TG</span>
+        </div>
+
+        <!-- Global Total (Suma Unificada Exacta) -->
+        <div class="bg-brand-card rounded-2xl border border-brand-border p-3">
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">GLOBAL TOTAL</span>
+          <span id="pctEfectividadGlobal" class="text-lg font-extrabold text-white font-mono mt-0.5 block">--%</span>
+          <span id="txtBalanceGlobal" class="text-[10px] text-slate-500 font-mono font-medium block">0V - 0D Total</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pestañas Principales: En Juego / Hoy, Finalizados y Alertas -->
+    <div class="bg-slate-900/90 rounded-2xl p-1.5 border border-slate-800 grid grid-cols-3 gap-1 text-center text-xs font-bold shadow-inner">
+      <button id="tabEnJuego" onclick="cambiarPestañaPrincipal('en_juego')" class="py-2.5 rounded-xl bg-brand-primary text-black transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20">
+        <span>En Juego / Hoy</span>
+        <span id="badgeEnJuego" class="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-extrabold bg-black/20 text-black">0</span>
+      </button>
+      <button id="tabFinalizados" onclick="cambiarPestañaPrincipal('finalizados')" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition-all flex items-center justify-center gap-1.5">
+        <span>Finalizados</span>
+        <span id="badgeFinalizados" class="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-slate-800 text-slate-300">0</span>
+      </button>
+      <button id="tabAlertas" onclick="cambiarPestañaPrincipal('alertas')" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition-all flex items-center justify-center gap-1.5">
+        <span>Alertas</span>
+        <span id="badgeAlertas" class="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-slate-800 text-slate-300">0</span>
+      </button>
+    </div>
+
+    <!-- Filtros de Competiciones (Píldoras horizontales) -->
+    <div id="seccionFiltroLigas" class="space-y-1.5">
+      <div class="flex items-center justify-between px-1 text-xs text-slate-400 font-semibold">
+        <span class="tracking-wider uppercase text-[10px]">COMPETICIONES</span>
+        <span id="horaSincroTop" class="font-mono text-[10px] text-slate-500">Sincronizando...</span>
+      </div>
+      <div class="flex gap-1.5 overflow-x-auto pb-1 hide-scrollbar">
+        <button onclick="filtrarLiga('LIVE', this)" class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 bg-rose-500/10 border-rose-500/30 text-rose-400 hover:border-rose-400">
+          <span class="w-2 h-2 rounded-full bg-rose-500 pulse-live"></span> EN VIVO
+        </button>
+        <button onclick="filtrarLiga('all', this)" class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-brand-primary text-black border-brand-primary">
           Todas
         </button>
-<button class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700" onclick="filtrarLiga('laliga', this)">
+        <button onclick="filtrarLiga('laliga', this)" class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">
           LaLiga (ESP)
         </button>
-<button class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700" onclick="filtrarLiga('laliga2', this)">
+        <button onclick="filtrarLiga('laliga2', this)" class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">
           LaLiga 2 (ESP)
         </button>
-<button class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700" onclick="filtrarLiga('premier', this)">
+        <button onclick="filtrarLiga('premier', this)" class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">
           Premier (ENG)
         </button>
-<button class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700" onclick="filtrarLiga('bundesliga', this)">
+        <button onclick="filtrarLiga('bundesliga', this)" class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">
           Bundesliga
         </button>
-<button class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700" onclick="filtrarLiga('seriea', this)">
+        <button onclick="filtrarLiga('seriea', this)" class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">
           Serie A
         </button>
-<button class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700" onclick="filtrarLiga('ligue1', this)">
+        <button onclick="filtrarLiga('ligue1', this)" class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">
           Ligue 1
         </button>
-<button class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700" onclick="filtrarLiga('champions', this)">
+        <button onclick="filtrarLiga('champions', this)" class="btn-liga shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">
           Champions
         </button>
-</div>
-</div>
-<!-- Título de sección activa -->
-<div class="flex items-center justify-between px-1 pt-1">
-<h2 class="text-xs font-extrabold uppercase tracking-wider text-slate-300" id="tituloLista">
+      </div>
+    </div>
+
+    <!-- Título de sección activa -->
+    <div class="flex items-center justify-between px-1 pt-1">
+      <h2 id="tituloLista" class="text-xs font-extrabold uppercase tracking-wider text-slate-300">
         ENCUENTROS PROGRAMADOS Y EN VIVO
       </h2>
-<span class="text-[11px] text-brand-primary font-mono flex items-center gap-1 font-semibold">
-<span class="w-1.5 h-1.5 rounded-full bg-brand-primary"></span> hora peninsular (madrid)
+      <span class="text-[11px] text-brand-primary font-mono flex items-center gap-1 font-semibold">
+        <span class="w-1.5 h-1.5 rounded-full bg-brand-primary"></span> hora peninsular (madrid)
       </span>
-</div>
-<!-- Contenedor dinámico de tarjetas -->
-<div class="space-y-3" id="contenedorTarjetas">
-<div class="bg-brand-card rounded-2xl border border-brand-border p-6 text-center text-slate-400 space-y-2">
-<p class="text-sm font-semibold text-slate-300">Esperando datos de la última ejecución...</p>
-<p class="text-xs text-slate-500">El archivo datos.json se generará automáticamente en el próximo ciclo.</p>
-</div>
-</div>
-</div>
-<!-- Lógica JavaScript Principal -->
-<script>
+    </div>
+
+    <!-- Contenedor dinámico de tarjetas -->
+    <div id="contenedorTarjetas" class="space-y-3">
+      <div class="bg-brand-card rounded-2xl border border-brand-border p-6 text-center text-slate-400 space-y-2">
+        <p class="text-sm font-semibold text-slate-300">Esperando datos de la última ejecución...</p>
+        <p class="text-xs text-slate-500">El archivo datos.json se generará automáticamente en el próximo ciclo.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Lógica JavaScript Principal -->
+  <script>
     let PARTIDOS_GLOBAL = [];
     let ALERTAS_GLOBAL = [];
     let PESTAÑA_ACTIVA = 'en_juego'; // 'en_juego' | 'finalizados' | 'alertas'
@@ -386,11 +526,57 @@
       };
     }
 
-    function dibujarCurvaEquity(puntos) {
-      const svg = document.getElementById('svgCurvaEquity');
+    function calcularResumenFinancieroPartidos(listaPartidos) {
+      let unidadesApostadas = 0.0;
+      let beneficioNeto = 0.0;
+      let acertadas = 0;
+      let finalizadas = 0;
+      let historialPuntos = [0.0];
+
+      listaPartidos.forEach(p => {
+        if (p.estado === 'FINISHED' && p.acertado !== undefined && p.acertado !== null) {
+          finalizadas++;
+          let stk = 2.0;
+          if (p.stake) {
+            const raw = p.stake.toString().split('/')[0].replace('U', '').trim();
+            const parsed = parseFloat(raw);
+            if (!isNaN(parsed)) stk = parsed;
+          }
+          let cuota = 2.0;
+          if (p.cuota) {
+            const rawC = p.cuota.toString().replace('@', '').trim();
+            const parsedC = parseFloat(rawC);
+            if (!isNaN(parsedC)) cuota = parsedC;
+          }
+
+          unidadesApostadas += stk;
+          if (p.acertado === true) {
+            acertadas++;
+            beneficioNeto += stk * (cuota - 1.0);
+          } else {
+            beneficioNeto -= stk;
+          }
+          historialPuntos.push(parseFloat(beneficioNeto.toFixed(2)));
+        }
+      });
+
+      const roi = unidadesApostadas > 0 ? ((beneficioNeto / unidadesApostadas) * 100).toFixed(1) : '0.0';
+      return {
+        finalizadas,
+        acertadas,
+        falladas: finalizadas - acertadas,
+        unidadesApostadas: unidadesApostadas.toFixed(1),
+        beneficioNeto: beneficioNeto.toFixed(2),
+        roi: (beneficioNeto >= 0 ? '+' : '') + roi + '%',
+        historialPuntos
+      };
+    }
+
+    function dibujarCurvaEquity(svgId, puntos, colorDefault = '#00f59b') {
+      const svg = document.getElementById(svgId);
       if (!svg) return;
       if (!puntos || puntos.length <= 1) {
-        svg.innerHTML = '<polyline fill="none" stroke="#00f59b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="0,20 100,20" />';
+        svg.innerHTML = `<polyline fill="none" stroke="${colorDefault}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="0,20 100,20" />`;
         return;
       }
 
@@ -405,15 +591,16 @@
         return `${x},${y}`;
       });
 
-      const colorStroke = puntos[puntos.length - 1] >= 0 ? '#00f59b' : '#ff4d6d';
+      const colorStroke = puntos[puntos.length - 1] >= 0 ? colorDefault : '#ff4d6d';
+      const gradId = 'grad_' + svgId;
       svg.innerHTML = `
         <defs>
-          <linearGradient id="gradEquity" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="${colorStroke}" stop-opacity="0.35"/>
             <stop offset="100%" stop-color="${colorStroke}" stop-opacity="0.0"/>
           </linearGradient>
         </defs>
-        <polygon fill="url(#gradEquity)" points="0,40 ${coords.join(' ')} 100,40" />
+        <polygon fill="url(#${gradId})" points="0,40 ${coords.join(' ')} 100,40" />
         <polyline fill="none" stroke="${colorStroke}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="${coords.join(' ')}" />
       `;
     }
@@ -430,35 +617,73 @@
       document.getElementById('badgeFinalizados').innerText = finalizados.length;
       document.getElementById('badgeAlertas').innerText = alertas.length;
 
-      // 3. Resumen Financiero Telegram
-      const fin = calcularResumenFinanciero(alertas);
-      const balanceSigno = parseFloat(fin.beneficioNeto) >= 0 ? '+' : '';
-      document.getElementById('txtBalanceNeto').innerText = `${balanceSigno}${fin.beneficioNeto} U.`;
-      document.getElementById('txtBalanceNeto').className = `text-lg font-extrabold font-mono block ${parseFloat(fin.beneficioNeto) >= 0 ? 'text-brand-primary' : 'text-rose-400'}`;
-      document.getElementById('txtRoi').innerText = fin.roi;
-      document.getElementById('txtRoi').className = `text-sm font-extrabold font-mono mt-0.5 block ${parseFloat(fin.beneficioNeto) >= 0 ? 'text-brand-primary' : 'text-rose-400'}`;
-      document.getElementById('txtUnidadesGanadas').innerText = `${balanceSigno}${fin.beneficioNeto} U.`;
-      document.getElementById('txtStakeApostado').innerText = `${fin.unidadesApostadas} U.`;
-      document.getElementById('txtPicksEvaluados').innerText = `${fin.finalizadas} picks evaluados`;
-      dibujarCurvaEquity(fin.historialPuntos);
+      // 3. Resumen Financiero 1: TELEGRAM (Oficiales Enviadas)
+      const finTg = calcularResumenFinanciero(alertas);
+      const balanceSignoTg = parseFloat(finTg.beneficioNeto) >= 0 ? '+' : '';
+      document.getElementById('txtBalanceNeto').innerText = `${balanceSignoTg}${finTg.beneficioNeto} U.`;
+      document.getElementById('txtBalanceNeto').className = `text-lg font-extrabold font-mono block ${parseFloat(finTg.beneficioNeto) >= 0 ? 'text-brand-primary' : 'text-rose-400'}`;
+      document.getElementById('txtRoi').innerText = finTg.roi;
+      document.getElementById('txtRoi').className = `text-sm font-extrabold font-mono mt-0.5 block ${parseFloat(finTg.beneficioNeto) >= 0 ? 'text-brand-primary' : 'text-rose-400'}`;
+      document.getElementById('txtUnidadesGanadas').innerText = `${balanceSignoTg}${finTg.beneficioNeto} U.`;
+      document.getElementById('txtStakeApostado').innerText = `${finTg.unidadesApostadas} U.`;
+      document.getElementById('txtPicksEvaluados').innerText = `${finTg.finalizadas} picks evaluados`;
+      dibujarCurvaEquity('svgCurvaEquity', finTg.historialPuntos, '#00f59b');
 
-      // 4. Cajas de Efectividad
+      // 4. Resumen Financiero 2: SIN ALERTA (Pronósticos No Enviados)
+      const finalizadosSinAlerta = finalizados.filter(p => !p.telegram_enviado);
+      const finNoTg = calcularResumenFinancieroPartidos(finalizadosSinAlerta);
+      const balanceSignoNoTg = parseFloat(finNoTg.beneficioNeto) >= 0 ? '+' : '';
+      document.getElementById('txtBalanceNetoNoTg').innerText = `${balanceSignoNoTg}${finNoTg.beneficioNeto} U.`;
+      document.getElementById('txtBalanceNetoNoTg').className = `text-lg font-extrabold font-mono block ${parseFloat(finNoTg.beneficioNeto) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+      document.getElementById('txtRoiNoTg').innerText = finNoTg.roi;
+      document.getElementById('txtRoiNoTg').className = `text-sm font-extrabold font-mono mt-0.5 block ${parseFloat(finNoTg.beneficioNeto) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+      document.getElementById('txtUnidadesGanadasNoTg').innerText = `${balanceSignoNoTg}${finNoTg.beneficioNeto} U.`;
+      document.getElementById('txtStakeApostadoNoTg').innerText = `${finNoTg.unidadesApostadas} U.`;
+      document.getElementById('txtPicksEvaluadosNoTg').innerText = `${finNoTg.finalizadas} picks evaluados`;
+      dibujarCurvaEquity('svgCurvaEquityNoTg', finNoTg.historialPuntos, '#94a3b8');
+
+      // 5. Resumen Financiero 3: GLOBAL TOTAL (Enviados + No Enviados)
+      const totalGlobalApostadas = (parseFloat(finTg.unidadesApostadas) + parseFloat(finNoTg.unidadesApostadas)).toFixed(1);
+      const totalGlobalNeto = (parseFloat(finTg.beneficioNeto) + parseFloat(finNoTg.beneficioNeto)).toFixed(2);
+      const totalGlobalPicks = finTg.finalizadas + finNoTg.finalizadas;
+      const totalGlobalRoiNum = parseFloat(totalGlobalApostadas) > 0 ? ((parseFloat(totalGlobalNeto) / parseFloat(totalGlobalApostadas)) * 100).toFixed(1) : '0.0';
+      const totalGlobalRoi = (parseFloat(totalGlobalNeto) >= 0 ? '+' : '') + totalGlobalRoiNum + '%';
+      const balanceSignoGlobal = parseFloat(totalGlobalNeto) >= 0 ? '+' : '';
+
+      // Fusionar puntos cronológicos aproximados para curva global
+      let historialGlobal = [0.0];
+      const maxLen = Math.max(finTg.historialPuntos.length, finNoTg.historialPuntos.length);
+      for (let i = 1; i < maxLen; i++) {
+        const p1 = finTg.historialPuntos[Math.min(i, finTg.historialPuntos.length - 1)] || 0;
+        const p2 = finNoTg.historialPuntos[Math.min(i, finNoTg.historialPuntos.length - 1)] || 0;
+        historialGlobal.push(parseFloat((p1 + p2).toFixed(2)));
+      }
+
+      document.getElementById('txtBalanceNetoGlobal').innerText = `${balanceSignoGlobal}${totalGlobalNeto} U.`;
+      document.getElementById('txtBalanceNetoGlobal').className = `text-lg font-extrabold font-mono block ${parseFloat(totalGlobalNeto) >= 0 ? 'text-sky-400' : 'text-rose-400'}`;
+      document.getElementById('txtRoiGlobal').innerText = totalGlobalRoi;
+      document.getElementById('txtRoiGlobal').className = `text-sm font-extrabold font-mono mt-0.5 block ${parseFloat(totalGlobalNeto) >= 0 ? 'text-sky-400' : 'text-rose-400'}`;
+      document.getElementById('txtUnidadesGanadasGlobal').innerText = `${balanceSignoGlobal}${totalGlobalNeto} U.`;
+      document.getElementById('txtStakeApostadoGlobal').innerText = `${totalGlobalApostadas} U.`;
+      document.getElementById('txtPicksEvaluadosGlobal').innerText = `${totalGlobalPicks} picks evaluados`;
+      dibujarCurvaEquity('svgCurvaEquityGlobal', historialGlobal, '#38bdf8');
+
+      // 6. Cajas de Efectividad
       // A) Telegram
       const pctTgEl = document.getElementById('pctEfectividadTg');
       const txtBalTgEl = document.getElementById('txtBalanceTg');
-      if (fin.finalizadas > 0) {
-        const pctTg = Math.round((fin.acertadas / fin.finalizadas) * 100);
+      if (finTg.finalizadas > 0) {
+        const pctTg = Math.round((finTg.acertadas / finTg.finalizadas) * 100);
         pctTgEl.innerText = `${pctTg}%`;
-        txtBalTgEl.innerText = `${fin.acertadas}V - ${fin.falladas}D TG`;
+        txtBalTgEl.innerText = `${finTg.acertadas}V - ${finTg.falladas}D TG`;
       } else {
         pctTgEl.innerText = '--%';
         txtBalTgEl.innerText = '0V - 0D TG';
       }
 
       // B) Sin Alerta
-      const finalizadosSinAlerta = finalizados.filter(p => !p.telegram_enviado);
-      const acertadosNoTg = finalizadosSinAlerta.filter(p => p.acertado === true).length;
-      const totalNoTg = finalizadosSinAlerta.length;
+      const acertadosNoTg = finNoTg.acertadas;
+      const totalNoTg = finNoTg.finalizadas;
       const pctNoTgEl = document.getElementById('pctEfectividadNoTg');
       const txtBalNoTgEl = document.getElementById('txtBalanceNoTg');
       if (totalNoTg > 0) {
@@ -471,8 +696,8 @@
       }
 
       // C) Global Total (Suma Unificada Exacta)
-      const totalGlobalEvaluados = fin.finalizadas + totalNoTg;
-      const totalGlobalAciertos = fin.acertadas + acertadosNoTg;
+      const totalGlobalEvaluados = finTg.finalizadas + totalNoTg;
+      const totalGlobalAciertos = finTg.acertadas + acertadosNoTg;
       const totalGlobalFallos = totalGlobalEvaluados - totalGlobalAciertos;
       const pctGlobalEl = document.getElementById('pctEfectividadGlobal');
       const txtBalGlobalEl = document.getElementById('txtBalanceGlobal');
@@ -500,8 +725,32 @@
         return p.estado !== 'FINISHED';
       });
 
+      // Filtro de competición y LIVE mejorado
       if (LIGA_ACTIVA === 'LIVE') {
-        lista = lista.filter(p => p.estado === 'IN_PLAY' || p.estado === 'HT' || p.estado === 'LIVE' || p.estado === 'PAUSED' || p.estado_original === 'IN_PLAY' || p.estado_original === 'PAUSED' || Boolean(p.minuto_juego) || (p.minutos_restantes !== undefined && p.minutos_restantes <= 0 && p.estado !== 'FINISHED' && p.estado !== 'FINALIZADO' && p.estado !== 'AWARDED' && p.estado !== 'POSTPONED' && p.estado !== 'CANCELLED'));
+        lista = lista.filter(p => {
+          const est = (p.estado || '').toUpperCase();
+          const estOrig = (p.estado_original || '').toUpperCase();
+          const esNoFinalizado = est !== 'FINISHED' && est !== 'FINALIZADO' && est !== 'AWARDED' && est !== 'CANCELLED' && est !== 'POSTPONED';
+          
+          if (!esNoFinalizado) return false;
+
+          // Condición 1: Marcas explícitas de partido en juego
+          if (est === 'IN_PLAY' || est === 'HT' || est === 'LIVE' || est === 'PAUSED' || estOrig === 'IN_PLAY' || estOrig === 'PAUSED') {
+            return true;
+          }
+
+          // Condición 2: Tiene minuto de juego activo (1', Descanso, 78', 90+')
+          if (p.minuto_juego && p.minuto_juego.length > 0) {
+            return true;
+          }
+
+          // Condición 3: Ya comenzó según la hora peninsular y se encuentra dentro de la ventana de partido (minutos_restantes <= 0)
+          if (p.minutos_restantes !== undefined && p.minutos_restantes <= 0 && p.minutos_restantes >= -135) {
+            return true;
+          }
+
+          return false;
+        });
       } else if (LIGA_ACTIVA !== 'all') {
         lista = lista.filter(p => p.liga_key === LIGA_ACTIVA);
       }
@@ -521,7 +770,7 @@
 
     function crearTarjetaPartidoHTML(p) {
       const esFinalizado = p.estado === 'FINISHED';
-      const esEnJuego = (p.estado === 'IN_PLAY' || p.estado === 'HT') && !esFinalizado;
+      const esEnJuego = (p.estado === 'IN_PLAY' || p.estado === 'HT' || (p.minutos_restantes <= 0 && !esFinalizado));
 
       // Formato limpio de fecha y hora: "15/10 • 20:30" (sin la palabra "Madrid")
       let displayFechaHora = '';
@@ -642,7 +891,7 @@
           <div class="bg-slate-900/90 rounded-xl p-3 border border-slate-800 space-y-2">
             <div class="flex items-center justify-between">
               ${badgeMercado}
-              <span class="text-xs font-mono font-extrabold text-amber-400">${p.ev || '+5.0%'}</span>
+              <span class="text-xs font-mono font-extrabold text-amber-400">${p.ev || '+3.0%'}</span>
             </div>
             <div class="text-sm font-extrabold text-white tracking-tight">
               PRONÓSTICO: <span class="text-slate-200">${p.mercado}</span>
@@ -666,7 +915,7 @@
             </div>
             <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-800/80">
               <span class="text-[9px] text-slate-400 block font-sans">VENTAJA</span>
-              <span class="text-xs font-bold text-brand-primary">${p.ev || '+5.0%'}</span>
+              <span class="text-xs font-bold text-brand-primary">${p.ev || '+3.0%'}</span>
             </div>
             <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-800/80">
               <span class="text-[9px] text-slate-400 block font-sans">STAKE SUG.</span>
@@ -782,4 +1031,5 @@
       }, 30000);
     });
   </script>
-</body></html>
+</body>
+</html>
