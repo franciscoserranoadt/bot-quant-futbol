@@ -975,6 +975,7 @@ def ejecutar_ciclo():
     partidos_previos = datos_previos.get("partidos", [])
     semana_guardada = datos_previos.get("semana_activa", semana_actual_id)
     resumen_semanal_enviado = datos_previos.get("resumen_semanal_enviado_para", "")
+    resumen_mensual_enviado = datos_previos.get("resumen_mensual_enviado_para", "")
 
     es_reinicio_lunes = (semana_actual_id != semana_guardada)
     if es_reinicio_lunes:
@@ -1375,6 +1376,88 @@ def ejecutar_ciclo():
                 resumen_semanal_enviado = semana_actual_id
                 print(f"🏆 Resumen semanal oficial de domingo enviado a Telegram con éxito.")
 
+    # ==============================================================================
+    # RESUMEN MENSUAL OFICIAL A TELEGRAM (ÚLTIMO DÍA DEL MES ENTRE 22:45 Y 23:55)
+    # ==============================================================================
+    dia_manana_madrid = ahora_madrid + timedelta(days=1)
+    es_ultimo_dia_mes = (dia_manana_madrid.month != ahora_madrid.month)
+
+    if es_ultimo_dia_mes and hora_int >= 22 and resumen_mensual_enviado != mes_actual_id:
+        partidos_hoy_mes = [p for p in partidos_para_web if p["fecha"] == hoy_madrid_str]
+        partidos_pendientes_mes = [p for p in partidos_hoy_mes if p["estado"] != "FINISHED"]
+
+        if len(partidos_pendientes_mes) == 0 or (hora_int == 23 and ahora_madrid.minute >= 45):
+            # Recopilación de todas las alertas finalizadas del mes
+            # 1. Alertas archivadas en historico_mensual.json para este mes
+            alertas_mes_totales = []
+            archivo_hist = "historico_mensual.json"
+            if os.path.exists(archivo_hist):
+                try:
+                    with open(archivo_hist, "r", encoding="utf-8") as f:
+                        hist_data = json.load(f)
+                        alertas_mes_totales.extend(hist_data.get(mes_actual_id, []))
+                except Exception as e:
+                    print(f"Aviso leyendo histórico para reporte mensual: {e}")
+
+            # 2. Sumar alertas del ciclo activo que pertenezcan a este mes
+            ids_ya_contadas = {a.get("id_alerta") for a in alertas_mes_totales}
+            for a in alertas_acumuladas:
+                f_a = a.get("fecha", "")
+                if f_a.startswith(mes_actual_id) and a.get("finalizado") and a.get("id_alerta") not in ids_ya_contadas:
+                    alertas_mes_totales.append(a)
+                    ids_ya_contadas.add(a.get("id_alerta"))
+
+            resumen_mes_fin = calcular_resumen_financiero(alertas_mes_totales)
+            total_mes = resumen_mes_fin["finalizadas"]
+
+            if total_mes > 0:
+                aciertos_mes = resumen_mes_fin["acertadas"]
+                fallos_mes = resumen_mes_fin["falladas"]
+                pct_acierto_mes = round((aciertos_mes / total_mes) * 100, 1)
+                signo_u_mes = "+" if resumen_mes_fin["unidades_netas"] >= 0 else ""
+                signo_roi_mes = "+" if resumen_mes_fin["roi_pct"] >= 0 else ""
+
+                # Desglose agrupado por semanas que componen el mes
+                semanas_map = {}
+                for a in alertas_mes_totales:
+                    sem_key = a.get("semana_id") or "S/D"
+                    if sem_key not in semanas_map:
+                        semanas_map[sem_key] = []
+                    semanas_map[sem_key].append(a)
+
+                lineas_semanas = []
+                for idx_sem, (sem_k, sem_alertas) in enumerate(sorted(semanas_map.items()), 1):
+                    res_sem = calcular_resumen_financiero(sem_alertas)
+                    signo_sem_u = "+" if res_sem["unidades_netas"] >= 0 else ""
+                    signo_sem_roi = "+" if res_sem["roi_pct"] >= 0 else ""
+                    lineas_semanas.append(
+                        f"▫️ <b>Semana {idx_sem} ({sem_k}):</b> {signo_sem_u}{res_sem['unidades_netas']} U. (ROI {signo_sem_roi}{res_sem['roi_pct']}%)"
+                    )
+
+                bloque_semanas_str = "\n".join(lineas_semanas) if lineas_semanas else "▫️ Registro semanal consolidado"
+
+                # Nombre del mes en español
+                nombres_meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+                nombre_mes_str = nombres_meses[ahora_madrid.month - 1]
+                año_str = ahora_madrid.strftime('%Y')
+
+                msg_resumen_mensual = (
+                    f"🏆 <b>CIERRE MENSUAL OFICIAL — APEX QUANT ANALYTICS</b> 📊\n\n"
+                    f"📅 <b>Mes:</b> <b>{nombre_mes_str} {año_str}</b> (Finalizado)\n"
+                    f"📈 <b>Total Pronósticos Oficiales:</b> <b>{total_mes}</b>\n\n"
+                    f"✅ <b>Alertas Acertadas:</b> <b>{aciertos_mes}</b> ({pct_acierto_mes}%)\n"
+                    f"❌ <b>Alertas Falladas:</b> <b>{fallos_mes}</b>\n"
+                    f"🎯 <b>Efectividad Mensual:</b> <b>{pct_acierto_mes}%</b>\n\n"
+                    f"💰 <b>Rendimiento Neto:</b> <b>{signo_u_mes}{resumen_mes_fin['unidades_netas']} Unidades</b>\n"
+                    f"📈 <b>Yield / ROI Mensual:</b> <b>{signo_roi_mes}{resumen_mes_fin['roi_pct']}%</b>\n\n"
+                    f"📊 <b>EVOLUCIÓN SEMANA A SEMANA:</b>\n"
+                    f"{bloque_semanas_str}\n\n"
+                    f"⚡ <i>Apex Quant Engine • Transparencia, Disciplina y Consistencia</i>"
+                )
+                enviar_telegram(msg_resumen_mensual, url_accion=APP_URL, texto_boton="📱 Abrir Balance Completo en la App")
+                resumen_mensual_enviado = mes_actual_id
+                print(f"🏆 Resumen mensual oficial ({nombre_mes_str} {año_str}) enviado a Telegram con éxito.")
+
     alertas_semana_act = [a for a in alertas_acumuladas if a.get("semana_id") == semana_actual_id]
     metricas_semana = calcular_resumen_financiero(alertas_semana_act)
 
@@ -1397,6 +1480,7 @@ def ejecutar_ciclo():
         "lunes_semana": lunes_semana_str,
         "domingo_semana": domingo_semana_str,
         "resumen_semanal_enviado_para": resumen_semanal_enviado,
+        "resumen_mensual_enviado_para": resumen_mensual_enviado,
         "metricas_semana": metricas_semana,
         "total_partidos_hoy": len(partidos_guardar),
         "partidos": partidos_guardar,
