@@ -444,39 +444,32 @@
     }
 
     // =========================================================================
-    // CÁLCULO ESTRICTO DE LA SEMANA ACTUAL (LUNES 00:00 A DOMINGO 23:59 MADRID)
+    // FILTRADO ESTRICTO DE SEMANA ACTUAL (CORTE DE LUNES A DOMINGO)
     // =========================================================================
-    function obtenerLunesSemanaActualMadrid() {
-      const ahora = new Date();
-      // Ajustar al lunes de la semana actual
-      const diaSemana = ahora.getDay(); // 0 es Domingo, 1 es Lunes...
-      const diffLunes = (diaSemana === 0 ? -6 : 1) - diaSemana;
-      const lunes = new Date(ahora);
-      lunes.setDate(ahora.getDate() + diffLunes);
-      const año = lunes.getFullYear();
-      const mes = String(lunes.getMonth() + 1).padStart(2, '0');
-      const dia = String(lunes.getDate()).padStart(2, '0');
-      return `${año}-${mes}-${dia}`;
-    }
-
     function esDeLaSemanaActual(item, lunesLimite) {
       if (!item) return false;
-      // 1. Si está marcado explícitamente como false por el reinicio del lunes
       if (item.es_semana_actual === false) return false;
 
-      // 2. Si tiene fecha textual 'YYYY-MM-DD', comparar directamente con el lunes de inicio
-      const fechaStr = item.fecha || '';
-      if (fechaStr && fechaStr.length >= 10) {
-        const fechaSolo = fechaStr.substring(0, 10);
-        if (fechaSolo < lunesLimite) return false;
-      }
-
-      // 3. Si tiene semana_id y state.semanaActiva está definido, debe coincidir
+      // 1. Verificación por ID de semana ISO exacta
       if (state.semanaActiva && item.semana_id && item.semana_id !== state.semanaActiva) {
         return false;
       }
 
+      // 2. Verificación por fecha límite del lunes oficial
+      if (lunesLimite) {
+        const f = item.fecha || '';
+        if (f.length >= 10 && f < lunesLimite) {
+          return false;
+        }
+      }
+
       return true;
+    }
+
+    // Obtiene la lista estricta de alertas de la semana en curso (reiniciadas los lunes a las 00:00)
+    function obtenerAlertasSemanaActual() {
+      const lunesLimite = state.lunesSemana || '';
+      return state.alertas.filter(a => esDeLaSemanaActual(a, lunesLimite));
     }
 
     async function cargarDatos() {
@@ -489,7 +482,7 @@
         state.alertas = data.alertas || [];
         state.metricasSemana = data.metricas_semana || {};
         state.semanaActiva = data.semana_activa || '';
-        state.lunesSemana = data.lunes_semana || obtenerLunesSemanaActualMadrid();
+        state.lunesSemana = data.lunes_semana || '';
         state.domingoSemana = data.domingo_semana || '';
         state.ultimaActualizacion = data.ultima_actualizacion || '';
 
@@ -506,18 +499,21 @@
       }
     }
 
-    function calcularRendimientoGenerico(items, lunesLimite) {
+    // =========================================================================
+    // CÁLCULO ESTRICTO DE RENDIMIENTO SEMANAL (SOLO SEMANA ACTUAL)
+    // =========================================================================
+    function calcularRendimientoGenerico(items, soloAlertasTG = true) {
       let unidadesApostadas = 0.0;
       let beneficioNeto = 0.0;
       let finalizadas = 0;
       let acertadas = 0;
       let puntosEquity = [0];
 
+      const lunesLimite = state.lunesSemana || '';
+
       items.forEach(item => {
-        // FILTRADO ESTRICTO E INFALIBLE POR FECHA DEL LUNES
-        if (!esDeLaSemanaActual(item, lunesLimite)) {
-          return;
-        }
+        // FILTRADO ESTRICTO DE SEMANA ACTUAL PARA GARANTIZAR REINICIO A CERO CADA LUNES
+        if (!esDeLaSemanaActual(item, lunesLimite)) return;
 
         const esFin = item.finalizado === true || (item.acertado !== null && item.acertado !== undefined) || item.estado === 'FINISHED';
         if (!esFin) return;
@@ -588,21 +584,19 @@
     }
 
     function actualizarMetricas() {
-      const lunesLimite = state.lunesSemana || obtenerLunesSemanaActualMadrid();
-
       document.getElementById('statPartidos').innerText = state.partidos.length || '--';
       document.getElementById('syncHour').innerText = state.ultimaActualizacion ? (state.ultimaActualizacion + ' sync') : 'Sincronizado';
 
       const activos = state.partidos.filter(p => p.estado !== 'FINISHED');
       const finalizados = state.partidos.filter(p => p.estado === 'FINISHED');
+      const alertasSemanaActual = obtenerAlertasSemanaActual();
 
       document.getElementById('countHoy').innerText = `(${activos.length})`;
       document.getElementById('countFinalizados').innerText = `(${finalizados.length})`;
-      document.getElementById('countAlertas').innerText = `(${state.alertas.length})`;
+      document.getElementById('countAlertas').innerText = `(${alertasSemanaActual.length})`;
 
-      // 1. ALERTAS OFICIALES TELEGRAM DE LA SEMANA ACTUAL
-      const alertasSemanaAct = state.alertas.filter(a => esDeLaSemanaActual(a, lunesLimite));
-      const alertasFinSemana = alertasSemanaAct.filter(a => a.finalizado || (a.acertado !== null && a.acertado !== undefined));
+      // 1. ALERTAS OFICIALES TELEGRAM (FINALIZADAS DE LA SEMANA ACTUAL)
+      const alertasFinSemana = alertasSemanaActual.filter(a => a.finalizado || (a.acertado !== null && a.acertado !== undefined));
       const aciertosTG = alertasFinSemana.filter(a => a.acertado === true).length;
       const totalTG = alertasFinSemana.length;
       const derrotasTG = totalTG - aciertosTG;
@@ -612,7 +606,7 @@
       document.getElementById('conteoTelegram').innerText = `${aciertosTG}V - ${derrotasTG}D TG`;
 
       // 2. SIN ALERTA (PRONÓSTICOS DE LA SEMANA ACTUAL NO ENVIADOS A TELEGRAM)
-      const finSemanaConPron = finalizados.filter(p => (p.acertado !== null && p.acertado !== undefined) && esDeLaSemanaActual(p, lunesLimite));
+      const finSemanaConPron = finalizados.filter(p => (p.acertado !== null && p.acertado !== undefined) && esDeLaSemanaActual(p, state.lunesSemana));
       const sinAlertaFin = finSemanaConPron.filter(p => !p.telegram_enviado);
       const aciertosSin = sinAlertaFin.filter(p => p.acertado === true).length;
       const totalSin = sinAlertaFin.length;
@@ -622,7 +616,7 @@
       document.getElementById('efectividadSinAlerta').innerText = pctSin !== '--' ? `${pctSin}%` : '--%';
       document.getElementById('conteoSinAlerta').innerText = `${aciertosSin}V - ${derrotasSin}D No TG`;
 
-      // 3. GLOBAL TOTAL (SUMA MATEMÁTICA EXACTA DE LA SEMANA ACTUAL)
+      // 3. GLOBAL TOTAL: SUMA MATEMÁTICA EXACTA DE LA SEMANA ACTUAL (TELEGRAM + SIN ALERTA)
       const victoriasGlobal = aciertosTG + aciertosSin;
       const derrotasGlobal = derrotasTG + derrotasSin;
       const totalGlobal = totalTG + totalSin;
@@ -636,7 +630,7 @@
       // =========================================================================
 
       // A) Tarjeta 1: Telegram (Exclusivo Alertas TG de la semana actual)
-      const resTG = calcularRendimientoGenerico(state.alertas, lunesLimite);
+      const resTG = calcularRendimientoGenerico(state.alertas, true);
       const sNetoTG = resTG.unidadesNetas >= 0 ? '+' : '';
       const sRoiTG = resTG.roiPct >= 0 ? '+' : '';
       document.getElementById('balanceNetoTG').innerText = `${sNetoTG}${resTG.unidadesNetas.toFixed(2)} U.`;
@@ -646,8 +640,8 @@
       document.getElementById('picksTG').innerText = `${resTG.finalizadas} picks evaluados`;
       dibujarCurvaGenerica('equityPathTG', resTG.puntosEquity, '#00f59b');
 
-      // B) Tarjeta 2: Sin Alerta (Pronósticos evaluados no enviados a TG de la semana actual)
-      const resSin = calcularRendimientoGenerico(sinAlertaFin, lunesLimite);
+      // B) Tarjeta 2: Sin Alerta (Pronósticos de la semana que no fueron a Telegram)
+      const resSin = calcularRendimientoGenerico(sinAlertaFin, false);
       const sNetoSin = resSin.unidadesNetas >= 0 ? '+' : '';
       const sRoiSin = resSin.roiPct >= 0 ? '+' : '';
       document.getElementById('balanceNetoSin').innerText = `${sNetoSin}${resSin.unidadesNetas.toFixed(2)} U.`;
@@ -671,6 +665,7 @@
       document.getElementById('stakeApostadoGlobal').innerText = `${totalApostadasGlobal.toFixed(1)} U.`;
       document.getElementById('picksGlobal').innerText = `${totalPicksGlobal} picks evaluados`;
 
+      // Fusión de puntos de equity para Global Total
       const puntosGlobal = resTG.finalizadas > 0 ? resTG.puntosEquity : resSin.puntosEquity;
       dibujarCurvaGenerica('equityPathGlobal', puntosGlobal, '#38bdf8');
     }
@@ -826,17 +821,19 @@
 
     function renderizarAlertas() {
       const container = document.getElementById('matchesContainer');
-      if (state.alertas.length === 0) {
+      const alertasSemanaActual = obtenerAlertasSemanaActual();
+
+      if (alertasSemanaActual.length === 0) {
         container.innerHTML = `
           <div class="p-8 rounded-2xl bg-brand-card border border-brand-border text-center">
             <p class="text-xs text-slate-300 font-medium">Aún no se han emitido alertas oficiales esta semana</p>
-            <p class="text-[10px] text-slate-500 mt-1">El bot emitirá alertas cuando detecte discrepancias de valor (+EV ≥ 3%).</p>
+            <p class="text-[10px] text-slate-500 mt-1">El bot emitirá alertas cuando detecte discrepancias de valor (+EV ≥ 3%). Las alertas se reinician limpiamente cada lunes a las 00:00h.</p>
           </div>
         `;
         return;
       }
 
-      container.innerHTML = state.alertas.slice().reverse().map(a => {
+      container.innerHTML = alertasSemanaActual.slice().reverse().map(a => {
         const esFinalizado = a.finalizado === true || a.estado_partido === 'FINISHED' || (a.acertado !== null && a.acertado !== undefined);
         const esEnJuego = a.estado_partido === 'IN_PLAY' || a.estado_partido === 'PAUSED' || a.estado_partido === 'HT';
 
