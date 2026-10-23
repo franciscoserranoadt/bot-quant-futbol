@@ -1,38 +1,3 @@
-# Solución Definitiva: Retención y Actualización Continua de Partidos Finalizados en bot_quant.py
-
-## 1. DIAGNÓSTICO EXACTO DEL PROBLEMA
-
-Al analizar tu captura de pantalla del **24 de octubre** (`IMAGE_1`) se identifican los dos factores que explican por qué la pestaña **Finalizados** se quedó en los partidos del 19 de octubre mientras que la pestaña **Alertas** sí está actualizada:
-
-### Factor 1: El filtro de corte del lunes (`p_fecha >= lunes_semana_str`)
-En `bot_quant.py`, la fusión de partidos acumulados para guardar en `datos.json` tenía esta condición:
-```python
-for prev_p in partidos_previos:
-    p_id = prev_p.get("id")
-    p_fecha = prev_p.get("fecha", "")
-    if p_id not in ids_guardados:
-        if p_fecha >= lunes_semana_str:
-            partidos_guardar.append(prev_p)
-            ids_guardados.add(p_id)
-```
-El lunes **19 de octubre** fue el inicio de la semana ISO 43 (`2026-W43`), donde `lunes_semana_str = "2026-10-19"`.
-Los partidos disputados ese lunes 19/10 (Monza vs Cagliari, Parma vs Torino) quedaron guardados. Sin embargo, al ir transcurriendo la semana hasta el sábado 24/10:
-- Si en un ciclo intermedio la API de Football-Data.org devolvió un conjunto de partidos vacío o restringido solo a fechas futuras, o si los partidos intermedios (días 20, 21, 22, 23) no se mantuvieron en el array `partidos_previos`, solo persistieron los que coincidían con el inicio exacto o los que la API devolvía en vivo.
-- En cambio, en la pestaña **`Alertas`**, las alertas se guardan en un array independiente (`alertas_acumuladas.append(...)`) que **nunca se sobrescribe**, conservando siempre los 70 últimos registros. Por eso las alertas sí se mantuvieron al día.
-
-### Factor 2: Rango de consulta a la API (`obtener_partidos_por_rango`)
-En `bot_quant.py`, `obtener_partidos_completos()` realizaba dos consultas:
-1. Desde `lunes_semana_str` hasta `date_hoy`.
-2. Desde `date_hoy` hasta `date_futuro_to`.
-Football-Data.org impone en su plan gratuito un límite de máximo **10 días de rango** por llamada (`dateFrom` a `dateTo`). A medida que avanzan los días hacia el fin de semana (sábado y domingo), si la API devuelve errores silenciosos de rate-limit o código HTTP 400 por desfase horario en la llamada de pasados, `lista_semana_hasta_hoy` no actualiza los partidos finalizados de mitad de semana.
-
----
-
-## 2. CÓDIGO MAESTRO CORREGIDO: `bot_quant.py` (v3.7.2 PRO)
-
-Copia y reemplaza este código íntegro en tu archivo `bot_quant.py`:
-
-```python
 import os
 import json
 import hashlib
@@ -379,7 +344,7 @@ def obtener_partidos_por_rango(date_from, date_to):
 
 def obtener_partidos_completos(lunes_semana_str, domingo_semana_str):
     """
-    Consulta Football-Data.org dividiendo los rangos en ventanas de máximo 6 días
+    Consulta Football-Data.org dividiendo los rangos en ventanas de máximo 5 días
     para cumplir con la restricción del plan gratuito (< 10 días).
     """
     hoy_utc = datetime.now(timezone.utc)
@@ -1469,7 +1434,7 @@ def ejecutar_ciclo():
                     f"❌ <b>Alertas Falladas:</b> <b>{fallos_mes}</b>\n"
                     f"🎯 <b>Efectividad Mensual:</b> <b>{pct_acierto_mes}%</b>\n\n"
                     f"💰 <b>Rendimiento Neto:</b> <b>{signo_u_mes}{resumen_mes_fin['unidades_netas']} Unidades</b>\n"
-                    f"📈 <b>Yield / ROI Mensual:</b> <b>{signo_roi_mes}{resumen_mes_fin['roi_pct']}%</b>\n\n"
+                    f"📈 <b>Yield / ROI Mensual:</b> <b>{signo_roi_mes}{resumen_mes_fin['roi_pct']}%)</b>\n\n"
                     f"📊 <b>EVOLUCIÓN SEMANA A SEMANA:</b>\n"
                     f"{bloque_semanas_str}\n\n"
                     f"⚡ <i>Apex Quant Engine • Transparencia, Disciplina y Consistencia</i>"
@@ -1494,12 +1459,10 @@ def ejecutar_ciclo():
         p_sem = prev_p.get("semana_id", "")
 
         if p_id not in ids_guardados:
-            # Condición de pertenencia semanal: o coincide con semana_actual_id o fecha >= lunes_semana_str
             if p_sem == semana_actual_id or (p_fecha and p_fecha >= lunes_semana_str):
                 partidos_guardar.append(prev_p)
                 ids_guardados.add(p_id)
 
-    # Ordenar cronológicamente (más recientes o programados primero)
     datos_completos = {
         "ultima_actualizacion": hora_madrid_str,
         "huso_horario": "Europe/Madrid",
@@ -1522,4 +1485,3 @@ def ejecutar_ciclo():
 
 if __name__ == "__main__":
     ejecutar_ciclo()
-```
