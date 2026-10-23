@@ -344,8 +344,9 @@ def obtener_partidos_por_rango(date_from, date_to):
 
 def obtener_partidos_completos(lunes_semana_str, domingo_semana_str):
     """
-    Consulta Football-Data.org dividiendo los rangos en ventanas de máximo 5 días
-    para cumplir con la restricción del plan gratuito (< 10 días).
+    Consulta Football-Data.org dividiendo los rangos en ventanas de máximo 4 días
+    para cumplir con la restricción del plan gratuito (< 10 días) y asegurar
+    la captura de partidos finalizados y futuros.
     """
     hoy_utc = datetime.now(timezone.utc)
     date_hoy = hoy_utc.strftime("%Y-%m-%d")
@@ -1434,7 +1435,7 @@ def ejecutar_ciclo():
                     f"❌ <b>Alertas Falladas:</b> <b>{fallos_mes}</b>\n"
                     f"🎯 <b>Efectividad Mensual:</b> <b>{pct_acierto_mes}%</b>\n\n"
                     f"💰 <b>Rendimiento Neto:</b> <b>{signo_u_mes}{resumen_mes_fin['unidades_netas']} Unidades</b>\n"
-                    f"📈 <b>Yield / ROI Mensual:</b> <b>{signo_roi_mes}{resumen_mes_fin['roi_pct']}%)</b>\n\n"
+                    f"📈 <b>Yield / ROI Mensual:</b> <b>{signo_roi_mes}{resumen_mes_fin['roi_pct']}%</b>\n\n"
                     f"📊 <b>EVOLUCIÓN SEMANA A SEMANA:</b>\n"
                     f"{bloque_semanas_str}\n\n"
                     f"⚡ <i>Apex Quant Engine • Transparencia, Disciplina y Consistencia</i>"
