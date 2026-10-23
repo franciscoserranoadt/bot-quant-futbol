@@ -1,39 +1,33 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Apex Quant Analytics • Motor Predictivo</title>
-  
+  <title>Apex Quant Analytics - v3.7.2 Pro</title>
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#070e1d">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="ApexQuant">
-  
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
           colors: {
-            oled: '#030712',
-            bgDark: '#070e1d',
-            surface: '#0c1527',
-            surfaceCard: '#101d36',
-            borderDark: '#16233b',
-            accentGreen: '#00f59b',
-            accentCyan: '#38bdf8',
-            accentBlue: '#0088cc',
-            accentAmber: '#ffb703',
-            accentRed: '#ff4d6d',
-            textPrimary: '#ffffff',
-            textSecondary: '#94a3b8',
-            textMuted: '#64748b'
+            brand: {
+              bg: '#070e1d',
+              card: '#0c1527',
+              border: '#16233b',
+              accent: '#00f59b',
+              telegram: '#0088cc',
+              danger: '#ff4d6d',
+              warning: '#ffb703',
+              muted: '#64748b'
+            }
           },
           fontFamily: {
             sans: ['"Plus Jakarta Sans"', 'sans-serif'],
@@ -41,445 +35,312 @@
           }
         }
       }
-    }
+    };
   </script>
   <style>
-    body {
-      background-color: #070e1d;
-      color: #ffffff;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    }
-    .custom-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .custom-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-    @keyframes pulseLive {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.92); }
-    }
-    .live-pulse {
-      animation: pulseLive 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-    .equity-glow {
-      filter: drop-shadow(0 0 10px rgba(0, 245, 155, 0.25));
-    }
-    .equity-glow-slate {
-      filter: drop-shadow(0 0 8px rgba(148, 163, 184, 0.2));
-    }
-    .equity-glow-cyan {
-      filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.25));
-    }
+    body { background-color: #070e1d; color: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .custom-scroll::-webkit-scrollbar { display: none; }
+    .custom-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    @keyframes pulse-subtle { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .animate-pulse-subtle { animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
   </style>
 </head>
-<body class="min-h-screen bg-bgDark font-sans pb-12 antialiased">
+<body class="bg-brand-bg text-slate-100 min-h-screen pb-16 antialiased selection:bg-brand-accent selection:text-slate-900">
+  <div class="max-w-md mx-auto px-4 pt-3 space-y-4">
 
-  <!-- HEADER -->
-  <header class="sticky top-0 z-40 bg-bgDark/90 backdrop-blur-md border-b border-borderDark px-4 py-3">
-    <div class="max-w-2xl mx-auto flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-surface border border-accentGreen/30 flex items-center justify-center font-bold text-accentGreen tracking-wider text-base shadow-[0_0_15px_rgba(0,245,155,0.15)]">
-          AQ
-        </div>
+    <!-- HEADER SUPERIOR -->
+    <header class="flex items-center justify-between py-2 border-b border-brand-border/60">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-accent/20 to-brand-accent/5 border border-brand-accent/40 flex items-center justify-center font-mono font-black text-brand-accent text-base tracking-tighter shadow-sm shadow-brand-accent/10">AQ</div>
         <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-base font-extrabold tracking-tight text-white">Apex Quant</h1>
-            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-accentGreen/10 text-accentGreen border border-accentGreen/30">
-              <span class="w-1.5 h-1.5 rounded-full bg-accentGreen live-pulse"></span>
-              24/7 ONLINE
+          <div class="flex items-center space-x-1.5">
+            <h1 class="text-base font-bold tracking-tight text-white">Apex Quant</h1>
+            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse"></span>24/7 ONLINE
             </span>
           </div>
-          <p class="text-[11px] text-textMuted font-mono">Motor Predictivo Just-In-Time (+EV)</p>
+          <p class="text-[11px] text-slate-400 font-mono">Motor Predictivo Just-In-Time (+EV)</p>
         </div>
       </div>
-      <div class="flex items-center gap-2">
-        <span class="px-2.5 py-1 rounded-lg bg-surface border border-borderDark text-[11px] font-mono text-textSecondary flex items-center gap-1">
-          <span class="w-2 h-2 rounded-full bg-accentCyan"></span> OLED
-        </span>
-        <button id="btnReload" onclick="recargarDatos(true)" title="Refrescar datos" class="p-2 rounded-xl bg-surface border border-borderDark text-textSecondary hover:text-white transition active:scale-95">
-          <svg class="w-4 h-4 transition-transform duration-500" id="iconReload" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-          </svg>
+      <div class="flex items-center space-x-1.5">
+        <span class="px-2 py-0.5 rounded-lg text-[10px] font-mono font-semibold bg-slate-900 text-slate-300 border border-slate-800">● OLED</span>
+        <button id="btnRefresh" onclick="recargarDatos(true)" class="p-1.5 rounded-xl bg-brand-card hover:bg-slate-800 text-slate-300 border border-brand-border active:scale-95 transition-all">
+          <svg id="refreshIcon" class="w-4 h-4 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
         </button>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <main class="max-w-2xl mx-auto px-4 pt-4 space-y-4">
-
-    <!-- BOTÓN CANAL OFICIAL TELEGRAM -->
-    <a href="https://t.me/apex_quant_alertas" target="_blank" rel="noopener noreferrer" 
-       class="block w-full rounded-2xl bg-gradient-to-r from-[#0088cc]/15 via-surface to-[#0088cc]/10 border border-[#0088cc]/40 p-3.5 hover:border-[#0088cc] transition shadow-lg active:scale-[0.99] group">
+    <!-- TARJETA CANAL TELEGRAM OFICIAL -->
+    <a href="https://t.me/apex_quant_alertas" target="_blank" rel="noopener noreferrer" class="block w-full rounded-2xl bg-gradient-to-r from-sky-950/40 via-brand-card to-sky-900/30 border border-sky-500/40 p-3 hover:border-sky-400 transition-all active:scale-[0.99] group shadow-lg shadow-sky-950/20">
       <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-[#0088cc]/20 border border-[#0088cc]/50 flex items-center justify-center text-[#0088cc] group-hover:scale-105 transition">
-            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
-            </svg>
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-xl bg-[#0088cc] flex items-center justify-center text-white shadow-md shadow-sky-500/20 group-hover:scale-105 transition-transform">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.56 8.16l-1.97 9.28c-.15.65-.53.81-1.08.5l-3.01-2.22-1.45 1.4c-.16.16-.3.3-.61.3l.22-3.05 5.56-5.02c.24-.22-.05-.34-.38-.13l-6.87 4.33-2.96-.92c-.64-.2-.66-.64.13-.95l11.58-4.46c.54-.2 1.01.13.84.94z"/></svg>
           </div>
           <div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-white group-hover:text-accentCyan transition">Canal Telegram Oficial</span>
-              <span class="w-2 h-2 rounded-full bg-accentGreen live-pulse"></span>
+            <div class="flex items-center space-x-1.5">
+              <span class="text-xs font-bold text-white group-hover:text-sky-300 transition-colors">Canal Telegram Oficial</span>
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
             </div>
-            <p class="text-[11px] text-textSecondary font-mono mt-0.5">Alertas automáticas en <span class="text-[#0088cc] font-semibold">@apex_quant_alertas</span></p>
+            <p class="text-[10px] text-sky-200/70 font-mono">Alertas automáticas en <span class="text-sky-300 font-semibold">@apex_quant_alertas</span></p>
           </div>
         </div>
-        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0088cc]/20 border border-[#0088cc]/50 text-accentCyan text-xs font-bold font-mono tracking-wider">
+        <div class="flex items-center space-x-1 text-sky-400 text-xs font-mono font-semibold px-2.5 py-1 rounded-lg bg-sky-500/10 border border-sky-500/30 group-hover:bg-sky-500/20">
           <span>ACTIVO</span>
-          <svg class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
-          </svg>
+          <svg class="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </div>
       </div>
     </a>
 
-    <!-- CAJAS MÉTRICAS SUPERIORES -->
-    <div class="grid grid-cols-3 gap-2.5">
-      <div class="bg-surface border border-borderDark rounded-2xl p-3 text-center">
-        <p class="text-[10px] font-bold tracking-wider text-textMuted uppercase font-mono">Partidos</p>
-        <p id="totalPartidosHeader" class="text-xl font-extrabold font-mono text-white mt-1">--</p>
-        <p class="text-[10px] text-textSecondary font-mono mt-0.5">Monitoreo</p>
+    <!-- MÉTRICAS SUPERIORES FIJAS -->
+    <div class="grid grid-cols-3 gap-2">
+      <div class="rounded-xl bg-brand-card border border-brand-border p-2.5 text-center">
+        <span class="text-[9px] font-mono font-semibold text-slate-400 uppercase tracking-wider block">Partidos</span>
+        <span id="statPartidos" class="text-lg font-mono font-black text-white">--</span>
+        <span class="text-[9px] font-mono text-slate-400 block">Monitoreo</span>
       </div>
-      <div class="bg-surface border border-borderDark rounded-2xl p-3 text-center">
-        <p class="text-[10px] font-bold tracking-wider text-textMuted uppercase font-mono">Filtro EV</p>
-        <p class="text-xl font-extrabold font-mono text-accentGreen mt-1">+3.0%</p>
-        <p class="text-[10px] text-textSecondary font-mono mt-0.5">Ventaja</p>
+      <div class="rounded-xl bg-brand-card border border-brand-border p-2.5 text-center">
+        <span class="text-[9px] font-mono font-semibold text-slate-400 uppercase tracking-wider block">Filtro EV</span>
+        <span class="text-lg font-mono font-black text-brand-accent">+3.0%</span>
+        <span class="text-[9px] font-mono text-slate-400 block">Ventaja</span>
       </div>
-      <div class="bg-surface border border-borderDark rounded-2xl p-3 text-center">
-        <p class="text-[10px] font-bold tracking-wider text-textMuted uppercase font-mono">Gestión</p>
-        <p class="text-xl font-extrabold font-mono text-accentCyan mt-1">1/4</p>
-        <p class="text-[10px] text-textSecondary font-mono mt-0.5">Kelly</p>
+      <div class="rounded-xl bg-brand-card border border-brand-border p-2.5 text-center">
+        <span class="text-[9px] font-mono font-semibold text-slate-400 uppercase tracking-wider block">Gestión</span>
+        <span class="text-lg font-mono font-black text-sky-400">1/4</span>
+        <span class="text-[9px] font-mono text-slate-400 block">Kelly</span>
       </div>
     </div>
 
-    <!-- TARJETA 1: RENDIMIENTO SEMANAL (EXCLUSIVO TELEGRAM) -->
-    <div class="bg-surface border border-borderDark rounded-2xl p-4 shadow-md space-y-3">
-      <div class="flex items-center justify-between border-b border-borderDark/60 pb-2.5">
-        <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-lg bg-accentGreen/15 border border-accentGreen/30 flex items-center justify-center text-accentGreen">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-            </svg>
+    <!-- TRIPLE TARJETA DE RENDIMIENTO SEMANAL -->
+    <!-- 1. EXCLUSIVO TELEGRAM -->
+    <div class="rounded-2xl bg-brand-card border border-brand-border p-3.5 space-y-2.5 shadow-md">
+      <div class="flex items-center justify-between border-b border-brand-border/50 pb-2">
+        <div class="flex items-center space-x-2">
+          <div class="w-6 h-6 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-brand-accent">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
           </div>
           <div>
-            <h2 class="text-xs font-bold text-white uppercase tracking-wider font-mono">Rendimiento Semanal</h2>
-            <p class="text-[10px] text-textMuted font-mono">Curva de Equity & Balance de Unidades</p>
+            <h2 class="text-xs font-bold text-white tracking-tight uppercase">Rendimiento Semanal</h2>
+            <p class="text-[10px] text-slate-400 font-mono">Curva de Equity &amp; Balance de Unidades</p>
           </div>
         </div>
         <div class="text-right">
-          <span class="inline-block text-[9px] font-bold font-mono px-2 py-0.5 rounded bg-accentGreen/15 text-accentGreen border border-accentGreen/30 uppercase tracking-wider mb-0.5">
-            Exclusivo Telegram
-          </span>
-          <div class="flex items-baseline justify-end gap-1">
-            <span class="text-[10px] text-textMuted uppercase font-mono">Balance Neto</span>
-            <span id="equityTotalUnidades" class="text-lg font-extrabold font-mono text-accentGreen">+0.00 U.</span>
-          </div>
+          <span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 uppercase">Exclusivo Telegram</span>
+          <div class="text-xs font-mono font-black text-brand-accent mt-0.5" id="headerBalanceTG">+0.00 U.</div>
         </div>
       </div>
-
-      <div class="bg-surfaceCard/70 border border-borderDark/80 rounded-xl p-2.5 flex items-start gap-2">
-        <svg class="w-4 h-4 text-accentCyan shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        <p class="text-[11px] text-textSecondary leading-relaxed">
-          Métricas calculadas <strong class="text-white">exclusivamente</strong> sobre las alertas oficiales emitidas al <a href="https://t.me/apex_quant_alertas" target="_blank" class="text-[#0088cc] underline font-semibold">canal de Telegram</a>.
-        </p>
+      <div class="bg-slate-900/40 rounded-xl p-2 border border-brand-border/40 text-[10px] text-slate-300 font-mono flex items-start space-x-1.5">
+        <span class="text-sky-400 text-xs">ℹ️</span>
+        <span>Métricas calculadas <strong>exclusivamente</strong> sobre las alertas oficiales emitidas al <a href="https://t.me/apex_quant_alertas" class="text-sky-400 underline">canal de Telegram</a>.</span>
       </div>
-
-      <div class="grid grid-cols-3 gap-2 text-center pt-1">
-        <div class="bg-surfaceCard border border-borderDark/70 rounded-xl p-2">
-          <p class="text-[9px] text-textMuted font-mono uppercase font-bold">Yield / ROI</p>
-          <p id="equityRoi" class="text-sm font-extrabold font-mono text-accentGreen mt-0.5">+0.0%</p>
+      <div class="grid grid-cols-3 gap-2 pt-1 text-center font-mono">
+        <div class="p-2 rounded-xl bg-slate-900/50 border border-brand-border/30">
+          <span class="text-[9px] text-slate-400 block uppercase">Yield / ROI</span>
+          <span id="roiValueTG" class="text-xs font-black text-brand-accent">+0.0%</span>
         </div>
-        <div class="bg-surfaceCard border border-borderDark/70 rounded-xl p-2">
-          <p class="text-[9px] text-textMuted font-mono uppercase font-bold">Unidades Ganadas</p>
-          <p id="equityUnidades" class="text-sm font-extrabold font-mono text-accentGreen mt-0.5">+0.00 U.</p>
+        <div class="p-2 rounded-xl bg-slate-900/50 border border-brand-border/30">
+          <span class="text-[9px] text-slate-400 block uppercase">Unidades Ganadas</span>
+          <span id="unidadesValueTG" class="text-xs font-black text-brand-accent">+0.00 U.</span>
         </div>
-        <div class="bg-surfaceCard border border-borderDark/70 rounded-xl p-2">
-          <p class="text-[9px] text-textMuted font-mono uppercase font-bold">Stake Apostado</p>
-          <p id="equityStakeTotal" class="text-sm font-extrabold font-mono text-white mt-0.5">0.0 U.</p>
+        <div class="p-2 rounded-xl bg-slate-900/50 border border-brand-border/30">
+          <span class="text-[9px] text-slate-400 block uppercase">Stake Apostado</span>
+          <span id="stakeValueTG" class="text-xs font-black text-slate-200">0.0 U.</span>
         </div>
       </div>
-
-      <div class="pt-1">
-        <div class="flex items-center justify-between text-[10px] text-textMuted font-mono mb-1.5">
-          <span class="flex items-center gap-1.5">
-            <span class="w-1.5 h-1.5 rounded-full bg-accentGreen"></span>
-            Curva de Crecimiento Bankroll (Alertas TG)
-          </span>
-          <span id="equityPicksCount">0 picks evaluados</span>
+      <div class="space-y-1 pt-1">
+        <div class="flex items-center justify-between text-[10px] font-mono text-slate-400">
+          <span class="flex items-center space-x-1"><span class="w-1.5 h-1.5 rounded-full bg-brand-accent"></span><span>Curva de Crecimiento Bankroll (Alertas TG)</span></span>
+          <span id="picksCountTG">0 picks evaluados</span>
         </div>
-        <div class="h-14 w-full bg-surfaceCard/90 border border-borderDark/80 rounded-xl p-1.5 relative overflow-hidden flex items-end">
-          <svg id="svgEquityCurve" class="w-full h-full equity-glow" viewBox="0 0 100 40" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="equityGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#00f59b" stop-opacity="0.35"/>
-                <stop offset="100%" stop-color="#00f59b" stop-opacity="0.0"/>
-              </linearGradient>
-            </defs>
-            <path id="equityAreaPath" d="M 0 35 L 100 35 Z" fill="url(#equityGrad)"/>
-            <path id="equityLinePath" d="M 0 35 L 100 35" fill="none" stroke="#00f59b" stroke-width="2" stroke-linecap="round"/>
-          </svg>
+        <div class="h-14 w-full bg-slate-950/60 rounded-xl border border-brand-border/40 p-1 flex items-center justify-center overflow-hidden">
+          <svg id="equityChartTG" class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 300 60"><path d="M 0 30 L 300 30" fill="none" stroke="#00f59b" stroke-width="2" stroke-linecap="round"/></svg>
         </div>
       </div>
     </div>
 
-    <!-- TARJETA 2: RENDIMIENTO SEMANAL (SIN ALERTA) -->
-    <div class="bg-surface border border-borderDark rounded-2xl p-4 shadow-md space-y-3">
-      <div class="flex items-center justify-between border-b border-borderDark/60 pb-2.5">
-        <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-lg bg-slate-700/20 border border-slate-500/30 flex items-center justify-center text-slate-400">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-            </svg>
+    <!-- 2. SIN ALERTA -->
+    <div class="rounded-2xl bg-brand-card border border-brand-border p-3.5 space-y-2.5 shadow-md">
+      <div class="flex items-center justify-between border-b border-brand-border/50 pb-2">
+        <div class="flex items-center space-x-2">
+          <div class="w-6 h-6 rounded-lg bg-slate-500/10 border border-slate-500/30 flex items-center justify-center text-slate-400">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
           </div>
           <div>
-            <h2 class="text-xs font-bold text-white uppercase tracking-wider font-mono">Rendimiento Semanal</h2>
-            <p class="text-[10px] text-textMuted font-mono">Curva de Equity & Balance de Unidades</p>
+            <h2 class="text-xs font-bold text-white tracking-tight uppercase">Rendimiento Semanal</h2>
+            <p class="text-[10px] text-slate-400 font-mono">Curva de Equity &amp; Balance de Unidades</p>
           </div>
         </div>
         <div class="text-right">
-          <span class="inline-block text-[9px] font-bold font-mono px-2 py-0.5 rounded bg-slate-700/30 text-slate-300 border border-slate-500/40 uppercase tracking-wider mb-0.5">
-            Sin Alerta
-          </span>
-          <div class="flex items-baseline justify-end gap-1">
-            <span class="text-[10px] text-textMuted uppercase font-mono">Balance Neto</span>
-            <span id="equityTotalUnidadesNoTg" class="text-lg font-extrabold font-mono text-slate-300">+0.00 U.</span>
-          </div>
+          <span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-slate-500/20 text-slate-300 border border-slate-500/30 uppercase">Sin Alerta</span>
+          <div class="text-xs font-mono font-black text-slate-200 mt-0.5" id="headerBalanceNoTG">+0.00 U.</div>
         </div>
       </div>
-
-      <div class="bg-surfaceCard/70 border border-borderDark/80 rounded-xl p-2.5 flex items-start gap-2">
-        <svg class="w-4 h-4 text-slate-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        <p class="text-[11px] text-textSecondary leading-relaxed">
-          Métricas calculadas sobre los pronósticos evaluados que <strong class="text-white">no se enviaron</strong> a Telegram.
-        </p>
+      <div class="bg-slate-900/40 rounded-xl p-2 border border-brand-border/40 text-[10px] text-slate-300 font-mono flex items-start space-x-1.5">
+        <span class="text-slate-400 text-xs">ℹ️</span>
+        <span>Métricas calculadas sobre los pronósticos evaluados que <strong>no se enviaron</strong> a Telegram.</span>
       </div>
-
-      <div class="grid grid-cols-3 gap-2 text-center pt-1">
-        <div class="bg-surfaceCard border border-borderDark/70 rounded-xl p-2">
-          <p class="text-[9px] text-textMuted font-mono uppercase font-bold">Yield / ROI</p>
-          <p id="equityRoiNoTg" class="text-sm font-extrabold font-mono text-slate-300 mt-0.5">+0.0%</p>
+      <div class="grid grid-cols-3 gap-2 pt-1 text-center font-mono">
+        <div class="p-2 rounded-xl bg-slate-900/50 border border-brand-border/30">
+          <span class="text-[9px] text-slate-400 block uppercase">Yield / ROI</span>
+          <span id="roiValueNoTG" class="text-xs font-black text-slate-300">+0.0%</span>
         </div>
-        <div class="bg-surfaceCard border border-borderDark/70 rounded-xl p-2">
-          <p class="text-[9px] text-textMuted font-mono uppercase font-bold">Unidades Ganadas</p>
-          <p id="equityUnidadesNoTg" class="text-sm font-extrabold font-mono text-slate-300 mt-0.5">+0.00 U.</p>
+        <div class="p-2 rounded-xl bg-slate-900/50 border border-brand-border/30">
+          <span class="text-[9px] text-slate-400 block uppercase">Unidades Ganadas</span>
+          <span id="unidadesValueNoTG" class="text-xs font-black text-slate-300">+0.00 U.</span>
         </div>
-        <div class="bg-surfaceCard border border-borderDark/70 rounded-xl p-2">
-          <p class="text-[9px] text-textMuted font-mono uppercase font-bold">Stake Apostado</p>
-          <p id="equityStakeTotalNoTg" class="text-sm font-extrabold font-mono text-white mt-0.5">0.0 U.</p>
+        <div class="p-2 rounded-xl bg-slate-900/50 border border-brand-border/30">
+          <span class="text-[9px] text-slate-400 block uppercase">Stake Apostado</span>
+          <span id="stakeValueNoTG" class="text-xs font-black text-slate-200">0.0 U.</span>
         </div>
       </div>
-
-      <div class="pt-1">
-        <div class="flex items-center justify-between text-[10px] text-textMuted font-mono mb-1.5">
-          <span class="flex items-center gap-1.5">
-            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-            Curva de Crecimiento Bankroll (Sin Alerta)
-          </span>
-          <span id="equityPicksCountNoTg">0 picks evaluados</span>
+      <div class="space-y-1 pt-1">
+        <div class="flex items-center justify-between text-[10px] font-mono text-slate-400">
+          <span class="flex items-center space-x-1"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span><span>Curva de Crecimiento Bankroll (Sin Alerta)</span></span>
+          <span id="picksCountNoTG">0 picks evaluados</span>
         </div>
-        <div class="h-14 w-full bg-surfaceCard/90 border border-borderDark/80 rounded-xl p-1.5 relative overflow-hidden flex items-end">
-          <svg id="svgEquityCurveNoTg" class="w-full h-full equity-glow-slate" viewBox="0 0 100 40" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="equityGradNoTg" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#94a3b8" stop-opacity="0.30"/>
-                <stop offset="100%" stop-color="#94a3b8" stop-opacity="0.0"/>
-              </linearGradient>
-            </defs>
-            <path id="equityAreaPathNoTg" d="M 0 35 L 100 35 Z" fill="url(#equityGradNoTg)"/>
-            <path id="equityLinePathNoTg" d="M 0 35 L 100 35" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
-          </svg>
+        <div class="h-14 w-full bg-slate-950/60 rounded-xl border border-brand-border/40 p-1 flex items-center justify-center overflow-hidden">
+          <svg id="equityChartNoTG" class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 300 60"><path d="M 0 30 L 300 30" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/></svg>
         </div>
       </div>
     </div>
 
-    <!-- TARJETA 3: RENDIMIENTO SEMANAL (GLOBAL TOTAL) -->
-    <div class="bg-surface border border-borderDark rounded-2xl p-4 shadow-md space-y-3">
-      <div class="flex items-center justify-between border-b border-borderDark/60 pb-2.5">
-        <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-lg bg-accentCyan/15 border border-accentCyan/30 flex items-center justify-center text-accentCyan">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
+    <!-- 3. GLOBAL TOTAL -->
+    <div class="rounded-2xl bg-brand-card border border-brand-border p-3.5 space-y-2.5 shadow-md">
+      <div class="flex items-center justify-between border-b border-brand-border/50 pb-2">
+        <div class="flex items-center space-x-2">
+          <div class="w-6 h-6 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           </div>
           <div>
-            <h2 class="text-xs font-bold text-white uppercase tracking-wider font-mono">Rendimiento Semanal</h2>
-            <p class="text-[10px] text-textMuted font-mono">Curva de Equity & Balance de Unidades</p>
+            <h2 class="text-xs font-bold text-white tracking-tight uppercase">Rendimiento Semanal</h2>
+            <p class="text-[10px] text-slate-400 font-mono">Curva de Equity &amp; Balance de Unidades</p>
           </div>
         </div>
         <div class="text-right">
-          <span class="inline-block text-[9px] font-bold font-mono px-2 py-0.5 rounded bg-accentCyan/15 text-accentCyan border border-accentCyan/30 uppercase tracking-wider mb-0.5">
-            Global Total
-          </span>
-          <div class="flex items-baseline justify-end gap-1">
-            <span class="text-[10px] text-textMuted uppercase font-mono">Balance Neto</span>
-            <span id="equityTotalUnidadesGlobal" class="text-lg font-extrabold font-mono text-accentCyan">+0.00 U.</span>
-          </div>
+          <span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30 uppercase">Global Total</span>
+          <div class="text-xs font-mono font-black text-sky-400 mt-0.5" id="headerBalanceGlobal">+0.00 U.</div>
         </div>
       </div>
-
-      <div class="bg-surfaceCard/70 border border-borderDark/80 rounded-xl p-2.5 flex items-start gap-2">
-        <svg class="w-4 h-4 text-accentCyan shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        <p class="text-[11px] text-textSecondary leading-relaxed">
-          Métricas consolidadas del <strong class="text-white">universo total</strong> (suma unificada de Telegram + Sin Alerta).
-        </p>
+      <div class="bg-slate-900/40 rounded-xl p-2 border border-brand-border/40 text-[10px] text-slate-300 font-mono flex items-start space-x-1.5">
+        <span class="text-sky-400 text-xs">ℹ️</span>
+        <span>Métricas consolidadas del <strong>universo total</strong> (suma unificada de Telegram + Sin Alerta).</span>
       </div>
-
-      <div class="grid grid-cols-3 gap-2 text-center pt-1">
-        <div class="bg-surfaceCard border border-borderDark/70 rounded-xl p-2">
-          <p class="text-[9px] text-textMuted font-mono uppercase font-bold">Yield / ROI</p>
-          <p id="equityRoiGlobal" class="text-sm font-extrabold font-mono text-accentCyan mt-0.5">+0.0%</p>
+      <div class="grid grid-cols-3 gap-2 pt-1 text-center font-mono">
+        <div class="p-2 rounded-xl bg-slate-900/50 border border-brand-border/30">
+          <span class="text-[9px] text-slate-400 block uppercase">Yield / ROI</span>
+          <span id="roiValueGlobal" class="text-xs font-black text-sky-400">+0.0%</span>
         </div>
-        <div class="bg-surfaceCard border border-borderDark/70 rounded-xl p-2">
-          <p class="text-[9px] text-textMuted font-mono uppercase font-bold">Unidades Ganadas</p>
-          <p id="equityUnidadesGlobal" class="text-sm font-extrabold font-mono text-accentCyan mt-0.5">+0.00 U.</p>
+        <div class="p-2 rounded-xl bg-slate-900/50 border border-brand-border/30">
+          <span class="text-[9px] text-slate-400 block uppercase">Unidades Ganadas</span>
+          <span id="unidadesValueGlobal" class="text-xs font-black text-sky-400">+0.00 U.</span>
         </div>
-        <div class="bg-surfaceCard border border-borderDark/70 rounded-xl p-2">
-          <p class="text-[9px] text-textMuted font-mono uppercase font-bold">Stake Apostado</p>
-          <p id="equityStakeTotalGlobal" class="text-sm font-extrabold font-mono text-white mt-0.5">0.0 U.</p>
+        <div class="p-2 rounded-xl bg-slate-900/50 border border-brand-border/30">
+          <span class="text-[9px] text-slate-400 block uppercase">Stake Apostado</span>
+          <span id="stakeValueGlobal" class="text-xs font-black text-slate-200">0.0 U.</span>
         </div>
       </div>
-
-      <div class="pt-1">
-        <div class="flex items-center justify-between text-[10px] text-textMuted font-mono mb-1.5">
-          <span class="flex items-center gap-1.5">
-            <span class="w-1.5 h-1.5 rounded-full bg-accentCyan"></span>
-            Curva de Crecimiento Bankroll (Global Total)
-          </span>
-          <span id="equityPicksCountGlobal">0 picks evaluados</span>
+      <div class="space-y-1 pt-1">
+        <div class="flex items-center justify-between text-[10px] font-mono text-slate-400">
+          <span class="flex items-center space-x-1"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span><span>Curva de Crecimiento Bankroll (Global Total)</span></span>
+          <span id="picksCountGlobal">0 picks evaluados</span>
         </div>
-        <div class="h-14 w-full bg-surfaceCard/90 border border-borderDark/80 rounded-xl p-1.5 relative overflow-hidden flex items-end">
-          <svg id="svgEquityCurveGlobal" class="w-full h-full equity-glow-cyan" viewBox="0 0 100 40" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="equityGradGlobal" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.35"/>
-                <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.0"/>
-              </linearGradient>
-            </defs>
-            <path id="equityAreaPathGlobal" d="M 0 35 L 100 35 Z" fill="url(#equityGradGlobal)"/>
-            <path id="equityLinePathGlobal" d="M 0 35 L 100 35" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"/>
-          </svg>
+        <div class="h-14 w-full bg-slate-950/60 rounded-xl border border-brand-border/40 p-1 flex items-center justify-center overflow-hidden">
+          <svg id="equityChartGlobal" class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 300 60"><path d="M 0 30 L 300 30" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"/></svg>
         </div>
       </div>
     </div>
 
-    <!-- TRIPLE BLOQUE DE EFECTIVIDAD -->
+    <!-- TRIPLE EFECTIVIDAD SEMANAL -->
     <div class="space-y-1.5">
-      <div class="flex items-center justify-between px-1 text-[11px] font-mono text-textMuted">
-        <span class="flex items-center gap-1.5">
-          <span class="w-1.5 h-1.5 rounded-full bg-accentCyan"></span>
-          Semana actual
-        </span>
+      <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 px-1">
+        <span class="flex items-center space-x-1"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span><span>Semana actual</span></span>
         <span>Reinicio oficial cada lunes 00:00h</span>
       </div>
       <div class="grid grid-cols-3 gap-2">
-        <div class="bg-surface border border-accentGreen/30 rounded-2xl p-3 text-center">
-          <p class="text-[10px] font-bold text-accentGreen uppercase tracking-wider font-mono flex items-center justify-center gap-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-accentGreen"></span> TELEGRAM
-          </p>
-          <p id="efectividadTelegram" class="text-lg font-extrabold font-mono text-white mt-0.5">--%</p>
-          <p id="recordTelegram" class="text-[10px] text-textSecondary font-mono mt-0.5">0V - 0D TG</p>
+        <div class="rounded-xl bg-brand-card border border-brand-border p-2.5 text-center">
+          <span class="text-[9px] font-mono font-semibold text-emerald-400 uppercase tracking-wider block">● Telegram</span>
+          <span id="efectividadTG" class="text-base font-mono font-black text-white">--%</span>
+          <span id="efectividadDetalleTG" class="text-[9px] font-mono text-slate-400 block">0V - 0D TG</span>
         </div>
-        <div class="bg-surface border border-borderDark rounded-2xl p-3 text-center">
-          <p class="text-[10px] font-bold text-textMuted uppercase tracking-wider font-mono">SIN ALERTA</p>
-          <p id="efectividadNoTelegram" class="text-lg font-extrabold font-mono text-textSecondary mt-0.5">--%</p>
-          <p id="recordNoTelegram" class="text-[10px] text-textSecondary font-mono mt-0.5">0V - 0D No TG</p>
+        <div class="rounded-xl bg-brand-card border border-brand-border p-2.5 text-center">
+          <span class="text-[9px] font-mono font-semibold text-slate-400 uppercase tracking-wider block">Sin Alerta</span>
+          <span id="efectividadNoTG" class="text-base font-mono font-black text-white">--%</span>
+          <span id="efectividadDetalleNoTG" class="text-[9px] font-mono text-slate-400 block">0V - 0D No TG</span>
         </div>
-        <div class="bg-surface border border-borderDark rounded-2xl p-3 text-center">
-          <p class="text-[10px] font-bold text-textMuted uppercase tracking-wider font-mono">GLOBAL TOTAL</p>
-          <p id="efectividadGlobal" class="text-lg font-extrabold font-mono text-white mt-0.5">--%</p>
-          <p id="recordGlobal" class="text-[10px] text-textSecondary font-mono mt-0.5">0V - 0D Total</p>
+        <div class="rounded-xl bg-brand-card border border-brand-border p-2.5 text-center">
+          <span class="text-[9px] font-mono font-semibold text-sky-400 uppercase tracking-wider block">Global Total</span>
+          <span id="efectividadGlobal" class="text-base font-mono font-black text-white">--%</span>
+          <span id="efectividadDetalleGlobal" class="text-[9px] font-mono text-slate-400 block">0V - 0D Total</span>
         </div>
       </div>
     </div>
 
-    <!-- SELECTOR DE PESTAÑAS (EN JUEGO / HOY vs FINALIZADOS vs ALERTAS) -->
-    <div class="grid grid-cols-3 gap-1.5 p-1 bg-surface border border-borderDark rounded-2xl">
-      <button id="tabActivos" onclick="cambiarTab('activos')" class="py-2.5 px-2 rounded-xl text-xs font-bold font-mono transition text-bgDark bg-accentGreen shadow-sm flex items-center justify-center gap-1">
-        <span>En Juego / Hoy</span>
-        <span id="countActivos" class="text-[10px] font-semibold opacity-80">(0)</span>
+    <!-- PESTAÑAS PRINCIPALES CON CONTADORES EXACTOS -->
+    <div class="flex rounded-xl bg-slate-900/80 p-1 border border-brand-border">
+      <button id="tabPartidos" onclick="cambiarVista('partidos')" class="flex-1 py-2 rounded-lg text-xs font-mono font-bold transition-all text-slate-900 bg-brand-accent shadow">
+        En Juego / Hoy <span id="countPartidos" class="text-[10px] opacity-80">(0)</span>
       </button>
-      <button id="tabFinalizados" onclick="cambiarTab('finalizados')" class="py-2.5 px-2 rounded-xl text-xs font-bold font-mono transition text-textSecondary hover:text-white flex items-center justify-center gap-1">
-        <span>Finalizados</span>
-        <span id="countFinalizados" class="text-[10px] font-semibold opacity-80">(0)</span>
+      <button id="tabFinalizados" onclick="cambiarVista('finalizados')" class="flex-1 py-2 rounded-lg text-xs font-mono font-bold transition-all text-slate-400 hover:text-white">
+        Finalizados <span id="countFinalizados" class="text-[10px] opacity-80">(0)</span>
       </button>
-      <button id="tabAlertas" onclick="cambiarTab('alertas')" class="py-2.5 px-2 rounded-xl text-xs font-bold font-mono transition text-textSecondary hover:text-white flex items-center justify-center gap-1">
-        <span>Alertas</span>
-        <span id="countAlertas" class="text-[10px] font-semibold opacity-80">(0)</span>
+      <button id="tabAlertas" onclick="cambiarVista('alertas')" class="flex-1 py-2 rounded-lg text-xs font-mono font-bold transition-all text-slate-400 hover:text-white">
+        Alertas <span id="countAlertas" class="text-[10px] opacity-80">(0)</span>
       </button>
     </div>
 
-    <!-- FILTRO DE LIGAS Y BOTÓN EN VIVO -->
-    <div class="space-y-2">
-      <div class="flex items-center justify-between text-xs text-textMuted font-mono">
-        <span class="tracking-wider uppercase font-bold text-[10px]">Competiciones</span>
-        <span id="labelSync">Sincronizando...</span>
+    <!-- FILTRO DE COMPETICIONES Y BOTÓN EN VIVO -->
+    <div id="seccionFiltros" class="space-y-2">
+      <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 px-1">
+        <span class="uppercase font-semibold">Competiciones</span>
+        <span id="syncText">Sincronizando...</span>
       </div>
-      <div class="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
-        <button id="btnFiltroLive" onclick="activarFiltroLive()" class="px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono bg-accentRed/15 text-accentRed border border-accentRed/40 whitespace-nowrap active:scale-95 transition flex items-center gap-1.5 hover:bg-accentRed/25">
-          <span class="w-2 h-2 rounded-full bg-accentRed live-pulse"></span>
+      <div class="flex items-center space-x-1.5 overflow-x-auto custom-scroll pb-1">
+        <button id="btnLiveFilter" onclick="toggleFiltroLive()" class="px-3 py-1.5 rounded-lg text-xs font-mono font-bold whitespace-nowrap bg-brand-card text-brand-danger border border-brand-danger/30 flex items-center space-x-1 hover:border-brand-danger">
+          <span class="w-2 h-2 rounded-full bg-brand-danger animate-pulse"></span>
           <span>EN VIVO</span>
         </button>
-        <button onclick="filtrarLiga('all')" class="filtro-btn px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono bg-accentGreen text-bgDark whitespace-nowrap transition" data-liga="all">Todas</button>
-        <button onclick="filtrarLiga('laliga')" class="filtro-btn px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono bg-surface text-textSecondary border border-borderDark whitespace-nowrap transition hover:text-white" data-liga="laliga">LaLiga (ESP)</button>
-        <button onclick="filtrarLiga('laliga2')" class="filtro-btn px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono bg-surface text-textSecondary border border-borderDark whitespace-nowrap transition hover:text-white" data-liga="laliga2">LaLiga 2 (ESP)</button>
-        <button onclick="filtrarLiga('premier')" class="filtro-btn px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono bg-surface text-textSecondary border border-borderDark whitespace-nowrap transition hover:text-white" data-liga="premier">Premier (ENG)</button>
-        <button onclick="filtrarLiga('bundesliga')" class="filtro-btn px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono bg-surface text-textSecondary border border-borderDark whitespace-nowrap transition hover:text-white" data-liga="bundesliga">Bundesliga (GER)</button>
-        <button onclick="filtrarLiga('seriea')" class="filtro-btn px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono bg-surface text-textSecondary border border-borderDark whitespace-nowrap transition hover:text-white" data-liga="seriea">Serie A (ITA)</button>
-        <button onclick="filtrarLiga('ligue1')" class="filtro-btn px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono bg-surface text-textSecondary border border-borderDark whitespace-nowrap transition hover:text-white" data-liga="ligue1">Ligue 1 (FRA)</button>
-        <button onclick="filtrarLiga('champions')" class="filtro-btn px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono bg-surface text-textSecondary border border-borderDark whitespace-nowrap transition hover:text-white" data-liga="champions">Champions (UEFA)</button>
+        <button onclick="filtrarLiga('all')" class="pill-liga px-3 py-1.5 rounded-lg text-xs font-mono font-bold whitespace-nowrap bg-brand-accent text-slate-900 shadow">Todas</button>
+        <button onclick="filtrarLiga('laliga')" class="pill-liga px-3 py-1.5 rounded-lg text-xs font-mono font-semibold whitespace-nowrap bg-brand-card text-slate-300 border border-brand-border hover:border-slate-600">LaLiga (ESP)</button>
+        <button onclick="filtrarLiga('laliga2')" class="pill-liga px-3 py-1.5 rounded-lg text-xs font-mono font-semibold whitespace-nowrap bg-brand-card text-slate-300 border border-brand-border hover:border-slate-600">LaLiga 2 (ESP)</button>
+        <button onclick="filtrarLiga('premier')" class="pill-liga px-3 py-1.5 rounded-lg text-xs font-mono font-semibold whitespace-nowrap bg-brand-card text-slate-300 border border-brand-border hover:border-slate-600">Premier (ENG)</button>
+        <button onclick="filtrarLiga('bundesliga')" class="pill-liga px-3 py-1.5 rounded-lg text-xs font-mono font-semibold whitespace-nowrap bg-brand-card text-slate-300 border border-brand-border hover:border-slate-600">Bundesliga (GER)</button>
+        <button onclick="filtrarLiga('seriea')" class="pill-liga px-3 py-1.5 rounded-lg text-xs font-mono font-semibold whitespace-nowrap bg-brand-card text-slate-300 border border-brand-border hover:border-slate-600">Serie A (ITA)</button>
+        <button onclick="filtrarLiga('ligue1')" class="pill-liga px-3 py-1.5 rounded-lg text-xs font-mono font-semibold whitespace-nowrap bg-brand-card text-slate-300 border border-brand-border hover:border-slate-600">Ligue 1 (FRA)</button>
+        <button onclick="filtrarLiga('champions')" class="pill-liga px-3 py-1.5 rounded-lg text-xs font-mono font-semibold whitespace-nowrap bg-brand-card text-slate-300 border border-brand-border hover:border-slate-600">Champions (UEFA)</button>
       </div>
     </div>
 
-    <!-- TÍTULO SECCIÓN DINÁMICA -->
-    <div class="flex items-center justify-between pt-1">
-      <h3 id="tituloSeccion" class="text-xs font-bold tracking-wider uppercase font-mono text-white">Encuentros Programados y en Vivo</h3>
-      <span class="text-[10px] font-mono text-accentGreen flex items-center gap-1">
-        <span class="w-1.5 h-1.5 rounded-full bg-accentGreen"></span>
-        hora peninsular (madrid)
-      </span>
-    </div>
-
-    <!-- CONTENEDOR DE PARTIDOS / ALERTAS -->
-    <div id="listaPartidos" class="space-y-3">
-      <div class="p-8 text-center bg-surface border border-borderDark rounded-2xl">
-        <div class="w-8 h-8 border-2 border-accentGreen border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-        <p class="text-xs text-textSecondary font-mono">Esperando datos de la última ejecución...</p>
-        <p class="text-[11px] text-textMuted font-mono mt-1">El archivo datos.json se generará automáticamente en el próximo ciclo.</p>
+    <!-- CONTENEDOR DE TARJETAS DINÁMICAS -->
+    <div id="contenedorPartidos" class="space-y-3">
+      <div class="rounded-2xl bg-brand-card border border-brand-border p-8 text-center space-y-3">
+        <div class="w-8 h-8 mx-auto border-2 border-brand-accent border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-xs text-slate-400 font-mono">Esperando datos de la última ejecución...<br>El archivo datos.json se generará automáticamente en el próximo ciclo.</p>
       </div>
     </div>
 
-  </main>
+    <div id="contenedorAlertas" class="hidden space-y-3"></div>
+
+  </div>
 
   <script>
-    // ESTADO GLOBAL
     const state = {
+      vistaActual: 'partidos',
+      filtroLiga: 'all',
+      filtroSoloLive: false,
       partidos: [],
       alertas: [],
-      tabActual: 'activos', // 'activos' | 'finalizados' | 'alertas'
-      filtroLiga: 'all',
-      filtroLiveActivo: false,
-      ultimaActualizacion: '--:--',
       semanaActiva: '',
       lunesSemana: '',
       domingoSemana: '',
-      metricasSemana: null
+      ultimaActualizacion: ''
     };
 
     function esDeLaSemanaActual(item, lunesLimite) {
       if (!item) return false;
       if (item.es_semana_actual === false) return false;
       const fechaStr = item.fecha || '';
-      if (fechaStr && fechaStr.length >= 10 && lunesLimite && lunesLimite.length >= 10) {
+      if (fechaStr && fechaStr.length >= 10 && lunesLimite) {
         const fechaSolo = fechaStr.substring(0, 10);
         if (fechaSolo < lunesLimite) return false;
       }
@@ -491,716 +352,502 @@
       return state.alertas.filter(a => esDeLaSemanaActual(a, lunesLimite));
     }
 
-    // REGISTRO SERVICE WORKER PWA
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then(() => console.log('SW registrado con éxito'))
-          .catch(err => console.log('Error registrando SW:', err));
+    function cambiarVista(vista) {
+      state.vistaActual = vista;
+      const btnP = document.getElementById('tabPartidos');
+      const btnF = document.getElementById('tabFinalizados');
+      const btnA = document.getElementById('tabAlertas');
+      const secF = document.getElementById('seccionFiltros');
+      const conP = document.getElementById('contenedorPartidos');
+      const conA = document.getElementById('contenedorAlertas');
+
+      [btnP, btnF, btnA].forEach(b => {
+        b.className = 'flex-1 py-2 rounded-lg text-xs font-mono font-bold transition-all text-slate-400 hover:text-white';
       });
+
+      if (vista === 'partidos') {
+        btnP.className = 'flex-1 py-2 rounded-lg text-xs font-mono font-bold transition-all text-slate-900 bg-brand-accent shadow';
+        secF.classList.remove('hidden');
+        conP.classList.remove('hidden');
+        conA.classList.add('hidden');
+        renderizarPartidos();
+      } else if (vista === 'finalizados') {
+        btnF.className = 'flex-1 py-2 rounded-lg text-xs font-mono font-bold transition-all text-slate-900 bg-brand-accent shadow';
+        secF.classList.remove('hidden');
+        conP.classList.remove('hidden');
+        conA.classList.add('hidden');
+        renderizarPartidos();
+      } else {
+        btnA.className = 'flex-1 py-2 rounded-lg text-xs font-mono font-bold transition-all text-slate-900 bg-brand-accent shadow';
+        secF.classList.add('hidden');
+        conP.classList.add('hidden');
+        conA.classList.remove('hidden');
+        renderizarAlertas();
+      }
     }
 
-    // CARGA DE DATOS REALES (datos.json)
-    async function recargarDatos(animarIcono = false) {
-      const icon = document.getElementById('iconReload');
-      if (animarIcono && icon) icon.classList.add('rotate-180');
+    function toggleFiltroLive() {
+      state.filtroSoloLive = !state.filtroSoloLive;
+      const btn = document.getElementById('btnLiveFilter');
+      if (state.filtroSoloLive) {
+        btn.className = 'px-3 py-1.5 rounded-lg text-xs font-mono font-bold whitespace-nowrap bg-brand-danger text-white border border-brand-danger flex items-center space-x-1 shadow-lg shadow-brand-danger/30';
+      } else {
+        btn.className = 'px-3 py-1.5 rounded-lg text-xs font-mono font-bold whitespace-nowrap bg-brand-card text-brand-danger border border-brand-danger/30 flex items-center space-x-1 hover:border-brand-danger';
+      }
+      renderizarPartidos();
+    }
+
+    function filtrarLiga(liga) {
+      state.filtroLiga = liga;
+      document.querySelectorAll('.pill-liga').forEach(btn => {
+        btn.className = 'pill-liga px-3 py-1.5 rounded-lg text-xs font-mono font-semibold whitespace-nowrap bg-brand-card text-slate-300 border border-brand-border hover:border-slate-600';
+      });
+      event.target.className = 'pill-liga px-3 py-1.5 rounded-lg text-xs font-mono font-bold whitespace-nowrap bg-brand-accent text-slate-900 shadow';
+      renderizarPartidos();
+    }
+
+    function renderizarRachas(rachaStr) {
+      if (!rachaStr) return '';
+      const parts = rachaStr.split('-');
+      return parts.map(res => {
+        const r = res.trim().toUpperCase();
+        if (r === 'W') return '<span class="inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-mono font-black bg-emerald-500 text-slate-950 shadow-sm">W</span>';
+        if (r === 'D') return '<span class="inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-mono font-black bg-amber-500 text-slate-950 shadow-sm">D</span>';
+        return '<span class="inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-mono font-black bg-rose-500 text-white shadow-sm">L</span>';
+      }).join(' ');
+    }
+
+    function renderizarBadgeMercado(tipoMercado, mercadoTexto) {
+      const tm = (tipoMercado || '').toUpperCase();
+      const mt = (mercadoTexto || '').toLowerCase();
+      if (tm.includes('DOUBLE_CHANCE') || mt.includes('doble oportunidad')) {
+        return '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">🛡️ DOBLE OPORTUNIDAD</span>';
+      }
+      if (tm === 'BTTS' || mt.includes('ambos')) {
+        return '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">🤝 AMBOS MARCAN</span>';
+      }
+      if (tm === 'OVER_15' || mt.includes('1.5')) {
+        return '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">⚽ MÁS DE 1.5 GOLES</span>';
+      }
+      if (tm === 'GOLES' || tm === 'GOLES_HT' || mt.includes('2.5') || mt.includes('goles')) {
+        return '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-sky-500/10 text-sky-400 border border-sky-500/30">🥅 GOLES TOTALES</span>';
+      }
+      return '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-purple-500/10 text-purple-400 border border-purple-500/30">1X2 GANADOR</span>';
+    }
+
+    function renderizarPartidos() {
+      const contenedor = document.getElementById('contenedorPartidos');
+      const esFinalizados = state.vistaActual === 'finalizados';
+      const lunesLimite = state.lunesSemana || '';
+
+      let lista = state.partidos.filter(p => {
+        const estado = (p.estado || '').toUpperCase();
+        const finalizado = estado === 'FINISHED' || estado === 'FINALIZADO' || estado === 'AWARDED' || p.finalizado === true;
+        if (esFinalizados) {
+          if (!finalizado) return false;
+          // Retención continua de la semana ISO actual
+          if (!esDeLaSemanaActual(p, lunesLimite)) return false;
+          return true;
+        } else {
+          return !finalizado;
+        }
+      });
+
+      if (state.filtroSoloLive && !esFinalizados) {
+        lista = lista.filter(p => {
+          const est = (p.estado || '').toUpperCase();
+          return est === 'IN_PLAY' || est === 'PAUSED' || est === 'HT' || est === 'LIVE' || (p.minutos_restantes !== undefined && p.minutos_restantes <= 0);
+        });
+      }
+
+      if (state.filtroLiga !== 'all') {
+        lista = lista.filter(p => p.liga_key === state.filtroLiga);
+      }
+
+      const totalFinalizadosSemana = state.partidos.filter(p => {
+        const est = (p.estado || '').toUpperCase();
+        const fin = est === 'FINISHED' || est === 'FINALIZADO' || est === 'AWARDED' || p.finalizado === true;
+        return fin && esDeLaSemanaActual(p, lunesLimite);
+      }).length;
+
+      const totalActivos = state.partidos.filter(p => {
+        const est = (p.estado || '').toUpperCase();
+        return est !== 'FINISHED' && est !== 'FINALIZADO' && est !== 'AWARDED' && p.finalizado !== true;
+      }).length;
+
+      const totalAlertasSemana = obtenerAlertasSemanaActual().length;
+
+      document.getElementById('countPartidos').innerText = `(${totalActivos})`;
+      document.getElementById('countFinalizados').innerText = `(${totalFinalizadosSemana})`;
+      document.getElementById('countAlertas').innerText = `(${totalAlertasSemana})`;
+      document.getElementById('statPartidos').innerText = state.partidos.length.toString();
+
+      if (lista.length === 0) {
+        contenedor.innerHTML = `
+          <div class="rounded-2xl bg-brand-card border border-brand-border p-8 text-center space-y-2">
+            <p class="text-sm font-semibold text-slate-300">No hay partidos en esta sección</p>
+            <p class="text-xs text-slate-400 font-mono">
+              ${esFinalizados 
+                ? 'Todos los partidos finalizados de la semana se acumulan aquí automáticamente.' 
+                : 'Todos los encuentros han finalizado o están programados para más tarde.'}
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      contenedor.innerHTML = lista.map(p => {
+        const est = (p.estado || '').toUpperCase();
+        const esFin = est === 'FINISHED' || est === 'FINALIZADO' || est === 'AWARDED' || p.finalizado === true;
+        const esLive = est === 'IN_PLAY' || est === 'PAUSED' || est === 'HT' || est === 'LIVE';
+
+        let badgeEstado = '';
+        if (esFin) {
+          if (p.acertado === true) {
+            badgeEstado = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">✓ ACERTADO</span>';
+          } else if (p.acertado === false) {
+            badgeEstado = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30">✕ PERDIDO</span>';
+          } else {
+            badgeEstado = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-800 text-slate-300 border border-slate-700">FINALIZADO</span>';
+          }
+        } else if (esLive) {
+          badgeEstado = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30 animate-pulse"><span class="w-1.5 h-1.5 rounded-full bg-rose-500 mr-1"></span>EN JUEGO ${p.minuto_juego ? '(' + p.minuto_juego + ')' : ''}</span>`;
+        } else {
+          badgeEstado = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-700">PROGRAMADO</span>';
+        }
+
+        const marcadorBox = (p.marcador || (p.goles_local !== null && p.goles_local !== undefined ? `${p.goles_local} - ${p.goles_visitante}` : null))
+          ? `<span class="px-2.5 py-0.5 rounded-md bg-slate-900 border border-brand-border text-xs font-mono font-black text-brand-accent tracking-wider shadow-inner">${p.marcador || `${p.goles_local} - ${p.goles_visitante}`}</span>`
+          : '';
+
+        const formInfo = p.form_info || {};
+        const rachaLocalHtml = renderizarRachas(formInfo.racha_local);
+        const rachaVisHtml = renderizarRachas(formInfo.racha_visitante);
+        const tendenciaHtml = formInfo.tendencia ? `<div class="text-[10px] font-mono text-slate-400 mt-1">${formInfo.tendencia}</div>` : '';
+
+        const badgeMercadoHtml = renderizarBadgeMercado(p.tipo_mercado, p.mercado);
+
+        return `
+          <div class="rounded-2xl bg-brand-card border border-brand-border p-3.5 space-y-3 shadow-md hover:border-slate-700 transition-all">
+            <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 border-b border-brand-border/40 pb-2">
+              <span class="font-semibold text-slate-300 truncate max-w-[130px]">${p.liga || 'Competición'}</span>
+              <div class="flex items-center space-x-1.5">
+                <span class="text-slate-400">${p.fecha_hora_display || `${p.fecha || ''} • ${p.hora || ''}`}</span>
+                ${marcadorBox}
+                ${badgeEstado}
+              </div>
+            </div>
+
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  ${p.escudo_local ? `<img src="${p.escudo_local}" class="w-5 h-5 object-contain" alt="">` : ''}
+                  <span class="text-sm font-bold text-white tracking-tight">${p.local}</span>
+                </div>
+                <div class="text-[10px] font-mono text-slate-400">CUOTA VALOR</div>
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  ${p.escudo_visitante ? `<img src="${p.escudo_visitante}" class="w-5 h-5 object-contain" alt="">` : ''}
+                  <span class="text-sm font-bold text-white tracking-tight">${p.visitante}</span>
+                </div>
+                <div class="text-base font-mono font-black text-brand-accent">@${p.cuota || '2.00'}</div>
+              </div>
+            </div>
+
+            <div class="bg-slate-900/60 rounded-xl p-2.5 border border-brand-border/40 space-y-1.5">
+              <div class="flex items-center justify-between">
+                ${badgeMercadoHtml}
+                <span class="text-[10px] font-mono font-bold text-brand-accent bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">${p.ev || '+7.5%'}</span>
+              </div>
+              <div class="text-xs font-semibold text-slate-200">
+                PRONÓSTICO: <span class="text-white font-bold">${p.mercado}</span>
+              </div>
+              ${rachaLocalHtml ? `
+                <div class="pt-1 border-t border-brand-border/30">
+                  <div class="flex items-center justify-between text-[10px] font-mono text-slate-400">
+                    <span>RACHA:</span>
+                    <div class="flex items-center space-x-1">
+                      <div class="flex items-center space-x-0.5">${rachaLocalHtml}</div>
+                      <span class="text-[9px] text-slate-400">vs</span>
+                      <div class="flex items-center space-x-0.5">${rachaVisHtml}</div>
+                    </div>
+                  </div>
+                  ${tendenciaHtml}
+                </div>
+              ` : ''}
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 pt-0.5 font-mono text-center">
+              <div class="p-2 rounded-xl bg-slate-900/40 border border-brand-border/30">
+                <span class="text-[9px] text-slate-400 block uppercase">Prob. Modelo</span>
+                <span class="text-xs font-bold text-slate-200">${p.prob_modelo || '65.0%'}</span>
+              </div>
+              <div class="p-2 rounded-xl bg-slate-900/40 border border-brand-border/30">
+                <span class="text-[9px] text-slate-400 block uppercase">Ventaja</span>
+                <span class="text-xs font-bold text-brand-accent">${p.ev || '+7.5%'}</span>
+              </div>
+              <div class="p-2 rounded-xl bg-slate-900/40 border border-brand-border/30">
+                <span class="text-[9px] text-slate-400 block uppercase">Stake Sug.</span>
+                <span class="text-xs font-bold text-sky-400">${p.stake ? p.stake + '/10 U.' : '2/10 U.'}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderizarAlertas() {
+      const contenedor = document.getElementById('contenedorAlertas');
+      const alertasSemana = obtenerAlertasSemanaActual();
+
+      if (alertasSemana.length === 0) {
+        contenedor.innerHTML = `
+          <div class="rounded-2xl bg-brand-card border border-brand-border p-8 text-center space-y-2">
+            <p class="text-sm font-semibold text-slate-300">Historial de Alertas de la Semana</p>
+            <p class="text-xs text-slate-400 font-mono">Aún no se han emitido alertas oficiales esta semana.<br>Las alertas se acumulan de lunes a domingo y se reinician cada lunes a las 00:00h.</p>
+          </div>
+        `;
+        return;
+      }
+
+      contenedor.innerHTML = alertasSemana.slice().reverse().map(a => {
+        let badge = '';
+        if (a.finalizado) {
+          badge = a.acertado === true
+            ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">✓ ACERTADO</span>'
+            : '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30">✕ PERDIDO</span>';
+        } else {
+          badge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-sky-500/10 text-sky-400 border border-sky-500/30">EN CURSO</span>';
+        }
+
+        const marcadorFinalHtml = (a.marcador_final || a.marcador) 
+          ? `<span class="px-2 py-0.5 rounded bg-slate-900 border border-brand-border text-[11px] font-mono font-bold text-brand-accent">${a.marcador_final || a.marcador}</span>` 
+          : '';
+
+        const badgeMercado = renderizarBadgeMercado(a.tipo_mercado, a.mercado);
+
+        return `
+          <div class="rounded-2xl bg-brand-card border border-brand-border p-3.5 space-y-2.5 shadow-md">
+            <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 border-b border-brand-border/40 pb-2">
+              <span class="flex items-center space-x-1.5 text-sky-400 font-bold">
+                <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+                <span>Enviado a Telegram • ${a.fecha_hora_display || `${a.fecha || ''} • ${a.hora || ''}`}</span>
+              </span>
+              <div class="flex items-center space-x-1.5">
+                ${marcadorFinalHtml}
+                ${badge}
+              </div>
+            </div>
+            <div class="space-y-1">
+              <div class="text-sm font-bold text-white flex items-center space-x-2">
+                ${a.escudo_local ? `<img src="${a.escudo_local}" class="w-4 h-4 object-contain" alt="">` : ''}
+                <span>${a.partido || (a.local + ' vs ' + a.visitante)}</span>
+                ${a.escudo_visitante ? `<img src="${a.escudo_visitante}" class="w-4 h-4 object-contain" alt="">` : ''}
+              </div>
+              <div class="flex items-center space-x-2 pt-0.5">
+                ${badgeMercado}
+                <span class="text-xs font-semibold text-slate-200">${a.mercado}</span>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-2 pt-1 font-mono text-center">
+              <div class="p-1.5 rounded-lg bg-slate-900/40 border border-brand-border/30">
+                <span class="text-[9px] text-slate-400 block uppercase">Cuota</span>
+                <span class="text-xs font-bold text-slate-200">${a.cuota}</span>
+              </div>
+              <div class="p-1.5 rounded-lg bg-slate-900/40 border border-brand-border/30">
+                <span class="text-[9px] text-slate-400 block uppercase">Ventaja</span>
+                <span class="text-xs font-bold text-brand-accent">${a.ev}</span>
+              </div>
+              <div class="p-1.5 rounded-lg bg-slate-900/40 border border-brand-border/30">
+                <span class="text-[9px] text-slate-400 block uppercase">Stake</span>
+                <span class="text-xs font-bold text-sky-400">${a.stake}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function dibujarCurvaSVG(svgId, puntosArray, strokeColor, degradadoId) {
+      const svg = document.getElementById(svgId);
+      if (!svg) return;
+      if (!puntosArray || puntosArray.length === 0) {
+        svg.innerHTML = `<path d="M 0 30 L 300 30" fill="none" stroke="${strokeColor}" stroke-width="2" stroke-linecap="round"/>`;
+        return;
+      }
+
+      const vals = puntosArray.map(p => Number(p.unidades || 0));
+      let minVal = Math.min(0, ...vals);
+      let maxVal = Math.max(0.01, ...vals);
+      const span = maxVal - minVal || 1;
+
+      const n = vals.length;
+      const coords = vals.map((v, idx) => {
+        const x = (idx / (n - 1 || 1)) * 300;
+        const y = 50 - ((v - minVal) / span) * 40;
+        return { x: Math.round(x), y: Math.round(y) };
+      });
+
+      const pathLine = coords.map((c, i) => `${i === 0 ? 'M' : 'L'} ${c.x} ${c.y}`).join(' ');
+      const pathArea = `${pathLine} L ${coords[coords.length - 1].x} 60 L ${coords[0].x} 60 Z`;
+
+      svg.innerHTML = `
+        <defs>
+          <linearGradient id="${degradadoId}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${strokeColor}" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="${strokeColor}" stop-opacity="0.0"/>
+          </linearGradient>
+        </defs>
+        <path d="${pathArea}" fill="url(#${degradadoId})"/>
+        <path d="${pathLine}" fill="none" stroke="${strokeColor}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      `;
+    }
+
+    function actualizarEstadisticasYCurvas() {
+      const lunesLimite = state.lunesSemana || '';
+
+      // 1. UNIVERSO TELEGRAM (alertas oficiales de la semana)
+      const alertasTG = state.alertas.filter(a => esDeLaSemanaActual(a, lunesLimite) && a.finalizado);
+      let aciertosTG = 0, fallosTG = 0, unidadesTG = 0.0, stakeTG = 0.0;
+      let curvaTG = [{ unidades: 0.0 }];
+
+      alertasTG.forEach(a => {
+        const cuota = parseFloat((a.cuota || '2.00').replace('@', '')) || 2.0;
+        const stake = parseFloat((a.stake || '2').split('/')[0]) || 2.0;
+        stakeTG += stake;
+        if (a.acertado === true) {
+          aciertosTG++;
+          unidadesTG += stake * (cuota - 1.0);
+        } else {
+          fallosTG++;
+          unidadesTG -= stake;
+        }
+        curvaTG.push({ unidades: Number(unidadesTG.toFixed(2)) });
+      });
+
+      const totalTG = aciertosTG + fallosTG;
+      const pctTG = totalTG > 0 ? Math.round((aciertosTG / totalTG) * 100) : 0;
+      const roiTG = stakeTG > 0 ? ((unidadesTG / stakeTG) * 100).toFixed(1) : '0.0';
+
+      document.getElementById('headerBalanceTG').innerText = `${unidadesTG >= 0 ? '+' : ''}${unidadesTG.toFixed(2)} U.`;
+      document.getElementById('unidadesValueTG').innerText = `${unidadesTG >= 0 ? '+' : ''}${unidadesTG.toFixed(2)} U.`;
+      document.getElementById('roiValueTG').innerText = `${unidadesTG >= 0 ? '+' : ''}${roiTG}%`;
+      document.getElementById('stakeValueTG').innerText = `${stakeTG.toFixed(1)} U.`;
+      document.getElementById('picksCountTG').innerText = `${alertasTG.length} picks evaluados`;
+      document.getElementById('efectividadTG').innerText = totalTG > 0 ? `${pctTG}%` : '--%';
+      document.getElementById('efectividadDetalleTG').innerText = `${aciertosTG}V - ${fallosTG}D TG`;
+      dibujarCurvaSVG('equityChartTG', curvaTG, '#00f59b', 'gradTG');
+
+      // 2. UNIVERSO SIN ALERTA (partidos de la semana finalizados que no se enviaron a TG)
+      const idsTG = new Set(state.alertas.map(a => a.id_partido || a.id_alerta));
+      const partidosNoTG = state.partidos.filter(p => {
+        const est = (p.estado || '').toUpperCase();
+        const fin = est === 'FINISHED' || est === 'FINALIZADO' || est === 'AWARDED' || p.finalizado === true;
+        return fin && esDeLaSemanaActual(p, lunesLimite) && !idsTG.has(p.id);
+      });
+
+      let aciertosNoTG = 0, fallosNoTG = 0, unidadesNoTG = 0.0, stakeNoTG = 0.0;
+      let curvaNoTG = [{ unidades: 0.0 }];
+
+      partidosNoTG.forEach(p => {
+        const cuota = parseFloat((p.cuota || '2.00').toString().replace('@', '')) || 2.0;
+        const stake = parseFloat((p.stake || '2').toString().split('/')[0]) || 2.0;
+        stakeNoTG += stake;
+        if (p.acertado === true) {
+          aciertosNoTG++;
+          unidadesNoTG += stake * (cuota - 1.0);
+        } else {
+          fallosNoTG++;
+          unidadesNoTG -= stake;
+        }
+        curvaNoTG.push({ unidades: Number(unidadesNoTG.toFixed(2)) });
+      });
+
+      const totalNoTG = aciertosNoTG + fallosNoTG;
+      const pctNoTG = totalNoTG > 0 ? Math.round((aciertosNoTG / totalNoTG) * 100) : 0;
+      const roiNoTG = stakeNoTG > 0 ? ((unidadesNoTG / stakeNoTG) * 100).toFixed(1) : '0.0';
+
+      document.getElementById('headerBalanceNoTG').innerText = `${unidadesNoTG >= 0 ? '+' : ''}${unidadesNoTG.toFixed(2)} U.`;
+      document.getElementById('unidadesValueNoTG').innerText = `${unidadesNoTG >= 0 ? '+' : ''}${unidadesNoTG.toFixed(2)} U.`;
+      document.getElementById('roiValueNoTG').innerText = `${unidadesNoTG >= 0 ? '+' : ''}${roiNoTG}%`;
+      document.getElementById('stakeValueNoTG').innerText = `${stakeNoTG.toFixed(1)} U.`;
+      document.getElementById('picksCountNoTG').innerText = `${partidosNoTG.length} picks evaluados`;
+      document.getElementById('efectividadNoTG').innerText = totalNoTG > 0 ? `${pctNoTG}%` : '--%';
+      document.getElementById('efectividadDetalleNoTG').innerText = `${aciertosNoTG}V - ${fallosNoTG}D No TG`;
+      dibujarCurvaSVG('equityChartNoTG', curvaNoTG, '#94a3b8', 'gradNoTG');
+
+      // 3. UNIVERSO GLOBAL TOTAL (Suma unificada exacta)
+      const aciertosTotal = aciertosTG + aciertosNoTG;
+      const fallosTotal = fallosTG + fallosNoTG;
+      const totalGlobal = aciertosTotal + fallosTotal;
+      const unidadesGlobal = unidadesTG + unidadesNoTG;
+      const stakeGlobal = stakeTG + stakeNoTG;
+      const pctGlobal = totalGlobal > 0 ? Math.round((aciertosTotal / totalGlobal) * 100) : 0;
+      const roiGlobal = stakeGlobal > 0 ? ((unidadesGlobal / stakeGlobal) * 100).toFixed(1) : '0.0';
+
+      document.getElementById('headerBalanceGlobal').innerText = `${unidadesGlobal >= 0 ? '+' : ''}${unidadesGlobal.toFixed(2)} U.`;
+      document.getElementById('unidadesValueGlobal').innerText = `${unidadesGlobal >= 0 ? '+' : ''}${unidadesGlobal.toFixed(2)} U.`;
+      document.getElementById('roiValueGlobal').innerText = `${unidadesGlobal >= 0 ? '+' : ''}${roiGlobal}%`;
+      document.getElementById('stakeValueGlobal').innerText = `${stakeGlobal.toFixed(1)} U.`;
+      document.getElementById('picksCountGlobal').innerText = `${totalGlobal} picks evaluados`;
+      document.getElementById('efectividadGlobal').innerText = totalGlobal > 0 ? `${pctGlobal}%` : '--%';
+      document.getElementById('efectividadDetalleGlobal').innerText = `${aciertosTotal}V - ${fallosTotal}D Total`;
+
+      let curvaGlobal = [{ unidades: 0.0 }];
+      const maxLen = Math.max(curvaTG.length, curvaNoTG.length);
+      for (let i = 1; i < maxLen; i++) {
+        const v1 = (curvaTG[Math.min(i, curvaTG.length - 1)] || {}).unidades || 0;
+        const v2 = (curvaNoTG[Math.min(i, curvaNoTG.length - 1)] || {}).unidades || 0;
+        curvaGlobal.push({ unidades: Number((v1 + v2).toFixed(2)) });
+      }
+      dibujarCurvaSVG('equityChartGlobal', curvaGlobal, '#38bdf8', 'gradGlobal');
+    }
+
+    async function recargarDatos(manual = false) {
+      const icon = document.getElementById('refreshIcon');
+      if (manual && icon) icon.classList.add('rotate-180');
 
       try {
-        const cacheBuster = `?t=${Date.now()}`;
-        const res = await fetch(`./datos.json${cacheBuster}`, { cache: 'no-store' });
-        
-        if (!res.ok) {
-          throw new Error('No se pudo cargar datos.json');
+        const urlFetch = `./datos.json?t=${Date.now()}`;
+        const res = await fetch(urlFetch);
+        if (res.ok) {
+          const data = await res.json();
+          state.partidos = Array.isArray(data.partidos) ? data.partidos : [];
+          state.alertas = Array.isArray(data.alertas) ? data.alertas : [];
+          state.semanaActiva = data.semana_activa || '';
+          state.lunesSemana = data.lunes_semana || '';
+          state.domingoSemana = data.domingo_semana || '';
+          state.ultimaActualizacion = data.ultima_actualizacion || '';
+
+          const syncEl = document.getElementById('syncText');
+          if (syncEl) syncEl.innerText = `${state.ultimaActualizacion} sync`;
+
+          actualizarEstadisticasYCurvas();
+
+          if (state.vistaActual === 'alertas') {
+            renderizarAlertas();
+          } else {
+            renderizarPartidos();
+          }
         }
-
-        const data = await res.json();
-        state.partidos = data.partidos || [];
-        state.alertas = data.alertas || [];
-        state.ultimaActualizacion = data.ultima_actualizacion || '--:--';
-        state.semanaActiva = data.semana_activa || '';
-        state.lunesSemana = data.lunes_semana || '';
-        state.domingoSemana = data.domingo_semana || '';
-        state.metricasSemana = data.metricas_semana || null;
-
-        actualizarMetricas();
-        actualizarContadoresPestañas();
-        renderizar();
-
-        const lblSync = document.getElementById('labelSync');
-        if (lblSync) {
-          lblSync.innerText = `${state.ultimaActualizacion} sync`;
-        }
-      } catch (err) {
-        console.warn('Aviso cargando datos.json:', err);
+      } catch (e) {
+        console.warn('Error cargando datos.json:', e);
       } finally {
-        if (animarIcono && icon) {
+        if (manual && icon) {
           setTimeout(() => icon.classList.remove('rotate-180'), 500);
         }
       }
     }
 
-    function cambiarTab(nuevoTab) {
-      state.tabActual = nuevoTab;
-      state.filtroLiveActivo = false;
-
-      const btnActivos = document.getElementById('tabActivos');
-      const btnFin = document.getElementById('tabFinalizados');
-      const btnAlertas = document.getElementById('tabAlertas');
-
-      [btnActivos, btnFin, btnAlertas].forEach(b => {
-        b.className = 'py-2.5 px-2 rounded-xl text-xs font-bold font-mono transition text-textSecondary hover:text-white flex items-center justify-center gap-1';
-      });
-
-      const titulo = document.getElementById('tituloSeccion');
-
-      if (nuevoTab === 'activos') {
-        btnActivos.className = 'py-2.5 px-2 rounded-xl text-xs font-bold font-mono transition text-bgDark bg-accentGreen shadow-sm flex items-center justify-center gap-1';
-        titulo.innerText = 'Encuentros Programados y en Vivo';
-      } else if (nuevoTab === 'finalizados') {
-        btnFin.className = 'py-2.5 px-2 rounded-xl text-xs font-bold font-mono transition text-bgDark bg-accentGreen shadow-sm flex items-center justify-center gap-1';
-        titulo.innerText = 'Partidos Finalizados Recientes';
-      } else {
-        btnAlertas.className = 'py-2.5 px-2 rounded-xl text-xs font-bold font-mono transition text-bgDark bg-accentGreen shadow-sm flex items-center justify-center gap-1';
-        titulo.innerText = 'Historial de Alertas Telegram Emitidas';
-      }
-
-      actualizarBotonLive();
-      renderizar();
-    }
-
-    function filtrarLiga(ligaKey) {
-      state.filtroLiga = ligaKey;
-      state.filtroLiveActivo = false;
-
-      document.querySelectorAll('.filtro-btn').forEach(btn => {
-        const esActivo = btn.getAttribute('data-liga') === ligaKey;
-        btn.className = esActivo
-          ? 'filtro-btn px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono bg-accentGreen text-bgDark whitespace-nowrap transition'
-          : 'filtro-btn px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono bg-surface text-textSecondary border border-borderDark whitespace-nowrap transition hover:text-white';
-      });
-
-      actualizarBotonLive();
-      renderizar();
-    }
-
-    function activarFiltroLive() {
-      state.filtroLiveActivo = !state.filtroLiveActivo;
-      actualizarBotonLive();
-      renderizar();
-    }
-
-    function actualizarBotonLive() {
-      const btn = document.getElementById('btnFiltroLive');
-      if (!btn) return;
-      if (state.filtroLiveActivo) {
-        btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono bg-accentRed text-white border border-accentRed whitespace-nowrap active:scale-95 transition flex items-center gap-1.5 shadow-[0_0_12px_rgba(255,77,109,0.4)]';
-      } else {
-        btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono bg-accentRed/15 text-accentRed border border-accentRed/40 whitespace-nowrap active:scale-95 transition flex items-center gap-1.5 hover:bg-accentRed/25';
-      }
-    }
-
-    function esPartidoFinalizado(estado) {
-      if (!estado) return false;
-      const e = estado.toUpperCase();
-      return e === 'FINISHED' || e === 'FINALIZADO' || e === 'AWARDED';
-    }
-
-    function esPartidoEnDirecto(p) {
-      if (!p) return false;
-      const e = (p.estado || '').toUpperCase();
-      if (esPartidoFinalizado(e)) return false;
-      if (e === 'IN_PLAY' || e === 'PAUSED' || e === 'HT' || e === 'LIVE') return true;
-      if (p.minutos_restantes !== undefined && p.minutos_restantes <= 0 && p.minutos_restantes >= -135) return true;
-      return false;
-    }
-
-    function calcularTiempoJuego(p) {
-      const e = (p.estado || '').toUpperCase();
-      if (esPartidoFinalizado(e)) return 'FINALIZADO';
-      if (e === 'HT' || e === 'PAUSED') return 'Descanso';
-      
-      if (p.minutos_restantes !== undefined && p.minutos_restantes <= 0) {
-        const transcurrido = Math.abs(p.minutos_restantes);
-        if (transcurrido <= 45) return `${Math.max(1, transcurrido)}'`;
-        if (transcurrido <= 60) return 'Descanso';
-        if (transcurrido <= 110) {
-          const m2t = Math.min(90, Math.max(46, transcurrido - 15));
-          return `${m2t}'`;
-        }
-        return '90+\'';
-      }
-      
-      return p.minuto_juego || 'EN JUEGO';
-    }
-
-    function actualizarContadoresPestañas() {
-      // Contador Activos: En juego o programados
-      const activos = state.partidos.filter(p => !esPartidoFinalizado(p.estado));
-      
-      // Contador Finalizados: Todos los partidos finalizados presentes en datos.json (semana activa)
-      const finalizados = state.partidos.filter(p => esPartidoFinalizado(p.estado));
-      
-      // Contador Alertas: Exclusivo de la semana actual
-      const alertasSemana = obtenerAlertasSemanaActual();
-
-      const cAct = document.getElementById('countActivos');
-      const cFin = document.getElementById('countFinalizados');
-      const cAlr = document.getElementById('countAlertas');
-      const hTot = document.getElementById('totalPartidosHeader');
-
-      if (cAct) cAct.innerText = `(${activos.length})`;
-      if (cFin) cFin.innerText = `(${finalizados.length})`;
-      if (cAlr) cAlr.innerText = `(${alertasSemana.length})`;
-      if (hTot) hTot.innerText = `${activos.length + finalizados.length}`;
-    }
-
-    function calcularStats(lista) {
-      let v = 0;
-      let d = 0;
-      let stakeTotal = 0;
-      let unidadesGanadas = 0;
-      const history = [];
-
-      lista.forEach(item => {
-        if (item.acertado !== null && item.acertado !== undefined) {
-          const stkStr = String(item.stake || '2').split('/')[0].replace('U', '').trim();
-          const stk = parseFloat(stkStr) || 2;
-          const cuotaStr = String(item.cuota || '2.00').replace('@', '').trim();
-          const cuota = parseFloat(cuotaStr) || 2.0;
-
-          stakeTotal += stk;
-
-          if (item.acertado === true) {
-            v++;
-            const ganancia = stk * (cuota - 1.0);
-            unidadesGanadas += ganancia;
-            history.push(ganancia);
-          } else {
-            d++;
-            unidadesGanadas -= stk;
-            history.push(-stk);
-          }
-        }
-      });
-
-      const total = v + d;
-      const pct = total > 0 ? Math.round((v / total) * 100) : null;
-      const roi = stakeTotal > 0 ? ((unidadesGanadas / stakeTotal) * 100).toFixed(1) : '0.0';
-
-      return { v, d, total, pct, stakeTotal, unidadesGanadas, roi, history };
-    }
-
-    function dibujarCurvaSvg(svgId, areaPathId, linePathId, history) {
-      const areaPath = document.getElementById(areaPathId);
-      const linePath = document.getElementById(linePathId);
-      if (!areaPath || !linePath) return;
-
-      if (!history || history.length === 0) {
-        areaPath.setAttribute('d', 'M 0 35 L 100 35 Z');
-        linePath.setAttribute('d', 'M 0 35 L 100 35');
-        return;
-      }
-
-      let acumulado = 0;
-      const puntos = [0];
-      history.forEach(delta => {
-        acumulado += delta;
-        puntos.push(acumulado);
-      });
-
-      const minVal = Math.min(...puntos, 0);
-      const maxVal = Math.max(...puntos, 1);
-      const rango = (maxVal - minVal) || 1;
-
-      const n = puntos.length;
-      const coords = puntos.map((val, idx) => {
-        const x = (idx / (n - 1)) * 100;
-        // Invertir Y (y=5 arriba, y=35 abajo)
-        const y = 35 - ((val - minVal) / rango) * 28;
-        return [x.toFixed(1), y.toFixed(1)];
-      });
-
-      let lineD = `M ${coords[0][0]} ${coords[0][1]}`;
-      for (let i = 1; i < coords.length; i++) {
-        lineD += ` L ${coords[i][0]} ${coords[i][1]}`;
-      }
-
-      const areaD = `${lineD} L 100 38 L 0 38 Z`;
-
-      linePath.setAttribute('d', lineD);
-      areaPath.setAttribute('d', areaD);
-    }
-
-    function actualizarMetricas() {
-      const lunesLimite = state.lunesSemana || '';
-
-      // 1. TELEGRAM: Alertas finalizadas de la semana actual
-      const alertasSemanaActual = state.alertas.filter(a => esDeLaSemanaActual(a, lunesLimite));
-      const statsTg = calcularStats(alertasSemanaActual);
-
-      // 2. SIN ALERTA: Partidos finalizados de la semana evaluados pero sin alerta
-      const partidosFinalizadosSemana = state.partidos.filter(p => esPartidoFinalizado(p.estado) && esDeLaSemanaActual(p, lunesLimite));
-      const partidosNoTg = partidosFinalizadosSemana.filter(p => !p.telegram_enviado);
-      const statsNoTg = calcularStats(partidosNoTg);
-
-      // 3. GLOBAL TOTAL: Suma matemática exacta de ambos universos
-      const totalGlobalV = statsTg.v + statsNoTg.v;
-      const totalGlobalD = statsTg.d + statsNoTg.d;
-      const totalGlobalPronosticos = totalGlobalV + totalGlobalD;
-      const pctGlobal = totalGlobalPronosticos > 0 ? Math.round((totalGlobalV / totalGlobalPronosticos) * 100) : null;
-      const stakeTotalGlobal = statsTg.stakeTotal + statsNoTg.stakeTotal;
-      const unidadesGlobales = statsTg.unidadesGanadas + statsNoTg.unidadesGanadas;
-      const roiGlobal = stakeTotalGlobal > 0 ? ((unidadesGlobales / stakeTotalGlobal) * 100).toFixed(1) : '0.0';
-
-      const historyGlobal = [];
-      const lenMax = Math.max(statsTg.history.length, statsNoTg.history.length);
-      for (let i = 0; i < lenMax; i++) {
-        const d1 = statsTg.history[i] !== undefined ? statsTg.history[i] : 0;
-        const d2 = statsNoTg.history[i] !== undefined ? statsNoTg.history[i] : 0;
-        historyGlobal.push(d1 + d2);
-      }
-
-      // RENDERIZADO TARJETA 1 (TELEGRAM)
-      const uSignoTg = statsTg.unidadesGanadas >= 0 ? '+' : '';
-      const roiSignoTg = parseFloat(statsTg.roi) >= 0 ? '+' : '';
-      const elTotU = document.getElementById('equityTotalUnidades');
-      const elRoi = document.getElementById('equityRoi');
-      const elU = document.getElementById('equityUnidades');
-      const elStk = document.getElementById('equityStakeTotal');
-      const elPicks = document.getElementById('equityPicksCount');
-
-      if (elTotU) elTotU.innerText = `${uSignoTg}${statsTg.unidadesGanadas.toFixed(2)} U.`;
-      if (elRoi) elRoi.innerText = `${roiSignoTg}${statsTg.roi}%`;
-      if (elU) elU.innerText = `${uSignoTg}${statsTg.unidadesGanadas.toFixed(2)} U.`;
-      if (elStk) elStk.innerText = `${statsTg.stakeTotal.toFixed(1)} U.`;
-      if (elPicks) elPicks.innerText = `${statsTg.total} picks evaluados`;
-      dibujarCurvaSvg('svgEquityCurve', 'equityAreaPath', 'equityLinePath', statsTg.history);
-
-      // RENDERIZADO TARJETA 2 (SIN ALERTA)
-      const uSignoNoTg = statsNoTg.unidadesGanadas >= 0 ? '+' : '';
-      const roiSignoNoTg = parseFloat(statsNoTg.roi) >= 0 ? '+' : '';
-      const elTotUNoTg = document.getElementById('equityTotalUnidadesNoTg');
-      const elRoiNoTg = document.getElementById('equityRoiNoTg');
-      const elUNoTg = document.getElementById('equityUnidadesNoTg');
-      const elStkNoTg = document.getElementById('equityStakeTotalNoTg');
-      const elPicksNoTg = document.getElementById('equityPicksCountNoTg');
-
-      if (elTotUNoTg) elTotUNoTg.innerText = `${uSignoNoTg}${statsNoTg.unidadesGanadas.toFixed(2)} U.`;
-      if (elRoiNoTg) elRoiNoTg.innerText = `${roiSignoNoTg}${statsNoTg.roi}%`;
-      if (elUNoTg) elUNoTg.innerText = `${uSignoNoTg}${statsNoTg.unidadesGanadas.toFixed(2)} U.`;
-      if (elStkNoTg) elStkNoTg.innerText = `${statsNoTg.stakeTotal.toFixed(1)} U.`;
-      if (elPicksNoTg) elPicksNoTg.innerText = `${statsNoTg.total} picks evaluados`;
-      dibujarCurvaSvg('svgEquityCurveNoTg', 'equityAreaPathNoTg', 'equityLinePathNoTg', statsNoTg.history);
-
-      // RENDERIZADO TARJETA 3 (GLOBAL TOTAL)
-      const uSignoGlb = unidadesGlobales >= 0 ? '+' : '';
-      const roiSignoGlb = parseFloat(roiGlobal) >= 0 ? '+' : '';
-      const elTotUGlb = document.getElementById('equityTotalUnidadesGlobal');
-      const elRoiGlb = document.getElementById('equityRoiGlobal');
-      const elUGlb = document.getElementById('equityUnidadesGlobal');
-      const elStkGlb = document.getElementById('equityStakeTotalGlobal');
-      const elPicksGlb = document.getElementById('equityPicksCountGlobal');
-
-      if (elTotUGlb) elTotUGlb.innerText = `${uSignoGlb}${unidadesGlobales.toFixed(2)} U.`;
-      if (elRoiGlb) elRoiGlb.innerText = `${roiSignoGlb}${roiGlobal}%`;
-      if (elUGlb) elUGlb.innerText = `${uSignoGlb}${unidadesGlobales.toFixed(2)} U.`;
-      if (elStkGlb) elStkGlb.innerText = `${stakeTotalGlobal.toFixed(1)} U.`;
-      if (elPicksGlb) elPicksGlb.innerText = `${totalGlobalPronosticos} picks evaluados`;
-      dibujarCurvaSvg('svgEquityCurveGlobal', 'equityAreaPathGlobal', 'equityLinePathGlobal', historyGlobal);
-
-      // TRIPLE BLOQUE INFERIOR
-      const elEfTg = document.getElementById('efectividadTelegram');
-      const elRecTg = document.getElementById('recordTelegram');
-      if (elEfTg) elEfTg.innerText = statsTg.pct !== null ? `${statsTg.pct}%` : '--%';
-      if (elRecTg) elRecTg.innerText = `${statsTg.v}V - ${statsTg.d}D TG`;
-
-      const elEfNoTg = document.getElementById('efectividadNoTelegram');
-      const elRecNoTg = document.getElementById('recordNoTelegram');
-      if (elEfNoTg) elEfNoTg.innerText = statsNoTg.pct !== null ? `${statsNoTg.pct}%` : '--%';
-      if (elRecNoTg) elRecNoTg.innerText = `${statsNoTg.v}V - ${statsNoTg.d}D No TG`;
-
-      const elEfGlb = document.getElementById('efectividadGlobal');
-      const elRecGlb = document.getElementById('recordGlobal');
-      if (elEfGlb) elEfGlb.innerText = pctGlobal !== null ? `${pctGlobal}%` : '--%';
-      if (elRecGlb) elRecGlb.innerText = `${totalGlobalV}V - ${totalGlobalD}D Total`;
-    }
-
-    function renderizarRachaCirculos(rachaString) {
-      if (!rachaString) return '';
-      const letras = rachaString.split('-');
-      return letras.map(l => {
-        const val = l.trim().toUpperCase();
-        if (val === 'W') {
-          return '<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-accentGreen text-bgDark text-[9px] font-extrabold font-mono shadow-[0_0_4px_rgba(0,245,155,0.4)]">W</span>';
-        } else if (val === 'D') {
-          return '<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-accentAmber text-bgDark text-[9px] font-extrabold font-mono shadow-[0_0_4px_rgba(255,183,3,0.4)]">D</span>';
-        } else {
-          return '<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-accentRed text-white text-[9px] font-extrabold font-mono shadow-[0_0_4px_rgba(255,77,109,0.4)]">L</span>';
-        }
-      }).join(' ');
-    }
-
-    function obtenerBadgeMercado(p) {
-      const tipo = (p.tipo_mercado || '').toUpperCase();
-      const mercadoTexto = (p.mercado || '').toLowerCase();
-
-      if (tipo === 'BTTS' || mercadoTexto.includes('ambos')) {
-        return { label: 'AMBOS MARCAN', color: 'bg-amber-500/15 text-amber-400 border-amber-500/30' };
-      }
-      if (tipo === 'OVER_15' || mercadoTexto.includes('1.5')) {
-        return { label: '+1.5 GOLES', color: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' };
-      }
-      if (tipo === 'GOLES' || tipo === 'GOLES_HT' || mercadoTexto.includes('2.5')) {
-        return { label: 'GOLES TOTALES', color: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' };
-      }
-      if (tipo.includes('DOUBLE_CHANCE') || mercadoTexto.includes('doble oportunidad') || p.categoria_visual === 'doble_oportunidad') {
-        return { label: '🛡️ DOBLE OPORTUNIDAD', color: 'bg-blue-500/15 text-blue-400 border-blue-500/30' };
-      }
-      return { label: '1X2 GANADOR', color: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30' };
-    }
-
-    function renderizar() {
-      const contenedor = document.getElementById('listaPartidos');
-      if (!contenedor) return;
-
-      if (state.tabActual === 'alertas') {
-        renderizarAlertas(contenedor);
-        return;
-      }
-
-      // FILTRADO DE PARTIDOS
-      let lista = state.partidos;
-
-      if (state.tabActual === 'finalizados') {
-        lista = lista.filter(p => esPartidoFinalizado(p.estado));
-      } else {
-        // 'activos'
-        lista = lista.filter(p => !esPartidoFinalizado(p.estado));
-      }
-
-      if (state.filtroLiveActivo) {
-        lista = lista.filter(p => esPartidoEnDirecto(p));
-      }
-
-      if (state.filtroLiga !== 'all') {
-        lista = lista.filter(p => (p.liga_key || '').toLowerCase() === state.filtroLiga);
-      }
-
-      if (lista.length === 0) {
-        contenedor.innerHTML = `
-          <div class="p-8 text-center bg-surface border border-borderDark rounded-2xl">
-            <svg class="w-10 h-10 text-textMuted mx-auto mb-2 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-            </svg>
-            <p class="text-xs font-bold text-white font-mono">No hay partidos en esta sección</p>
-            <p class="text-[11px] text-textMuted font-mono mt-1">
-              ${state.tabActual === 'finalizados' ? 'Aún no hay partidos finalizados con el filtro actual.' : 'Todos los encuentros han finalizado o están programados para más tarde.'}
-            </p>
-          </div>
-        `;
-        return;
-      }
-
-      // RENDERIZADO DE TARJETAS DE PARTIDO
-      let html = '';
-      lista.forEach(p => {
-        const enVivo = esPartidoEnDirecto(p);
-        const finalizado = esPartidoFinalizado(p.estado);
-        const tiempoJuego = calcularTiempoJuego(p);
-        const badgeMercado = obtenerBadgeMercado(p);
-
-        // FECHA Y HORA LIMPIA (SIN 'MADRID')
-        let fechaHoraStr = p.fecha_hora_display || '';
-        if (!fechaHoraStr) {
-          const f = p.fecha || '';
-          const h = p.hora || 'TBD';
-          let fechaCorta = f;
-          if (f.includes('-')) {
-            const partes = f.split('-');
-            if (partes.length === 3) fechaCorta = `${partes[2]}/${partes[1]}`;
-          }
-          const horaLimpia = h.replace(/madrid/gi, '').trim();
-          fechaHoraStr = `${fechaCorta} • ${horaLimpia}`;
-        }
-        fechaHoraStr = fechaHoraStr.replace(/madrid/gi, '').trim();
-
-        // Escudos
-        const escudoLocal = p.escudo_local 
-          ? `<img src="${p.escudo_local}" alt="" class="w-5 h-5 object-contain shrink-0">` 
-          : `<span class="w-5 h-5 rounded-full bg-surfaceCard border border-borderDark flex items-center justify-center text-[10px]">⚽</span>`;
-        const escudoVis = p.escudo_visitante 
-          ? `<img src="${p.escudo_visitante}" alt="" class="w-5 h-5 object-contain shrink-0">` 
-          : `<span class="w-5 h-5 rounded-full bg-surfaceCard border border-borderDark flex items-center justify-center text-[10px]">⚽</span>`;
-
-        // Badge Estado
-        let badgeEstado = '';
-        if (enVivo) {
-          badgeEstado = `
-            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-extrabold font-mono bg-accentRed/15 text-accentRed border border-accentRed/40">
-              <span class="w-1.5 h-1.5 rounded-full bg-accentRed live-pulse"></span>
-              EN JUEGO (${tiempoJuego})
-            </span>
-          `;
-        } else if (finalizado) {
-          badgeEstado = `
-            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold font-mono bg-surfaceCard text-textSecondary border border-borderDark">
-              FINALIZADO
-            </span>
-          `;
-        } else {
-          badgeEstado = `
-            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold font-mono bg-surfaceCard text-textMuted border border-borderDark">
-              PROGRAMADO
-            </span>
-          `;
-        }
-
-        // Marcador Central
-        let bloqueMarcador = '';
-        if (enVivo || finalizado || p.marcador) {
-          const m = p.marcador || '0 - 0';
-          const [gL, gV] = m.split('-').map(x => x.trim());
-          bloqueMarcador = `
-            <div class="px-2.5 py-0.5 rounded-lg bg-oled border border-borderDark flex items-center justify-center gap-1.5 font-mono font-extrabold text-sm ${enVivo ? 'text-accentGreen' : 'text-white'}">
-              <span>${gL !== undefined ? gL : '0'}</span>
-              <span class="text-textMuted text-xs">-</span>
-              <span>${gV !== undefined ? gV : '0'}</span>
-            </div>
-          `;
-        }
-
-        // Insignia de resultado para finalizados
-        let badgeResultado = '';
-        if (finalizado && p.acertado !== null && p.acertado !== undefined) {
-          if (p.acertado) {
-            badgeResultado = `
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-extrabold font-mono bg-accentGreen/15 text-accentGreen border border-accentGreen/40">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                ACERTADO
-              </span>
-            `;
-          } else {
-            badgeResultado = `
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-extrabold font-mono bg-accentRed/15 text-accentRed border border-accentRed/40">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-                PERDIDO
-              </span>
-            `;
-          }
-        }
-
-        // Form Info (Rachas)
-        let bloqueRacha = '';
-        if (p.form_info && (p.form_info.racha_local || p.form_info.racha_visitante)) {
-          const rL = renderizarRachaCirculos(p.form_info.racha_local);
-          const rV = renderizarRachaCirculos(p.form_info.racha_visitante);
-          bloqueRacha = `
-            <div class="pt-2 border-t border-borderDark/60 flex items-center justify-between text-[10px] text-textMuted font-mono">
-              <div class="flex items-center gap-1.5">
-                <span class="text-[9px] uppercase font-bold text-textMuted">Racha:</span>
-                <span class="flex items-center gap-1">${rL}</span>
-                <span class="text-textMuted text-[9px]">vs</span>
-                <span class="flex items-center gap-1">${rV}</span>
-              </div>
-              <span class="text-textSecondary font-semibold truncate max-w-[160px] text-right">${p.form_info.tendencia || ''}</span>
-            </div>
-          `;
-        }
-
-        html += `
-          <div class="bg-surface border ${enVivo ? 'border-accentGreen/40 shadow-[0_0_15px_rgba(0,245,155,0.08)]' : 'border-borderDark'} rounded-2xl p-4 space-y-3 transition">
-            
-            <!-- CABECERA TARJETA -->
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="px-2 py-0.5 rounded bg-surfaceCard text-textSecondary text-[10px] font-mono border border-borderDark">
-                  ${p.liga || 'Liga Oficial'}
-                </span>
-                <span class="text-[11px] font-mono text-textMuted">${fechaHoraStr}</span>
-              </div>
-              <div class="flex items-center gap-2">
-                ${bloqueMarcador}
-                ${badgeEstado}
-                ${badgeResultado}
-              </div>
-            </div>
-
-            <!-- EQUIPOS -->
-            <div class="space-y-1.5 pt-0.5">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2 min-w-0 pr-2">
-                  ${escudoLocal}
-                  <span class="text-sm font-bold text-white truncate leading-tight">${p.local || 'Local'}</span>
-                </div>
-                <span class="text-xs font-mono text-textMuted uppercase shrink-0">Cuota Valor</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2 min-w-0 pr-2">
-                  ${escudoVis}
-                  <span class="text-sm font-bold text-white truncate leading-tight">${p.visitante || 'Visitante'}</span>
-                </div>
-                <span class="text-base font-extrabold font-mono text-accentGreen shrink-0">@${p.cuota || '2.00'}</span>
-              </div>
-            </div>
-
-            <!-- PRONÓSTICO & VALOR -->
-            <div class="bg-surfaceCard border border-borderDark/80 rounded-xl p-3 space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="px-2 py-0.5 rounded text-[10px] font-extrabold font-mono border ${badgeMercado.color}">
-                  ${badgeMercado.label}
-                </span>
-                <span class="text-xs font-extrabold font-mono text-accentAmber">${p.ev || '+8.0%'}</span>
-              </div>
-              <p class="text-xs font-extrabold text-white leading-snug">
-                PRONÓSTICO: <span class="text-accentCyan">${p.mercado || 'Valor Cuantitativo'}</span>
-              </p>
-
-              <!-- Barra Intensidad Alfa (+EV) -->
-              <div class="space-y-1 pt-1">
-                <div class="flex items-center justify-between text-[10px] font-mono text-textMuted">
-                  <span class="flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-accentGreen"></span>
-                    Intensidad Alfa (+EV)
-                  </span>
-                  <span class="text-accentAmber font-bold">VALOR ÉLITE (+25%)</span>
-                </div>
-                <div class="w-full h-1.5 bg-oled rounded-full overflow-hidden">
-                  <div class="h-full bg-gradient-to-r from-accentGreen via-accentCyan to-accentAmber rounded-full" style="width: 78%;"></div>
-                </div>
-              </div>
-
-              ${bloqueRacha}
-            </div>
-
-            <!-- MÉTRICAS FOOTER -->
-            <div class="grid grid-cols-3 gap-2 pt-1 text-center font-mono">
-              <div class="bg-surfaceCard/60 border border-borderDark/60 rounded-xl p-2">
-                <p class="text-[9px] text-textMuted uppercase font-bold">Prob. Modelo</p>
-                <p class="text-xs font-bold text-white mt-0.5">${p.prob_modelo || '60.0%'}</p>
-              </div>
-              <div class="bg-surfaceCard/60 border border-borderDark/60 rounded-xl p-2">
-                <p class="text-[9px] text-textMuted uppercase font-bold">Ventaja</p>
-                <p class="text-xs font-bold text-accentGreen mt-0.5">${p.ev || '+8.0%'}</p>
-              </div>
-              <div class="bg-surfaceCard/60 border border-borderDark/60 rounded-xl p-2">
-                <p class="text-[9px] text-textMuted uppercase font-bold">Stake Sug.</p>
-                <p class="text-xs font-bold text-accentCyan mt-0.5">${p.stake ? p.stake + '/10 U.' : '2/10 U.'}</p>
-              </div>
-            </div>
-
-          </div>
-        `;
-      });
-
-      contenedor.innerHTML = html;
-    }
-
-    function renderizarAlertas(contenedor) {
-      const lunesLimite = state.lunesSemana || '';
-      const listaAlertas = state.alertas.filter(a => esDeLaSemanaActual(a, lunesLimite));
-
-      if (listaAlertas.length === 0) {
-        contenedor.innerHTML = `
-          <div class="p-8 text-center bg-surface border border-borderDark rounded-2xl">
-            <svg class="w-10 h-10 text-textMuted mx-auto mb-2 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-            </svg>
-            <p class="text-xs font-bold text-white font-mono">Aún no se han emitido alertas oficiales esta semana</p>
-            <p class="text-[11px] text-textMuted font-mono mt-1">
-              El bot emitirá alertas cuando detecte discrepancias de valor (+EV ≥ 3%). Las alertas se reinician limpiamente cada lunes a las 00:00h.
-            </p>
-          </div>
-        `;
-        return;
-      }
-
-      let html = '';
-      listaAlertas.slice().reverse().forEach(a => {
-        const finalizado = a.finalizado || esPartidoFinalizado(a.estado_partido);
-        let badgeResultado = `
-          <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-surfaceCard text-textMuted border border-borderDark">
-            EN ESPERA
-          </span>
-        `;
-
-        if (finalizado && a.acertado !== null && a.acertado !== undefined) {
-          if (a.acertado) {
-            badgeResultado = `
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-extrabold font-mono bg-accentGreen/15 text-accentGreen border border-accentGreen/40">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                ACERTADO
-              </span>
-            `;
-          } else {
-            badgeResultado = `
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-extrabold font-mono bg-accentRed/15 text-accentRed border border-accentRed/40">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-                PERDIDO
-              </span>
-            `;
-          }
-        }
-
-        let marcadorDisplay = '';
-        if (a.marcador_final || a.marcador) {
-          const m = a.marcador_final || a.marcador;
-          const [gL, gV] = m.split('-').map(x => x.trim());
-          marcadorDisplay = `
-            <div class="px-2.5 py-0.5 rounded-lg bg-oled border border-borderDark flex items-center justify-center gap-1.5 font-mono font-extrabold text-sm text-white">
-              <span>${gL !== undefined ? gL : '0'}</span>
-              <span class="text-textMuted text-xs">-</span>
-              <span>${gV !== undefined ? gV : '0'}</span>
-            </div>
-          `;
-        }
-
-        const horaLimpia = (a.hora || '').replace(/madrid/gi, '').trim();
-        const fechaHoraAlerta = a.fecha_hora_display || `${a.fecha || ''} • ${horaLimpia}`;
-
-        html += `
-          <div class="bg-surface border border-borderDark rounded-2xl p-4 space-y-2.5">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-1.5 text-xs text-textSecondary font-mono">
-                <span class="w-2 h-2 rounded-full bg-accentCyan"></span>
-                <span>Enviado a Telegram • ${fechaHoraAlerta}</span>
-              </div>
-              <div class="flex items-center gap-2">
-                ${marcadorDisplay}
-                ${badgeResultado}
-              </div>
-            </div>
-            <div>
-              <p class="text-sm font-extrabold text-white leading-tight">
-                ${a.partido || 'Partido Analizado'} — <span class="text-accentCyan">${a.mercado || ''}</span>
-              </p>
-            </div>
-            <div class="grid grid-cols-3 gap-2 pt-1 text-center font-mono text-xs">
-              <div class="bg-surfaceCard p-2 rounded-xl border border-borderDark/60">
-                <p class="text-[9px] text-textMuted uppercase font-bold">Cuota</p>
-                <p class="font-bold text-white mt-0.5">${a.cuota || '@2.00'}</p>
-              </div>
-              <div class="bg-surfaceCard p-2 rounded-xl border border-borderDark/60">
-                <p class="text-[9px] text-textMuted uppercase font-bold">Ventaja</p>
-                <p class="font-bold text-accentGreen mt-0.5">${a.ev || '+8.0%'}</p>
-              </div>
-              <div class="bg-surfaceCard p-2 rounded-xl border border-borderDark/60">
-                <p class="text-[9px] text-textMuted uppercase font-bold">Stake</p>
-                <p class="font-bold text-accentCyan mt-0.5">${a.stake || '2/10'}</p>
-              </div>
-            </div>
-          </div>
-        `;
-      });
-
-      contenedor.innerHTML = html;
-    }
-
-    // INICIALIZACIÓN Y AUTO-REFRESCO
-    window.addEventListener('DOMContentLoaded', () => {
-      recargarDatos(false);
-      // Actualizar automáticamente cada 30 segundos
-      setInterval(() => recargarDatos(false), 30000);
+    document.addEventListener('DOMContentLoaded', () => {
+      recargarDatos();
+      setInterval(() => recargarDatos(), 30000);
     });
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
   </script>
 </body>
 </html>
