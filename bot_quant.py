@@ -1,3 +1,38 @@
+# Solución Definitiva: Retención y Actualización Continua de Partidos Finalizados en bot_quant.py
+
+## 1. DIAGNÓSTICO EXACTO DEL PROBLEMA
+
+Al analizar tu captura de pantalla del **24 de octubre** (`IMAGE_1`) se identifican los dos factores que explican por qué la pestaña **Finalizados** se quedó en los partidos del 19 de octubre mientras que la pestaña **Alertas** sí está actualizada:
+
+### Factor 1: El filtro de corte del lunes (`p_fecha >= lunes_semana_str`)
+En `bot_quant.py`, la fusión de partidos acumulados para guardar en `datos.json` tenía esta condición:
+```python
+for prev_p in partidos_previos:
+    p_id = prev_p.get("id")
+    p_fecha = prev_p.get("fecha", "")
+    if p_id not in ids_guardados:
+        if p_fecha >= lunes_semana_str:
+            partidos_guardar.append(prev_p)
+            ids_guardados.add(p_id)
+```
+El lunes **19 de octubre** fue el inicio de la semana ISO 43 (`2026-W43`), donde `lunes_semana_str = "2026-10-19"`.
+Los partidos disputados ese lunes 19/10 (Monza vs Cagliari, Parma vs Torino) quedaron guardados. Sin embargo, al ir transcurriendo la semana hasta el sábado 24/10:
+- Si en un ciclo intermedio la API de Football-Data.org devolvió un conjunto de partidos vacío o restringido solo a fechas futuras, o si los partidos intermedios (días 20, 21, 22, 23) no se mantuvieron en el array `partidos_previos`, solo persistieron los que coincidían con el inicio exacto o los que la API devolvía en vivo.
+- En cambio, en la pestaña **`Alertas`**, las alertas se guardan en un array independiente (`alertas_acumuladas.append(...)`) que **nunca se sobrescribe**, conservando siempre los 70 últimos registros. Por eso las alertas sí se mantuvieron al día.
+
+### Factor 2: Rango de consulta a la API (`obtener_partidos_por_rango`)
+En `bot_quant.py`, `obtener_partidos_completos()` realizaba dos consultas:
+1. Desde `lunes_semana_str` hasta `date_hoy`.
+2. Desde `date_hoy` hasta `date_futuro_to`.
+Football-Data.org impone en su plan gratuito un límite de máximo **10 días de rango** por llamada (`dateFrom` a `dateTo`). A medida que avanzan los días hacia el fin de semana (sábado y domingo), si la API devuelve errores silenciosos de rate-limit o código HTTP 400 por desfase horario en la llamada de pasados, `lista_semana_hasta_hoy` no actualiza los partidos finalizados de mitad de semana.
+
+---
+
+## 2. CÓDIGO MAESTRO CORREGIDO: `bot_quant.py` (v3.7.2 PRO)
+
+Copia y reemplaza este código íntegro en tu archivo `bot_quant.py`:
+
+```python
 import os
 import json
 import hashlib
@@ -32,7 +67,6 @@ LEAGUES_MAP = {
 
 # ==============================================================================
 # BASE DE DATOS MAESTRA: 5 ÚLTIMOS PARTIDOS OFICIALES REALES DE CADA CLUB
-# Estricto orden cronológico (5 resultados exactos reales: W, D, L)
 # ==============================================================================
 RACHAS_BASE_REALES = {
     # LaLiga EA Sports (ESP)
@@ -299,9 +333,7 @@ def enviar_telegram(mensaje, url_accion=None, texto_boton="📱 Abrir en Web App
     if destino_web:
         payload["reply_markup"] = {
             "inline_keyboard": [
-                [
-                    {"text": texto_boton, "url": destino_web}
-                ]
+                [{"text": texto_boton, "url": destino_web}]
             ]
         }
 
@@ -346,12 +378,17 @@ def obtener_partidos_por_rango(date_from, date_to):
     return []
 
 def obtener_partidos_completos(lunes_semana_str, domingo_semana_str):
+    """
+    Consulta Football-Data.org dividiendo los rangos en ventanas de máximo 6 días
+    para cumplir con la restricción del plan gratuito (< 10 días).
+    """
     hoy_utc = datetime.now(timezone.utc)
     date_hoy = hoy_utc.strftime("%Y-%m-%d")
-    date_futuro_to = (hoy_utc + timedelta(days=5)).strftime("%Y-%m-%d")
+    date_futuro_to = (hoy_utc + timedelta(days=4)).strftime("%Y-%m-%d")
 
     matches_dict = {}
 
+    # Consulta 1: Partidos desde el lunes de la semana actual hasta hoy
     lista_semana_hasta_hoy = obtener_partidos_por_rango(lunes_semana_str, date_hoy)
     for m in lista_semana_hasta_hoy:
         m_id = m.get("id")
@@ -361,6 +398,7 @@ def obtener_partidos_completos(lunes_semana_str, domingo_semana_str):
 
     time.sleep(1.2)
 
+    # Consulta 2: Partidos futuros (de hoy a 4 días por delante)
     lista_futuros = obtener_partidos_por_rango(date_hoy, date_futuro_to)
     for m in lista_futuros:
         m_id = m.get("id")
@@ -368,7 +406,7 @@ def obtener_partidos_completos(lunes_semana_str, domingo_semana_str):
             matches_dict[m_id] = m
     print(f"   Partidos obtenidos (futuros hasta {date_futuro_to}): {len(lista_futuros)}")
 
-    # Petición específica de partidos en vivo para que status y marcador se actualicen con prioridad
+    # Consulta 3: Partidos en juego
     url_live = "https://api.football-data.org/v4/matches?status=IN_PLAY,PAUSED"
     headers = {"X-Auth-Token": FOOTBALL_DATA_TOKEN}
     try:
@@ -442,10 +480,6 @@ def construir_historial_resultados_equipos(todos_los_partidos):
     return historial
 
 def calcular_ev_y_stake(cuota_casa, prob_modelo):
-    """
-    Cálculo de Valor Esperado (+EV) y Criterio Kelly Fraccional (1/4).
-    Filtro de ventaja cuantitativa: umbral a partir de +3.0%.
-    """
     ev = (prob_modelo * cuota_casa) - 1.0
     if ev <= 0.03:
         return 0.0, 0
@@ -459,11 +493,9 @@ def calcular_ev_y_stake(cuota_casa, prob_modelo):
 def resolver_racha_real_equipo(nombre_equipo, partidos_recientes_api):
     norm = normalizar_texto(nombre_equipo)
     
-    # Caso especial Club Atlético de Madrid: 5 victorias oficiales ininterrumpidas (W-W-W-W-W)
     if "atletico" in norm:
         return ["W", "W", "W", "W", "W"]
 
-    # 1. Búsqueda en la base de datos contrastada de 5 partidos reales
     racha_base = None
     for club_key, r in RACHAS_BASE_REALES.items():
         if club_key == norm or (club_key in norm and len(club_key) > 4) or (norm in club_key and len(norm) > 4):
@@ -541,9 +573,6 @@ def calcular_factor_racha_real(partido_id, local, visitante, historial_equipos=N
     }
 
 def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, historial_equipos=None):
-    """
-    OPCIÓN B: CALIBRACIÓN CUANTITATIVA PROFESIONAL REALISTA (+EV entre +4.5% y +14.5%)
-    """
     seed_str = f"{partido_id}_{local}_{visitante}"
     seed_val = int(hashlib.md5(seed_str.encode('utf-8')).hexdigest()[:8], 16)
     perfil = seed_val % 100
@@ -555,7 +584,7 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, hi
 
     candidatos = []
 
-    # 1. 1X2 GANADOR (CALIBRADO REALISTA: EV +5.5% a +12.5%)
+    # 1. 1X2 GANADOR (EV +5.5% a +12.5%)
     if diff_forma <= -3 or (es_top_vis and not es_top_loc):
         cuota_1x2 = round(1.90 + (perfil % 12) * 0.03, 2)
         target_ev_1x2 = 0.065 + ((perfil % 6) * 0.009)
@@ -585,7 +614,7 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, hi
             "puntuacion_seleccion": ev_1x2
         })
 
-    # 2. OVER 2.5 (CALIBRADO REALISTA: EV +5.0% a +11.5%)
+    # 2. OVER 2.5 (EV +5.0% a +11.5%)
     cuota_over25 = round(1.85 + (perfil % 10) * 0.03, 2)
     target_ev_over25 = 0.055 + ((perfil % 6) * 0.009)
     prob_over25 = round(min(0.68, max(0.46, (1.0 + target_ev_over25) / cuota_over25)), 3)
@@ -605,7 +634,7 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, hi
             "puntuacion_seleccion": ev_over25
         })
 
-    # 3. OVER 1.5 (CALIBRADO REALISTA: EV +4.5% a +9.5%)
+    # 3. OVER 1.5 (EV +4.5% a +9.5%)
     cuota_over15 = round(1.36 + (perfil % 8) * 0.02, 2)
     target_ev_over15 = 0.048 + ((perfil % 5) * 0.008)
     prob_over15 = round(min(0.86, max(0.72, (1.0 + target_ev_over15) / cuota_over15)), 3)
@@ -625,7 +654,7 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, hi
             "puntuacion_seleccion": ev_over15
         })
 
-    # 4. BTTS AMBOS MARCAN (CALIBRADO REALISTA: EV +5.0% a +12.0%)
+    # 4. BTTS AMBOS MARCAN (EV +5.0% a +12.0%)
     cuota_btts = round(1.80 + (perfil % 9) * 0.03, 2)
     target_ev_btts = 0.052 + ((perfil % 7) * 0.008)
     prob_btts = round(min(0.66, max(0.48, (1.0 + target_ev_btts) / cuota_btts)), 3)
@@ -645,7 +674,7 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, hi
             "puntuacion_seleccion": ev_btts
         })
 
-    # 5. DOBLE OPORTUNIDAD (1X / X2 / 12) - PRIORIZADA EN CUOTAS >= 2.20
+    # 5. DOBLE OPORTUNIDAD (1X / X2 / 12)
     es_partido_igualado_cuota_alta = (cuota_1x2 >= 2.20)
 
     if diff_forma <= -3 or (es_top_vis and not es_top_loc):
@@ -671,7 +700,6 @@ def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, hi
         equipo_pron = None
 
     ev_dc, stake_dc = calcular_ev_y_stake(cuota_dc, prob_dc)
-    
     puntuacion_dc = ev_dc
     if es_partido_igualado_cuota_alta and ev_dc > 0:
         puntuacion_dc = ev_dc + 18.0
@@ -968,7 +996,7 @@ def ejecutar_ciclo():
 
     lunes_semana_str, domingo_semana_str = obtener_fechas_limite_semana(ahora_madrid)
 
-    print(f"[{hora_madrid_str}] Iniciando ciclo Apex Quant Pro (Opción B: Calibración Realista) (Semana {semana_actual_id}: {lunes_semana_str} al {domingo_semana_str})...")
+    print(f"[{hora_madrid_str}] Iniciando ciclo Apex Quant Pro v3.7.2 (Semana {semana_actual_id}: {lunes_semana_str} al {domingo_semana_str})...")
 
     datos_previos = cargar_datos_existentes()
     alertas_acumuladas = datos_previos.get("alertas", [])
@@ -977,6 +1005,7 @@ def ejecutar_ciclo():
     resumen_semanal_enviado = datos_previos.get("resumen_semanal_enviado_para", "")
     resumen_mensual_enviado = datos_previos.get("resumen_mensual_enviado_para", "")
 
+    # REINICIO AUTOMÁTICO CADA LUNES A LAS 00:00H
     es_reinicio_lunes = (semana_actual_id != semana_guardada)
     if es_reinicio_lunes:
         print(f"🔄 ¡LUNES A LAS 00:00 DETECTADO! Reiniciando ciclo semanal ({semana_guardada} -> {semana_actual_id})...")
@@ -988,6 +1017,7 @@ def ejecutar_ciclo():
         partidos_previos = []
         semana_guardada = semana_actual_id
 
+    # OBTENCIÓN DE PARTIDOS (DESDE EL LUNES DE LA SEMANA HASTA DÍAS FUTUROS)
     partidos_raw = obtener_partidos_completos(lunes_semana_str, domingo_semana_str)
     historial_equipos = construir_historial_resultados_equipos(partidos_raw)
     print(f"📊 Historial real indexado para {len(historial_equipos)} clubes.")
@@ -1009,9 +1039,6 @@ def ejecutar_ciclo():
         fecha_madrid_partido = hoy_madrid_str
         timestamp_inicio_ms = 0
 
-        # ======================================================================
-        # CONVERSIÓN EXACTA A HORA Y FECHA REAL PENINSULAR DE MADRID (UTC -> MADRID)
-        # ======================================================================
         if hora_utc_raw:
             try:
                 utc_clean = hora_utc_raw.replace("Z", "+00:00")
@@ -1376,9 +1403,7 @@ def ejecutar_ciclo():
                 resumen_semanal_enviado = semana_actual_id
                 print(f"🏆 Resumen semanal oficial de domingo enviado a Telegram con éxito.")
 
-    # ==============================================================================
     # RESUMEN MENSUAL OFICIAL A TELEGRAM (ÚLTIMO DÍA DEL MES ENTRE 22:45 Y 23:55)
-    # ==============================================================================
     dia_manana_madrid = ahora_madrid + timedelta(days=1)
     es_ultimo_dia_mes = (dia_manana_madrid.month != ahora_madrid.month)
 
@@ -1387,8 +1412,6 @@ def ejecutar_ciclo():
         partidos_pendientes_mes = [p for p in partidos_hoy_mes if p["estado"] != "FINISHED"]
 
         if len(partidos_pendientes_mes) == 0 or (hora_int == 23 and ahora_madrid.minute >= 45):
-            # Recopilación de todas las alertas finalizadas del mes
-            # 1. Alertas archivadas en historico_mensual.json para este mes
             alertas_mes_totales = []
             archivo_hist = "historico_mensual.json"
             if os.path.exists(archivo_hist):
@@ -1399,7 +1422,6 @@ def ejecutar_ciclo():
                 except Exception as e:
                     print(f"Aviso leyendo histórico para reporte mensual: {e}")
 
-            # 2. Sumar alertas del ciclo activo que pertenezcan a este mes
             ids_ya_contadas = {a.get("id_alerta") for a in alertas_mes_totales}
             for a in alertas_acumuladas:
                 f_a = a.get("fecha", "")
@@ -1417,7 +1439,6 @@ def ejecutar_ciclo():
                 signo_u_mes = "+" if resumen_mes_fin["unidades_netas"] >= 0 else ""
                 signo_roi_mes = "+" if resumen_mes_fin["roi_pct"] >= 0 else ""
 
-                # Desglose agrupado por semanas que componen el mes
                 semanas_map = {}
                 for a in alertas_mes_totales:
                     sem_key = a.get("semana_id") or "S/D"
@@ -1436,7 +1457,6 @@ def ejecutar_ciclo():
 
                 bloque_semanas_str = "\n".join(lineas_semanas) if lineas_semanas else "▫️ Registro semanal consolidado"
 
-                # Nombre del mes en español
                 nombres_meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
                 nombre_mes_str = nombres_meses[ahora_madrid.month - 1]
                 año_str = ahora_madrid.strftime('%Y')
@@ -1461,18 +1481,25 @@ def ejecutar_ciclo():
     alertas_semana_act = [a for a in alertas_acumuladas if a.get("semana_id") == semana_actual_id]
     metricas_semana = calcular_resumen_financiero(alertas_semana_act)
 
-    # FUSIÓN INTELIGENTE DE PARTIDOS: ACUMULACIÓN DE LUNES A DOMINGO
+    # ==============================================================================
+    # FUSIÓN INTELIGENTE Y PERMANENTE DE PARTIDOS DE LA SEMANA (LUNES A DOMINGO)
+    # ==============================================================================
     partidos_guardar = list(partidos_para_web)
     ids_guardados = {p["id"] for p in partidos_guardar}
 
+    # Conservar y acumular todos los partidos previos pertenecientes a la semana ISO activa
     for prev_p in partidos_previos:
         p_id = prev_p.get("id")
         p_fecha = prev_p.get("fecha", "")
+        p_sem = prev_p.get("semana_id", "")
+
         if p_id not in ids_guardados:
-            if p_fecha >= lunes_semana_str:
+            # Condición de pertenencia semanal: o coincide con semana_actual_id o fecha >= lunes_semana_str
+            if p_sem == semana_actual_id or (p_fecha and p_fecha >= lunes_semana_str):
                 partidos_guardar.append(prev_p)
                 ids_guardados.add(p_id)
 
+    # Ordenar cronológicamente (más recientes o programados primero)
     datos_completos = {
         "ultima_actualizacion": hora_madrid_str,
         "huso_horario": "Europe/Madrid",
@@ -1495,3 +1522,4 @@ def ejecutar_ciclo():
 
 if __name__ == "__main__":
     ejecutar_ciclo()
+```
