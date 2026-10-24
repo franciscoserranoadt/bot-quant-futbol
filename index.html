@@ -779,7 +779,10 @@
                 <div class="h-full bg-gradient-to-r from-emerald-400 via-amber-400 to-amber-500 rounded-full" style="width: ${barra}%"></div>
               </div>
             </div>
-            ${evNum < 3 ? '<div class="text-[10px] text-slate-400">EV inferior al 3%: no se envía alerta a Telegram.</div>' : ''}
+            ${p.prob_estadistica != null
+              ? `<div class="text-[10px] ${p.confirmado_stats ? 'text-emerald-400' : 'text-slate-400'}">📐 Modelo estadístico: ${p.prob_estadistica}% vs mercado ${p.prob_mercado}% · ${p.confirmado_stats ? 'respalda la apuesta ✓' : 'no respalda la apuesta'}${p.xg_local != null ? ' · xG ' + p.xg_local + '-' + p.xg_visitante : ''}</div>`
+              : '<div class="text-[10px] text-slate-500">📐 Sin datos estadísticos suficientes</div>'}
+            ${evNum < 3 ? '<div class="text-[10px] text-slate-400">EV inferior al 3%: no se envía alerta a Telegram.</div>' : (!p.telegram_enviado && !p.confirmado_stats ? '<div class="text-[10px] text-slate-400">Sin respaldo estadístico: no se envía alerta a Telegram.</div>' : '')}
             ${rachaHtml}
           </div>
 
