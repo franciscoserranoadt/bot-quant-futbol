@@ -1088,6 +1088,11 @@ def ejecutar_ciclo():
                 minuto_en_juego_str = f"{m2t}'"
             else:
                 minuto_en_juego_str = "90+'"
+        elif estado_api in ["TIMED", "SCHEDULED"] and minutos_desde_inicio > 150:
+            # La API sigue diciendo "programado" aunque el partido ya debería haber terminado:
+            # no se da por finalizado (no hay marcador) hasta que la API publique el resultado.
+            estado_normalizado = "PENDING_RESULT"
+            minuto_en_juego_str = "Esperando resultado"
 
         info_partido_actual = {
             "id": p.get("id"),

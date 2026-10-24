@@ -742,6 +742,8 @@
             ${badgeAcierto}
           </div>
         `;
+      } else if (p.estado === 'PENDING_RESULT') {
+        badgeEstado = `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30 uppercase">ESPERANDO RESULTADO</span>`;
       } else {
         badgeEstado = `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800/80 text-slate-400 border border-slate-700/60 uppercase">PROGRAMADO</span>`;
       }
@@ -896,6 +898,8 @@
               <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">Alerta Real</span>
             </div>
           `;
+        } else if (a.estado_partido === 'PENDING_RESULT') {
+          badgeLiquidacion = `<span class="px-2 py-0.5 rounded text-[9px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">ESPERANDO RESULTADO</span>`;
         } else {
           badgeLiquidacion = `<span class="px-2 py-0.5 rounded text-[9px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">Alerta Real</span>`;
         }
