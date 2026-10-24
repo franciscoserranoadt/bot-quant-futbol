@@ -979,6 +979,19 @@ def ejecutar_ciclo():
 
     print(f"[{hora_madrid_str}] Iniciando ciclo Apex Quant Pro v3.8 (cuotas reales) (Semana {semana_actual_id}: {lunes_semana_str} al {domingo_semana_str})...")
 
+    # Comprobación de la clave de The Odds API (el endpoint /sports no consume créditos) y lectura de créditos restantes
+    estado_api_cuotas = "sin_clave"
+    if THE_ODDS_API_KEY:
+        info_sports, st_sports = odds_get("/sports", {})
+        if info_sports is not None:
+            estado_api_cuotas = "ok"
+            print(f"🔑 The Odds API OK | créditos restantes: {ODDS_ESTADO['restantes']}")
+        else:
+            estado_api_cuotas = f"error_{st_sports}"
+            print(f"🔑 The Odds API ERROR (HTTP {st_sports}): revisa THE_ODDS_API_KEY")
+    else:
+        print("🔑 THE_ODDS_API_KEY no configurada: no habrá cuotas reales ni alertas")
+
     datos_previos = cargar_datos_existentes()
     alertas_acumuladas = datos_previos.get("alertas", [])
     partidos_previos = datos_previos.get("partidos", [])
@@ -1465,6 +1478,7 @@ def ejecutar_ciclo():
         "total_partidos_hoy": len(partidos_guardar),
         "partidos": partidos_guardar,
         "creditos_odds_restantes": ODDS_ESTADO["restantes"],
+        "api_cuotas_estado": estado_api_cuotas,
         "alertas": alertas_acumuladas[-70:]
     }
 
