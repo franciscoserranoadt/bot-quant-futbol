@@ -3,6 +3,8 @@ import json
 import hashlib
 import requests
 import time
+import unicodedata
+import difflib
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 
@@ -284,6 +286,284 @@ RACHAS_BASE_REALES = {
     "montpellier hsc": ["L", "L", "W", "L", "L"]
 }
 
+# ==============================================================================
+# CUOTAS REALES (THE ODDS API) - WINAMAX vs CONSENSO DEL MERCADO
+# Solo se consultan cuotas (con coste de créditos) para partidos que empiezan
+# entre 15 y 90 minutos. El calendario viene de football-data.org (gratis) y la
+# lista de eventos de The Odds API (/events) tampoco consume créditos.
+# ==============================================================================
+ODDS_API_BASE = "https://api.the-odds-api.com/v4"
+ODDS_SPORT_KEYS = {
+    "PD": "soccer_spain_la_liga",
+    "SD": "soccer_spain_segunda_division",
+    "PL": "soccer_epl",
+    "BL1": "soccer_germany_bundesliga",
+    "SA": "soccer_italy_serie_a",
+    "FL1": "soccer_france_ligue_one",
+    "CL": "soccer_uefa_champs_league",
+    "CDR": "soccer_spain_copa_del_rey",
+}
+BOOKMAKERS_OBJETIVO = [b.strip() for b in os.getenv("ODDS_BOOKMAKERS", "winamax_fr,winamax_de").split(",") if b.strip()]
+ODDS_REGIONS = os.getenv("ODDS_REGIONS", "eu")
+ODDS_MARKETS = os.getenv("ODDS_MARKETS", "h2h,totals,btts,double_chance")
+MIN_CASAS_CONSENSO = int(os.getenv("ODDS_MIN_CASAS", "4"))
+CREDITOS_RESERVA = float(os.getenv("ODDS_MIN_CREDITS", "20"))
+MAX_CONSULTAS_CICLO = int(os.getenv("ODDS_MAX_CALLS", "10"))
+EV_MINIMO_PCT = 3.0     # filtro oficial de alerta (+EV >= 3%)
+EV_MAXIMO_PCT = 20.0    # por encima se considera dato sospechoso (cuota errónea / línea distinta)
+VENTANA_MIN = 15
+VENTANA_MAX = 90
+
+ODDS_ESTADO = {"restantes": None, "consultas": 0}
+
+_STOP_TOKENS = {"fc", "cf", "afc", "ud", "sad", "cd", "ca", "rc", "rcd", "sc", "sv", "fsv", "vfb", "vfl", "tsg",
+                "ac", "as", "ss", "us", "calcio", "club", "de", "del", "la", "le", "the", "and", "osc", "ssc",
+                "1907", "1909", "1913", "1899", "1846", "1901", "05", "04", "07", "1"}
+_ALIAS_TOKENS = {"internazionale": "inter", "milano": "milan", "munchen": "munich", "bayern": "bayern",
+                 "wanderers": "wanderers", "hotspur": "hotspur"}
+
+
+def _tokens_equipo(nombre):
+    t = unicodedata.normalize("NFKD", nombre or "").encode("ascii", "ignore").decode("ascii").lower()
+    for ch in ["&", "-", ".", "/", "'"]:
+        t = t.replace(ch, " ")
+    toks = {_ALIAS_TOKENS.get(x, x) for x in t.split() if x not in _STOP_TOKENS}
+    return toks
+
+
+def equipos_equivalentes(a, b):
+    ta, tb = _tokens_equipo(a), _tokens_equipo(b)
+    if not ta or not tb:
+        return False
+    if ta == tb or ta <= tb or tb <= ta:
+        return True
+    if len(ta & tb) / len(ta | tb) >= 0.6:
+        return True
+    return difflib.SequenceMatcher(None, " ".join(sorted(ta)), " ".join(sorted(tb))).ratio() >= 0.85
+
+
+def odds_get(path, params):
+    if not THE_ODDS_API_KEY:
+        return None, None
+    q = dict(params)
+    q["apiKey"] = THE_ODDS_API_KEY
+    try:
+        res = requests.get(f"{ODDS_API_BASE}{path}", params=q, timeout=15)
+    except Exception as e:
+        print(f"⚠️ Error The Odds API ({path}): {e}")
+        return None, None
+    rest = res.headers.get("x-requests-remaining")
+    if rest is not None:
+        try:
+            ODDS_ESTADO["restantes"] = float(rest)
+        except Exception:
+            pass
+    if res.status_code == 200:
+        return res.json(), 200
+    print(f"⚠️ The Odds API {res.status_code} en {path}: {res.text[:160]}")
+    return None, res.status_code
+
+
+def buscar_evento_odds(sport_key, local, visitante, inicio_utc, cache_eventos):
+    if sport_key not in cache_eventos:
+        data, _ = odds_get(f"/sports/{sport_key}/events", {"dateFormat": "iso"})
+        cache_eventos[sport_key] = data if isinstance(data, list) else []
+    for ev in cache_eventos[sport_key]:
+        if not (equipos_equivalentes(ev.get("home_team"), local) and equipos_equivalentes(ev.get("away_team"), visitante)):
+            continue
+        if inicio_utc is not None:
+            try:
+                t = datetime.fromisoformat(ev["commence_time"].replace("Z", "+00:00"))
+                if abs((t - inicio_utc).total_seconds()) > 6 * 3600:
+                    continue
+            except Exception:
+                pass
+        return ev
+    return None
+
+
+def consultar_cuotas_evento(sport_key, event_id):
+    params = {"regions": ODDS_REGIONS, "markets": ODDS_MARKETS, "oddsFormat": "decimal", "dateFormat": "iso"}
+    ODDS_ESTADO["consultas"] += 1
+    data, status = odds_get(f"/sports/{sport_key}/events/{event_id}/odds", params)
+    if data is None and status == 422:
+        params["markets"] = "h2h,totals"
+        data, _ = odds_get(f"/sports/{sport_key}/events/{event_id}/odds", params)
+    return data
+
+
+def parsear_bookmaker(bk, ev):
+    home = (ev.get("home_team") or "").lower()
+    away = (ev.get("away_team") or "").lower()
+    out = {"h2h": {}, "totals": {}, "btts": {}, "dc": {}}
+    for m in bk.get("markets", []):
+        key = m.get("key")
+        for o in m.get("outcomes", []):
+            nombre = (o.get("name") or "").strip()
+            low = nombre.lower()
+            precio = o.get("price")
+            if not precio or precio <= 1.0:
+                continue
+            if key == "h2h":
+                if low == home:
+                    out["h2h"]["1"] = precio
+                elif low == away:
+                    out["h2h"]["2"] = precio
+                elif low == "draw":
+                    out["h2h"]["X"] = precio
+            elif key == "totals":
+                punto = o.get("point")
+                if punto is None:
+                    continue
+                lado = "O" if low == "over" else ("U" if low == "under" else None)
+                if lado:
+                    out["totals"].setdefault(float(punto), {})[lado] = precio
+            elif key == "btts":
+                if low == "yes":
+                    out["btts"]["SI"] = precio
+                elif low == "no":
+                    out["btts"]["NO"] = precio
+            elif key == "double_chance":
+                if "draw" in low:
+                    if home and home in low:
+                        out["dc"]["1X"] = precio
+                    elif away and away in low:
+                        out["dc"]["X2"] = precio
+                elif home in low and away in low:
+                    out["dc"]["12"] = precio
+    return out
+
+
+def _quitar_margen(precios):
+    inv = {k: 1.0 / v for k, v in precios.items() if v and v > 1.0}
+    if len(inv) != len(precios) or not inv:
+        return None
+    s = sum(inv.values())
+    return {k: v / s for k, v in inv.items()} if s > 0 else None
+
+
+def _consenso(otros, extractor):
+    acum, n = {}, 0
+    for b in otros:
+        precios = extractor(b)
+        if not precios:
+            continue
+        pr = _quitar_margen(precios)
+        if not pr:
+            continue
+        n += 1
+        for k, v in pr.items():
+            acum[k] = acum.get(k, 0.0) + v
+    if n < MIN_CASAS_CONSENSO:
+        return None, n
+    return {k: v / n for k, v in acum.items()}, n
+
+
+def ev_y_stake(cuota, prob):
+    ev = prob * cuota - 1.0
+    if ev <= 0:
+        return round(ev * 100, 1), 0
+    b = cuota - 1.0
+    kelly = (b * prob - (1.0 - prob)) / b
+    stake = min(10, max(1, round(max(0.0, kelly * 0.25) * 40)))
+    return round(ev * 100, 1), stake
+
+
+def generar_candidatos(ev_odds, local, visitante):
+    books = {bk["key"]: parsear_bookmaker(bk, ev_odds) for bk in ev_odds.get("bookmakers", [])}
+    key_obj = next((k for k in BOOKMAKERS_OBJETIVO if k in books), None)
+    if not key_obj:
+        return [], 0, "Winamax no ofrece cuotas de este partido"
+    obj = books[key_obj]
+    otros = [b for k, b in books.items() if k not in BOOKMAKERS_OBJETIVO]
+    cands = []
+
+    def add(nombre, tipo, cat, equipo, cuota, prob, icono, n):
+        if cuota is None or prob is None:
+            return
+        ev, stake = ev_y_stake(cuota, prob)
+        if ev <= 0 or ev > EV_MAXIMO_PCT:
+            return
+        cands.append({"mercado": nombre, "tipo_mercado": tipo, "categoria_visual": cat,
+                      "equipo_pronosticado": equipo, "cuota": round(cuota, 2),
+                      "prob_modelo": f"{round(prob * 100, 1)}%", "ev": ev, "stake": stake,
+                      "icono_tg": icono, "n_casas": n, "casa": "Winamax"})
+
+    # 1X2 y Doble Oportunidad (derivada del consenso 1X2 de las otras casas)
+    h2h, n = _consenso(otros, lambda b: b["h2h"] if len(b["h2h"]) == 3 else None)
+    n_max = n
+    if h2h:
+        add(f"Victoria {local} (1X2)", "1X2", "1x2", local, obj["h2h"].get("1"), h2h["1"], "⚽", n)
+        add(f"Victoria {visitante} (1X2)", "1X2", "1x2", visitante, obj["h2h"].get("2"), h2h["2"], "⚽", n)
+        add(f"Doble Oportunidad: 1X ({local} o Empate)", "DOUBLE_CHANCE_1X", "doble_oportunidad", local,
+            obj["dc"].get("1X"), h2h["1"] + h2h["X"], "🛡️", n)
+        add(f"Doble Oportunidad: X2 (Empate o {visitante})", "DOUBLE_CHANCE_X2", "doble_oportunidad", visitante,
+            obj["dc"].get("X2"), h2h["X"] + h2h["2"], "🛡️", n)
+        add(f"Doble Oportunidad: 12 ({local} o {visitante} - Sin Empate)", "DOUBLE_CHANCE_12", "doble_oportunidad", None,
+            obj["dc"].get("12"), h2h["1"] + h2h["2"], "🛡️", n)
+
+    # Goles totales (Over 1.5 y Over 2.5)
+    for punto, nombre, tipo, cat in [(1.5, "Más de 1.5 Goles (Over 1.5)", "OVER_15", "over15"),
+                                     (2.5, "Más de 2.5 Goles (Over 2.5)", "GOLES", "goles")]:
+        cons, n = _consenso(otros, lambda b, p=punto: b["totals"].get(p) if len(b["totals"].get(p, {})) == 2 else None)
+        n_max = max(n_max, n)
+        if cons:
+            add(nombre, tipo, cat, None, obj["totals"].get(punto, {}).get("O"), cons["O"], "🥅", n)
+
+    # Ambos marcan
+    cons, n = _consenso(otros, lambda b: b["btts"] if len(b["btts"]) == 2 else None)
+    n_max = max(n_max, n)
+    if cons:
+        add("Ambos Equipos Marcan (Sí)", "BTTS", "btts", None, obj["btts"].get("SI"), cons["SI"], "🤝", n)
+
+    if not cands:
+        if n_max < MIN_CASAS_CONSENSO:
+            return [], n_max, f"Pocas casas para el consenso ({n_max}/{MIN_CASAS_CONSENSO})"
+        return [], n_max, "Sin valor: Winamax no supera al consenso del mercado"
+    return cands, n_max, None
+
+
+def analizar_partido_con_cuotas(comp_code, local, visitante, inicio_utc, form_info, cache_eventos):
+    """Devuelve (analisis|None, definitivo, nota). definitivo=False -> se reintenta en el siguiente ciclo."""
+    sport_key = ODDS_SPORT_KEYS.get(comp_code)
+    if not THE_ODDS_API_KEY or not sport_key:
+        return None, False, "Sin API de cuotas configurada"
+    if ODDS_ESTADO["consultas"] >= MAX_CONSULTAS_CICLO:
+        return None, False, "Límite de consultas por ciclo"
+    if ODDS_ESTADO["restantes"] is not None and ODDS_ESTADO["restantes"] <= CREDITOS_RESERVA:
+        return None, False, "Créditos de The Odds API en reserva"
+    ev = buscar_evento_odds(sport_key, local, visitante, inicio_utc, cache_eventos)
+    if not ev:
+        return None, False, "Evento no encontrado en The Odds API"
+    datos = consultar_cuotas_evento(sport_key, ev.get("id"))
+    if not datos:
+        return None, False, "Sin respuesta de cuotas"
+    cands, n_casas, nota = generar_candidatos(datos, local, visitante)
+    if not cands:
+        return None, True, nota
+    mejor = max(cands, key=lambda c: c["ev"])
+    mejor["form_info"] = form_info
+    return mejor, True, None
+
+
+def reconstruir_analisis(prev, form_info):
+    if not prev or not prev.get("tiene_pronostico") or not prev.get("mercado"):
+        return None
+    return {
+        "mercado": prev.get("mercado"),
+        "tipo_mercado": prev.get("tipo_mercado"),
+        "categoria_visual": prev.get("categoria_visual", "doble_oportunidad"),
+        "equipo_pronosticado": prev.get("equipo_pronosticado"),
+        "cuota": prev.get("cuota"),
+        "prob_modelo": prev.get("prob_modelo"),
+        "ev": prev.get("ev_numero"),
+        "stake": prev.get("stake"),
+        "n_casas": prev.get("n_casas"),
+        "casa": prev.get("casa", "Winamax"),
+        "form_info": form_info,
+    }
+
+
 def enviar_telegram(mensaje, url_accion=None, texto_boton="📱 Abrir en Web App"):
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         return False
@@ -438,17 +718,6 @@ def construir_historial_resultados_equipos(todos_los_partidos):
 
     return historial
 
-def calcular_ev_y_stake(cuota_casa, prob_modelo):
-    ev = (prob_modelo * cuota_casa) - 1.0
-    if ev <= 0.03:
-        return 0.0, 0
-    b = cuota_casa - 1.0
-    q = 1.0 - prob_modelo
-    kelly_puro = (b * prob_modelo - q) / b
-    kelly_fraccional = max(0.0, kelly_puro * 0.25)
-    stake = min(10, max(1, round(kelly_fraccional * 40)))
-    return round(ev * 100, 1), stake
-
 def resolver_racha_real_equipo(nombre_equipo, partidos_recientes_api):
     norm = normalizar_texto(nombre_equipo)
     
@@ -530,273 +799,6 @@ def calcular_factor_racha_real(partido_id, local, visitante, historial_equipos=N
         "es_club_top_local": es_club_top_local,
         "es_club_top_vis": es_club_top_vis
     }
-
-def evaluar_mercados_prepartido(partido_id, local, visitante, comp_info=None, historial_equipos=None):
-    seed_str = f"{partido_id}_{local}_{visitante}"
-    seed_val = int(hashlib.md5(seed_str.encode('utf-8')).hexdigest()[:8], 16)
-    perfil = seed_val % 100
-
-    form_info = calcular_factor_racha_real(partido_id, local, visitante, historial_equipos)
-    diff_forma = form_info.get("diferencia_forma", 0)
-    es_top_loc = form_info.get("es_club_top_local", False)
-    es_top_vis = form_info.get("es_club_top_vis", False)
-
-    candidatos = []
-
-    # 1. 1X2 GANADOR (CALIBRADO REALISTA: EV +5.5% a +12.5%)
-    if diff_forma <= -3 or (es_top_vis and not es_top_loc):
-        cuota_1x2 = round(1.90 + (perfil % 12) * 0.03, 2)
-        target_ev_1x2 = 0.065 + ((perfil % 6) * 0.009)
-        prob_1x2 = round(min(0.72, max(0.48, (1.0 + target_ev_1x2) / cuota_1x2)), 3)
-        nombre_1x2 = f"Victoria {visitante} (1X2)"
-        equipo_pron_1x2 = visitante
-    else:
-        cuota_1x2 = round(2.00 + (perfil % 14) * 0.03, 2)
-        target_ev_1x2 = 0.060 + ((perfil % 7) * 0.008)
-        prob_1x2 = round(min(0.68, max(0.42, (1.0 + target_ev_1x2) / cuota_1x2)), 3)
-        nombre_1x2 = f"Victoria {local} (1X2)"
-        equipo_pron_1x2 = local
-
-    ev_1x2, stake_1x2 = calcular_ev_y_stake(cuota_1x2, prob_1x2)
-    if ev_1x2 > 0:
-        candidatos.append({
-            "mercado": nombre_1x2,
-            "tipo_mercado": "1X2",
-            "categoria_visual": "1x2",
-            "equipo_pronosticado": equipo_pron_1x2,
-            "cuota": cuota_1x2,
-            "prob_modelo": f"{round(prob_1x2 * 100, 1)}%",
-            "ev": ev_1x2,
-            "stake": stake_1x2,
-            "form_info": form_info,
-            "icono_tg": "⚽",
-            "puntuacion_seleccion": ev_1x2
-        })
-
-    # 2. OVER 2.5 (CALIBRADO REALISTA: EV +5.0% a +11.5%)
-    cuota_over25 = round(1.85 + (perfil % 10) * 0.03, 2)
-    target_ev_over25 = 0.055 + ((perfil % 6) * 0.009)
-    prob_over25 = round(min(0.68, max(0.46, (1.0 + target_ev_over25) / cuota_over25)), 3)
-    ev_over25, stake_over25 = calcular_ev_y_stake(cuota_over25, prob_over25)
-    if ev_over25 > 0:
-        candidatos.append({
-            "mercado": "Más de 2.5 Goles (Over 2.5)",
-            "tipo_mercado": "GOLES",
-            "categoria_visual": "goles",
-            "equipo_pronosticado": None,
-            "cuota": cuota_over25,
-            "prob_modelo": f"{round(prob_over25 * 100, 1)}%",
-            "ev": ev_over25,
-            "stake": stake_over25,
-            "form_info": form_info,
-            "icono_tg": "🥅",
-            "puntuacion_seleccion": ev_over25
-        })
-
-    # 3. OVER 1.5 (CALIBRADO REALISTA: EV +4.5% a +9.5%)
-    cuota_over15 = round(1.36 + (perfil % 8) * 0.02, 2)
-    target_ev_over15 = 0.048 + ((perfil % 5) * 0.008)
-    prob_over15 = round(min(0.86, max(0.72, (1.0 + target_ev_over15) / cuota_over15)), 3)
-    ev_over15, stake_over15 = calcular_ev_y_stake(cuota_over15, prob_over15)
-    if ev_over15 > 0:
-        candidatos.append({
-            "mercado": "Más de 1.5 Goles (Over 1.5)",
-            "tipo_mercado": "OVER_15",
-            "categoria_visual": "over15",
-            "equipo_pronosticado": None,
-            "cuota": cuota_over15,
-            "prob_modelo": f"{round(prob_over15 * 100, 1)}%",
-            "ev": ev_over15,
-            "stake": stake_over15,
-            "form_info": form_info,
-            "icono_tg": "⚽",
-            "puntuacion_seleccion": ev_over15
-        })
-
-    # 4. BTTS AMBOS MARCAN (CALIBRADO REALISTA: EV +5.0% a +12.0%)
-    cuota_btts = round(1.80 + (perfil % 9) * 0.03, 2)
-    target_ev_btts = 0.052 + ((perfil % 7) * 0.008)
-    prob_btts = round(min(0.66, max(0.48, (1.0 + target_ev_btts) / cuota_btts)), 3)
-    ev_btts, stake_btts = calcular_ev_y_stake(cuota_btts, prob_btts)
-    if ev_btts > 0:
-        candidatos.append({
-            "mercado": "Ambos Equipos Marcan (Sí)",
-            "tipo_mercado": "BTTS",
-            "categoria_visual": "btts",
-            "equipo_pronosticado": None,
-            "cuota": cuota_btts,
-            "prob_modelo": f"{round(prob_btts * 100, 1)}%",
-            "ev": ev_btts,
-            "stake": stake_btts,
-            "form_info": form_info,
-            "icono_tg": "🤝",
-            "puntuacion_seleccion": ev_btts
-        })
-
-    # 5. DOBLE OPORTUNIDAD (1X / X2 / 12) - PRIORIZADA EN CUOTAS >= 2.20
-    es_partido_igualado_cuota_alta = (cuota_1x2 >= 2.20)
-
-    if diff_forma <= -3 or (es_top_vis and not es_top_loc):
-        cuota_dc = round(1.36 + (perfil % 7) * 0.02, 2)
-        target_ev_dc = 0.065 + ((perfil % 6) * 0.009)
-        prob_dc = round(min(0.88, max(0.74, (1.0 + target_ev_dc) / cuota_dc)), 3)
-        nombre_dc = f"X2 (Empate o {visitante})"
-        tipo_dc = "DOUBLE_CHANCE_X2"
-        equipo_pron = visitante
-    elif diff_forma >= 3 or (es_top_loc and not es_top_vis) or (es_partido_igualado_cuota_alta and diff_forma >= 0):
-        cuota_dc = round(1.38 + (perfil % 8) * 0.02, 2)
-        target_ev_dc = 0.068 + ((perfil % 6) * 0.009)
-        prob_dc = round(min(0.88, max(0.74, (1.0 + target_ev_dc) / cuota_dc)), 3)
-        nombre_dc = f"1X ({local} o Empate)"
-        tipo_dc = "DOUBLE_CHANCE_1X"
-        equipo_pron = local
-    else:
-        cuota_dc = round(1.32 + (perfil % 7) * 0.02, 2)
-        target_ev_dc = 0.060 + ((perfil % 5) * 0.009)
-        prob_dc = round(min(0.88, max(0.75, (1.0 + target_ev_dc) / cuota_dc)), 3)
-        nombre_dc = f"12 ({local} o {visitante} - Sin Empate)"
-        tipo_dc = "DOUBLE_CHANCE_12"
-        equipo_pron = None
-
-    ev_dc, stake_dc = calcular_ev_y_stake(cuota_dc, prob_dc)
-    puntuacion_dc = ev_dc
-    if es_partido_igualado_cuota_alta and ev_dc > 0:
-        puntuacion_dc = ev_dc + 18.0
-
-    if ev_dc > 0:
-        candidatos.append({
-            "mercado": f"Doble Oportunidad: {nombre_dc}",
-            "tipo_mercado": tipo_dc,
-            "categoria_visual": "doble_oportunidad",
-            "equipo_pronosticado": equipo_pron,
-            "cuota": cuota_dc,
-            "prob_modelo": f"{round(prob_dc * 100, 1)}%",
-            "ev": ev_dc,
-            "stake": stake_dc,
-            "form_info": form_info,
-            "icono_tg": "🛡️",
-            "puntuacion_seleccion": puntuacion_dc
-        })
-
-    if candidatos:
-        candidatos.sort(key=lambda x: x["puntuacion_seleccion"], reverse=True)
-        return candidatos[0]
-
-    return {
-        "mercado": f"Doble Oportunidad: 1X ({local} o Empate)",
-        "tipo_mercado": "DOUBLE_CHANCE_1X",
-        "categoria_visual": "doble_oportunidad",
-        "equipo_pronosticado": local,
-        "cuota": 1.40,
-        "prob_modelo": "77.0%",
-        "ev": 7.8,
-        "stake": 2,
-        "form_info": form_info,
-        "icono_tg": "🛡️"
-    }
-
-def evaluar_mercado_descanso_empate(partido_id, local, visitante, goles_ht, comp_info=None, historial_equipos=None):
-    seed_str = f"HT_{partido_id}_{local}_{visitante}_{goles_ht}"
-    seed_val = int(hashlib.md5(seed_str.encode('utf-8')).hexdigest()[:8], 16)
-    subperfil = seed_val % 100
-    form_info = calcular_factor_racha_real(partido_id, local, visitante, historial_equipos)
-    diff_forma = form_info.get("diferencia_forma", 0)
-
-    if goles_ht == 0:
-        if subperfil < 35:
-            cuota = round(1.82 + (subperfil % 8) * 0.03, 2)
-            target_ev = 0.080 + ((subperfil % 6) * 0.008)
-            prob = round(min(0.65, max(0.54, (1.0 + target_ev) / cuota)), 3)
-            ev, stake = calcular_ev_y_stake(cuota, prob)
-            return {
-                "mercado": "Más de 1.5 Goles Totales (In-Play 2T)",
-                "tipo_mercado": "GOLES_HT",
-                "categoria_visual": "inplay_ht",
-                "equipo_pronosticado": None,
-                "cuota": cuota,
-                "prob_modelo": f"{round(prob * 100, 1)}%",
-                "ev": ev if ev > 0 else 8.5,
-                "stake": stake if stake > 0 else 2,
-                "contexto": "Empate 0-0 al Descanso • Ritmo ofensivo favorable en 2T",
-                "form_info": form_info,
-                "icono_tg": "🥅"
-            }
-        elif subperfil < 60:
-            cuota = round(1.36 + (subperfil % 6) * 0.02, 2)
-            target_ev = 0.075 + ((subperfil % 5) * 0.008)
-            prob = round(min(0.86, max(0.74, (1.0 + target_ev) / cuota)), 3)
-            ev, stake = calcular_ev_y_stake(cuota, prob)
-            tipo_dc = "DOUBLE_CHANCE_X2" if diff_forma < 0 else "DOUBLE_CHANCE_1X"
-            eq_dc = visitante if diff_forma < 0 else local
-            nombre_dc = f"X2 (Empate o {visitante} In-Play)" if diff_forma < 0 else f"1X ({local} o Empate In-Play)"
-            return {
-                "mercado": f"Doble Oportunidad: {nombre_dc}",
-                "tipo_mercado": tipo_dc,
-                "categoria_visual": "doble_oportunidad",
-                "equipo_pronosticado": eq_dc,
-                "cuota": cuota,
-                "prob_modelo": f"{round(prob * 100, 1)}%",
-                "ev": ev if ev > 0 else 7.8,
-                "stake": stake if stake > 0 else 2,
-                "contexto": "Empate 0-0 al Descanso • Cobertura doble defensiva",
-                "form_info": form_info,
-                "icono_tg": "🛡️"
-            }
-        elif subperfil < 80:
-            cuota = round(1.90 + (subperfil % 7) * 0.03, 2)
-            target_ev = 0.085 + ((subperfil % 5) * 0.008)
-            prob = round(min(0.64, max(0.52, (1.0 + target_ev) / cuota)), 3)
-            ev, stake = calcular_ev_y_stake(cuota, prob)
-            return {
-                "mercado": "Ambos Equipos Marcan (Sí In-Play)",
-                "tipo_mercado": "BTTS",
-                "categoria_visual": "btts",
-                "equipo_pronosticado": None,
-                "cuota": cuota,
-                "prob_modelo": f"{round(prob * 100, 1)}%",
-                "ev": ev if ev > 0 else 8.9,
-                "stake": stake if stake > 0 else 2,
-                "contexto": "Empate 0-0 al Descanso • Ocasiones repartidas",
-                "form_info": form_info,
-                "icono_tg": "🤝"
-            }
-        else:
-            cuota = round(2.25 + (subperfil % 8) * 0.03, 2)
-            target_ev = 0.075 + ((subperfil % 5) * 0.008)
-            prob = round(min(0.55, max(0.44, (1.0 + target_ev) / cuota)), 3)
-            ev, stake = calcular_ev_y_stake(cuota, prob)
-            eq_gan = visitante if diff_forma < 0 else local
-            return {
-                "mercado": f"Victoria {eq_gan} (1X2 In-Play)",
-                "tipo_mercado": "1X2_HT",
-                "categoria_visual": "inplay_ht",
-                "equipo_pronosticado": eq_gan,
-                "cuota": cuota,
-                "prob_modelo": f"{round(prob * 100, 1)}%",
-                "ev": ev if ev > 0 else 7.5,
-                "stake": stake if stake > 0 else 2,
-                "contexto": f"Empate 0-0 al Descanso • Valor acumulado en {eq_gan}",
-                "form_info": form_info,
-                "icono_tg": "⚽"
-            }
-    else:
-        cuota = round(1.88 + (subperfil % 7) * 0.02, 2)
-        target_ev = 0.090 + ((subperfil % 5) * 0.008)
-        prob = round(min(0.66, max(0.54, (1.0 + target_ev) / cuota)), 3)
-        ev, stake = calcular_ev_y_stake(cuota, prob)
-        return {
-            "mercado": "Más de 2.5 Goles (Over 2.5 In-Play)",
-            "tipo_mercado": "GOLES_HT",
-            "categoria_visual": "inplay_ht",
-            "equipo_pronosticado": None,
-            "cuota": cuota,
-            "prob_modelo": f"{round(prob * 100, 1)}%",
-            "ev": ev if ev > 0 else 9.2,
-            "stake": stake if stake > 0 else 2,
-            "contexto": "Empate 1-1 al Descanso • Alta expectativa goleadora 2T",
-            "form_info": form_info,
-            "icono_tg": "🥅"
-        }
 
 def verificar_acierto(mercado_texto, tipo_mercado, goles_local, goles_visitante, nombre_local="", nombre_visitante="", equipo_pronosticado=None):
     if goles_local is None or goles_visitante is None:
@@ -955,7 +957,7 @@ def ejecutar_ciclo():
 
     lunes_semana_str, domingo_semana_str = obtener_fechas_limite_semana(ahora_madrid)
 
-    print(f"[{hora_madrid_str}] Iniciando ciclo Apex Quant Pro v3.7.1 (Semana {semana_actual_id}: {lunes_semana_str} al {domingo_semana_str})...")
+    print(f"[{hora_madrid_str}] Iniciando ciclo Apex Quant Pro v3.8 (cuotas reales Winamax) (Semana {semana_actual_id}: {lunes_semana_str} al {domingo_semana_str})...")
 
     datos_previos = cargar_datos_existentes()
     alertas_acumuladas = datos_previos.get("alertas", [])
@@ -984,6 +986,8 @@ def ejecutar_ciclo():
     partidos_para_web = []
     partidos_map_por_id = {}
     partidos_map_por_nombres = {}
+    partidos_previos_map = {str(x.get('id')): x for x in partidos_previos}
+    cache_eventos_odds = {}
 
     for p in partidos_raw:
         comp_code = p.get("competition", {}).get("code", "")
@@ -1108,78 +1112,46 @@ def ejecutar_ciclo():
         key_norm = f"{normalizar_texto(nombre_local)} vs {normalizar_texto(nombre_visitante)}"
         partidos_map_por_nombres[key_norm] = info_partido_actual
 
-        es_empate_descanso = (estado_normalizado == "HT") and (goles_local is not None and goles_visitante is not None and goles_local == goles_visitante)
+        form_info = calcular_factor_racha_real(p.get("id", 0), nombre_local, nombre_visitante, historial_equipos)
+        prev = partidos_previos_map.get(str(p.get("id")))
+        analizado = bool(prev and prev.get("analizado"))
+        nota_cuotas = prev.get("nota_cuotas") if prev else None
+        analisis = None
+        analisis_nuevo = False
 
-        if es_empate_descanso:
-            analisis = evaluar_mercado_descanso_empate(p.get("id", 0), nombre_local, nombre_visitante, goles_local, comp_info, historial_equipos)
-        else:
-            analisis = evaluar_mercados_prepartido(p.get("id", 0), nombre_local, nombre_visitante, comp_info, historial_equipos)
+        if analizado:
+            analisis = reconstruir_analisis(prev, form_info)
+        elif (not es_finalizado) and (not es_en_juego) and VENTANA_MIN <= minutos_restantes <= VENTANA_MAX:
+            inicio_dt = datetime.fromtimestamp(timestamp_inicio_ms / 1000.0, timezone.utc) if timestamp_inicio_ms else None
+            analisis, definitivo, nota = analizar_partido_con_cuotas(comp_code, nombre_local, nombre_visitante, inicio_dt, form_info, cache_eventos_odds)
+            nota_cuotas = nota
+            if definitivo:
+                analizado = True
+                analisis_nuevo = analisis is not None
+            else:
+                analisis = None
 
         acertado_partido = None
-        if es_finalizado and goles_local is not None and goles_visitante is not None:
-            acertado_partido = verificar_acierto(
-                analisis["mercado"],
-                analisis["tipo_mercado"],
-                goles_local,
-                goles_visitante,
-                nombre_local=nombre_local,
-                nombre_visitante=nombre_visitante,
-                equipo_pronosticado=analisis.get("equipo_pronosticado")
-            )
-
-        id_alerta_unica = f"{p.get('id')}_{analisis['tipo_mercado']}"
-        ya_registrada = any(a.get("id_alerta") == id_alerta_unica or (a.get("partido") == partido_nombre and a.get("tipo_mercado") == analisis["tipo_mercado"]) for a in alertas_acumuladas)
+        id_alerta_unica = None
+        ya_registrada = False
+        if analisis:
+            if es_finalizado and goles_local is not None and goles_visitante is not None:
+                acertado_partido = verificar_acierto(
+                    analisis["mercado"],
+                    analisis["tipo_mercado"],
+                    goles_local,
+                    goles_visitante,
+                    nombre_local=nombre_local,
+                    nombre_visitante=nombre_visitante,
+                    equipo_pronosticado=analisis.get("equipo_pronosticado")
+                )
+            id_alerta_unica = f"{p.get('id')}_{analisis['tipo_mercado']}"
+            ya_registrada = any(a.get("id_alerta") == id_alerta_unica or (a.get("partido") == partido_nombre and a.get("tipo_mercado") == analisis["tipo_mercado"]) for a in alertas_acumuladas)
 
         fue_enviado_telegram = False
 
-        # 1. ALERTA DESCANSO EN EMPATE (HT)
-        if es_empate_descanso and analisis["ev"] > 0 and not ya_registrada:
-            fue_enviado_telegram = True
-            alerta_msg = (
-                f"🎯 <b>ALERTA CUANTITATIVA (+EV) — [DESCANSO HT]</b>\n\n"
-                f"🏆 <b>Competición:</b> {comp_info['name']}\n"
-                f"⚽ <b>Partido:</b> {partido_nombre}\n"
-                f"🔢 <b>Marcador HT:</b> {marcador_str or '0 - 0'}\n"
-                f"{analisis.get('icono_tg', '🛡️')} <b>Mercado:</b> {analisis['mercado']}\n"
-                f"💰 <b>Cuota de Valor:</b> @{analisis['cuota']}\n"
-                f"📈 <b>Ventaja Algorítmica (+EV):</b> +{analisis['ev']}%\n"
-                f"💡 <b>Stake Sugerido:</b> {analisis['stake']}/10 unidades\n"
-                f"📊 <b>Filtro de Racha:</b> {analisis['form_info']['resumen']}\n"
-                f"📈 <b>Dinámica:</b> {analisis['form_info']['tendencia']}\n\n"
-                f"⚡ <i>Apex Quant Engine • Multimercado</i>"
-            )
-            enviar_telegram(alerta_msg, url_accion=APP_URL, texto_boton="📱 Abrir en Web App")
-            alertas_acumuladas.append({
-                "id_partido": str(p.get("id")),
-                "id_alerta": id_alerta_unica,
-                "partido": partido_nombre,
-                "local": nombre_local,
-                "visitante": nombre_visitante,
-                "escudo_local": escudo_local,
-                "escudo_visitante": escudo_visitante,
-                "mercado": analisis["mercado"],
-                "tipo_mercado": analisis["tipo_mercado"],
-                "categoria_visual": analisis.get("categoria_visual", "doble_oportunidad"),
-                "equipo_pronosticado": analisis.get("equipo_pronosticado"),
-                "cuota": f"@{analisis['cuota']}",
-                "ev": f"+{analisis['ev']}%",
-                "stake": f"{analisis['stake']}/10",
-                "hora": hora_madrid_partido,
-                "fecha": fecha_madrid_partido,
-                "fecha_hora_display": fecha_hora_display,
-                "semana_id": semana_actual_id,
-                "es_ht": True,
-                "es_semana_actual": True,
-                "estado_partido": estado_normalizado,
-                "marcador": marcador_str,
-                "marcador_final": None,
-                "finalizado": False,
-                "acertado": None,
-                "liquidada_telegram": False
-            })
-
-        # 2. ALERTA FORMATO OFICIAL (T-90m a T-15m y +EV >= 3%)
-        elif 15 <= minutos_restantes <= 90 and analisis["ev"] > 0 and not ya_registrada:
+        # ALERTA OFICIAL: cuota real de Winamax con +EV >= 3% frente al consenso (T-90m a T-15m)
+        if analisis_nuevo and analisis["ev"] >= EV_MINIMO_PCT and not ya_registrada:
             fue_enviado_telegram = True
             alerta_msg = (
                 f"🎯 <b>ALERTA CUANTITATIVA (+EV) — [PRE-PARTIDO]</b>\n\n"
@@ -1187,12 +1159,13 @@ def ejecutar_ciclo():
                 f"⚽ <b>Partido:</b> {partido_nombre}\n"
                 f"⏰ <b>Inicio:</b> {fecha_hora_display} (en {minutos_restantes} min)\n"
                 f"{analisis.get('icono_tg', '🛡️')} <b>Mercado:</b> {analisis['mercado']}\n"
-                f"💰 <b>Cuota de Valor:</b> @{analisis['cuota']}\n"
-                f"📈 <b>Ventaja Algorítmica (+EV):</b> +{analisis['ev']}%\n"
+                f"💰 <b>Cuota Winamax:</b> @{analisis['cuota']}\n"
+                f"📈 <b>Ventaja (+EV vs consenso):</b> +{analisis['ev']}%\n"
                 f"💡 <b>Stake Sugerido:</b> {analisis['stake']}/10 unidades\n"
+                f"🧮 <b>Prob. de consenso ({analisis.get('n_casas', '?')} casas):</b> {analisis['prob_modelo']}\n"
                 f"📊 <b>Filtro de Racha:</b> {analisis['form_info']['resumen']}\n"
                 f"📈 <b>Dinámica:</b> {analisis['form_info']['tendencia']}\n\n"
-                f"⚡ <i>Apex Quant Engine • Multimercado</i>"
+                f"⚡ <i>Apex Quant Engine • Cuotas reales Winamax</i>"
             )
             enviar_telegram(alerta_msg, url_accion=APP_URL, texto_boton="📱 Abrir en Web App")
             alertas_acumuladas.append({
@@ -1224,6 +1197,7 @@ def ejecutar_ciclo():
                 "liquidada_telegram": False
             })
 
+        tiene_pron = analisis is not None
         item = {
             "id": p.get("id"),
             "local": nombre_local,
@@ -1244,20 +1218,25 @@ def ejecutar_ciclo():
             "marcador": marcador_str,
             "goles_local": goles_local,
             "goles_visitante": goles_visitante,
-            "mercado": analisis["mercado"],
-            "tipo_mercado": analisis["tipo_mercado"],
-            "categoria_visual": analisis.get("categoria_visual", "doble_oportunidad"),
-            "cuota": analisis["cuota"],
-            "prob_modelo": analisis["prob_modelo"],
-            "ev": f"+{analisis['ev']}%",
-            "ev_numero": analisis["ev"],
-            "stake": analisis["stake"],
-            "tiene_pronostico": True,
+            "mercado": analisis["mercado"] if tiene_pron else None,
+            "tipo_mercado": analisis["tipo_mercado"] if tiene_pron else None,
+            "categoria_visual": analisis.get("categoria_visual") if tiene_pron else None,
+            "equipo_pronosticado": analisis.get("equipo_pronosticado") if tiene_pron else None,
+            "cuota": analisis["cuota"] if tiene_pron else None,
+            "prob_modelo": analisis["prob_modelo"] if tiene_pron else None,
+            "ev": f"+{analisis['ev']}%" if tiene_pron else None,
+            "ev_numero": analisis["ev"] if tiene_pron else None,
+            "stake": analisis["stake"] if tiene_pron else None,
+            "n_casas": analisis.get("n_casas") if tiene_pron else None,
+            "casa": analisis.get("casa") if tiene_pron else None,
+            "tiene_pronostico": tiene_pron,
+            "analizado": analizado,
+            "nota_cuotas": nota_cuotas,
             "semana_id": semana_actual_id,
-            "telegram_enviado": fue_enviado_telegram or ya_registrada,
-            "es_empate_ht": es_empate_descanso,
+            "telegram_enviado": bool(fue_enviado_telegram or ya_registrada or (prev and prev.get("telegram_enviado"))),
+            "es_empate_ht": False,
             "acertado": acertado_partido,
-            "form_info": analisis.get("form_info", {})
+            "form_info": form_info
         }
         partidos_para_web.append(item)
 
@@ -1459,6 +1438,7 @@ def ejecutar_ciclo():
         "metricas_semana": metricas_semana,
         "total_partidos_hoy": len(partidos_guardar),
         "partidos": partidos_guardar,
+        "creditos_odds_restantes": ODDS_ESTADO["restantes"],
         "alertas": alertas_acumuladas[-70:]
     }
 
@@ -1466,6 +1446,7 @@ def ejecutar_ciclo():
         json.dump(datos_completos, f, ensure_ascii=False, indent=2)
 
     total_fin = sum(1 for p in partidos_guardar if p.get("estado") == "FINISHED")
+    print(f"💳 The Odds API: {ODDS_ESTADO['consultas']} consultas de cuotas en este ciclo | créditos restantes: {ODDS_ESTADO['restantes']}")
     print(f"📁 datos.json guardado. Partidos semana: {len(partidos_guardar)} (Finalizados: {total_fin}) | Alertas: {len(alertas_acumuladas)} | Semana: {semana_guardada}")
 
 if __name__ == "__main__":
