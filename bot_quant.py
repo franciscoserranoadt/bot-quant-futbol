@@ -303,13 +303,20 @@ ODDS_SPORT_KEYS = {
     "CL": "soccer_uefa_champs_league",
     "CDR": "soccer_spain_copa_del_rey",
 }
-BOOKMAKERS_OBJETIVO = [b.strip() for b in os.getenv("ODDS_BOOKMAKERS", "winamax_fr,winamax_de").split(",") if b.strip()]
+# Casas donde se buscan las cuotas (se elige la mejor cuota disponible entre ellas).
+# Cámbialo con la variable ODDS_BOOKMAKERS (claves de The Odds API separadas por comas).
+# El log de cada ciclo imprime las casas disponibles por partido para que puedas ajustar la lista.
+BOOKMAKERS_OBJETIVO = [b.strip() for b in os.getenv(
+    "ODDS_BOOKMAKERS",
+    "winamax_fr,winamax_de,betclic_fr,unibet_eu,williamhill,betsson,marathonbet,sport888,coolbet,tipico_de,nordicbet,leovegas"
+).split(",") if b.strip()]
+PESOS_CASAS = {"pinnacle": 3.0, "matchbook": 2.0, "betfair_ex_eu": 2.0, "smarkets": 2.0}  # casas "afiladas" pesan más en el consenso
 ODDS_REGIONS = os.getenv("ODDS_REGIONS", "eu")
 ODDS_MARKETS = os.getenv("ODDS_MARKETS", "h2h,totals,btts,double_chance")
 MIN_CASAS_CONSENSO = int(os.getenv("ODDS_MIN_CASAS", "4"))
 CREDITOS_RESERVA = float(os.getenv("ODDS_MIN_CREDITS", "20"))
 MAX_CONSULTAS_CICLO = int(os.getenv("ODDS_MAX_CALLS", "10"))
-EV_MINIMO_PCT = 3.0     # filtro oficial de alerta (+EV >= 3%)
+EV_MINIMO_PCT = float(os.getenv("EV_MINIMO_PCT", "3.0"))     # filtro de alerta (+EV >= 3% por defecto)
 EV_MAXIMO_PCT = 20.0    # por encima se considera dato sospechoso (cuota errónea / línea distinta)
 VENTANA_MIN = 15
 VENTANA_MAX = 90
@@ -443,20 +450,22 @@ def _quitar_margen(precios):
 
 
 def _consenso(otros, extractor):
-    acum, n = {}, 0
-    for b in otros:
+    acum, peso_total, n = {}, 0.0, 0
+    for key, b in otros:
         precios = extractor(b)
         if not precios:
             continue
         pr = _quitar_margen(precios)
         if not pr:
             continue
+        w = PESOS_CASAS.get(key, 1.0)
         n += 1
+        peso_total += w
         for k, v in pr.items():
-            acum[k] = acum.get(k, 0.0) + v
-    if n < MIN_CASAS_CONSENSO:
+            acum[k] = acum.get(k, 0.0) + v * w
+    if n < MIN_CASAS_CONSENSO or peso_total <= 0:
         return None, n
-    return {k: v / n for k, v in acum.items()}, n
+    return {k: v / peso_total for k, v in acum.items()}, n
 
 
 def ev_y_stake(cuota, prob):
@@ -470,56 +479,67 @@ def ev_y_stake(cuota, prob):
 
 
 def generar_candidatos(ev_odds, local, visitante):
-    books = {bk["key"]: parsear_bookmaker(bk, ev_odds) for bk in ev_odds.get("bookmakers", [])}
-    key_obj = next((k for k in BOOKMAKERS_OBJETIVO if k in books), None)
-    if not key_obj:
-        return [], 0, "Winamax no ofrece cuotas de este partido"
-    obj = books[key_obj]
-    otros = [b for k, b in books.items() if k not in BOOKMAKERS_OBJETIVO]
-    cands = []
+    books, titulos = {}, {}
+    for bk in ev_odds.get("bookmakers", []):
+        books[bk["key"]] = parsear_bookmaker(bk, ev_odds)
+        titulos[bk["key"]] = bk.get("title") or bk["key"]
+    print(f"   Casas disponibles en {local} vs {visitante}: {', '.join(sorted(books)) or 'ninguna'}")
+    objetivos = [k for k in BOOKMAKERS_OBJETIVO if k in books]
+    if not objetivos:
+        return [], 0, "Ninguna casa objetivo ofrece cuotas de este partido"
 
-    def add(nombre, tipo, cat, equipo, cuota, prob, icono, n):
-        if cuota is None or prob is None:
-            return
-        ev, stake = ev_y_stake(cuota, prob)
-        if ev <= 0 or ev > EV_MAXIMO_PCT:
-            return
-        cands.append({"mercado": nombre, "tipo_mercado": tipo, "categoria_visual": cat,
-                      "equipo_pronosticado": equipo, "cuota": round(cuota, 2),
-                      "prob_modelo": f"{round(prob * 100, 1)}%", "ev": ev, "stake": stake,
-                      "icono_tg": icono, "n_casas": n, "casa": "Winamax"})
+    mejores = {}   # nombre de mercado -> mejor candidato entre todas las casas objetivo
+    n_max = 0
 
-    # 1X2 y Doble Oportunidad (derivada del consenso 1X2 de las otras casas)
-    h2h, n = _consenso(otros, lambda b: b["h2h"] if len(b["h2h"]) == 3 else None)
-    n_max = n
-    if h2h:
-        add(f"Victoria {local} (1X2)", "1X2", "1x2", local, obj["h2h"].get("1"), h2h["1"], "⚽", n)
-        add(f"Victoria {visitante} (1X2)", "1X2", "1x2", visitante, obj["h2h"].get("2"), h2h["2"], "⚽", n)
-        add(f"Doble Oportunidad: 1X ({local} o Empate)", "DOUBLE_CHANCE_1X", "doble_oportunidad", local,
-            obj["dc"].get("1X"), h2h["1"] + h2h["X"], "🛡️", n)
-        add(f"Doble Oportunidad: X2 (Empate o {visitante})", "DOUBLE_CHANCE_X2", "doble_oportunidad", visitante,
-            obj["dc"].get("X2"), h2h["X"] + h2h["2"], "🛡️", n)
-        add(f"Doble Oportunidad: 12 ({local} o {visitante} - Sin Empate)", "DOUBLE_CHANCE_12", "doble_oportunidad", None,
-            obj["dc"].get("12"), h2h["1"] + h2h["2"], "🛡️", n)
+    for tk in objetivos:
+        obj = books[tk]
+        casa = titulos[tk]
+        grupo = tk.split("_")[0]
+        # consenso con todas las demás casas (se excluye la propia casa y sus variantes, p.ej. winamax_fr/winamax_de)
+        otros = [(k, b) for k, b in books.items() if k.split("_")[0] != grupo]
 
-    # Goles totales (Over 1.5 y Over 2.5)
-    for punto, nombre, tipo, cat in [(1.5, "Más de 1.5 Goles (Over 1.5)", "OVER_15", "over15"),
-                                     (2.5, "Más de 2.5 Goles (Over 2.5)", "GOLES", "goles")]:
-        cons, n = _consenso(otros, lambda b, p=punto: b["totals"].get(p) if len(b["totals"].get(p, {})) == 2 else None)
+        def add(nombre, tipo, cat, equipo, cuota, prob, icono, n):
+            if cuota is None or prob is None:
+                return
+            ev, stake = ev_y_stake(cuota, prob)
+            if ev <= 0 or ev > EV_MAXIMO_PCT:
+                return
+            cand = {"mercado": nombre, "tipo_mercado": tipo, "categoria_visual": cat,
+                    "equipo_pronosticado": equipo, "cuota": round(cuota, 2),
+                    "prob_modelo": f"{round(prob * 100, 1)}%", "ev": ev, "stake": stake,
+                    "icono_tg": icono, "n_casas": n, "casa": casa}
+            if nombre not in mejores or ev > mejores[nombre]["ev"]:
+                mejores[nombre] = cand
+
+        h2h, n = _consenso(otros, lambda b: b["h2h"] if len(b["h2h"]) == 3 else None)
+        n_max = max(n_max, n)
+        if h2h:
+            add(f"Victoria {local} (1X2)", "1X2", "1x2", local, obj["h2h"].get("1"), h2h["1"], "⚽", n)
+            add(f"Victoria {visitante} (1X2)", "1X2", "1x2", visitante, obj["h2h"].get("2"), h2h["2"], "⚽", n)
+            add(f"Doble Oportunidad: 1X ({local} o Empate)", "DOUBLE_CHANCE_1X", "doble_oportunidad", local,
+                obj["dc"].get("1X"), h2h["1"] + h2h["X"], "🛡️", n)
+            add(f"Doble Oportunidad: X2 (Empate o {visitante})", "DOUBLE_CHANCE_X2", "doble_oportunidad", visitante,
+                obj["dc"].get("X2"), h2h["X"] + h2h["2"], "🛡️", n)
+            add(f"Doble Oportunidad: 12 ({local} o {visitante} - Sin Empate)", "DOUBLE_CHANCE_12", "doble_oportunidad", None,
+                obj["dc"].get("12"), h2h["1"] + h2h["2"], "🛡️", n)
+
+        for punto, nombre, tipo, cat in [(1.5, "Más de 1.5 Goles (Over 1.5)", "OVER_15", "over15"),
+                                         (2.5, "Más de 2.5 Goles (Over 2.5)", "GOLES", "goles")]:
+            cons, n = _consenso(otros, lambda b, p=punto: b["totals"].get(p) if len(b["totals"].get(p, {})) == 2 else None)
+            n_max = max(n_max, n)
+            if cons:
+                add(nombre, tipo, cat, None, obj["totals"].get(punto, {}).get("O"), cons["O"], "🥅", n)
+
+        cons, n = _consenso(otros, lambda b: b["btts"] if len(b["btts"]) == 2 else None)
         n_max = max(n_max, n)
         if cons:
-            add(nombre, tipo, cat, None, obj["totals"].get(punto, {}).get("O"), cons["O"], "🥅", n)
+            add("Ambos Equipos Marcan (Sí)", "BTTS", "btts", None, obj["btts"].get("SI"), cons["SI"], "🤝", n)
 
-    # Ambos marcan
-    cons, n = _consenso(otros, lambda b: b["btts"] if len(b["btts"]) == 2 else None)
-    n_max = max(n_max, n)
-    if cons:
-        add("Ambos Equipos Marcan (Sí)", "BTTS", "btts", None, obj["btts"].get("SI"), cons["SI"], "🤝", n)
-
+    cands = list(mejores.values())
     if not cands:
         if n_max < MIN_CASAS_CONSENSO:
             return [], n_max, f"Pocas casas para el consenso ({n_max}/{MIN_CASAS_CONSENSO})"
-        return [], n_max, "Sin valor: Winamax no supera al consenso del mercado"
+        return [], n_max, "Sin valor: ninguna casa supera al consenso del mercado"
     return cands, n_max, None
 
 
@@ -559,7 +579,7 @@ def reconstruir_analisis(prev, form_info):
         "ev": prev.get("ev_numero"),
         "stake": prev.get("stake"),
         "n_casas": prev.get("n_casas"),
-        "casa": prev.get("casa", "Winamax"),
+        "casa": prev.get("casa"),
         "form_info": form_info,
     }
 
@@ -957,7 +977,7 @@ def ejecutar_ciclo():
 
     lunes_semana_str, domingo_semana_str = obtener_fechas_limite_semana(ahora_madrid)
 
-    print(f"[{hora_madrid_str}] Iniciando ciclo Apex Quant Pro v3.8 (cuotas reales Winamax) (Semana {semana_actual_id}: {lunes_semana_str} al {domingo_semana_str})...")
+    print(f"[{hora_madrid_str}] Iniciando ciclo Apex Quant Pro v3.8 (cuotas reales) (Semana {semana_actual_id}: {lunes_semana_str} al {domingo_semana_str})...")
 
     datos_previos = cargar_datos_existentes()
     alertas_acumuladas = datos_previos.get("alertas", [])
@@ -1155,7 +1175,7 @@ def ejecutar_ciclo():
 
         fue_enviado_telegram = False
 
-        # ALERTA OFICIAL: cuota real de Winamax con +EV >= 3% frente al consenso (T-90m a T-15m)
+        # ALERTA OFICIAL: mejor cuota real entre las casas objetivo con +EV >= 3% frente al consenso (T-90m a T-15m)
         if analisis_nuevo and analisis["ev"] >= EV_MINIMO_PCT and not ya_registrada:
             fue_enviado_telegram = True
             alerta_msg = (
@@ -1164,13 +1184,13 @@ def ejecutar_ciclo():
                 f"⚽ <b>Partido:</b> {partido_nombre}\n"
                 f"⏰ <b>Inicio:</b> {fecha_hora_display} (en {minutos_restantes} min)\n"
                 f"{analisis.get('icono_tg', '🛡️')} <b>Mercado:</b> {analisis['mercado']}\n"
-                f"💰 <b>Cuota Winamax:</b> @{analisis['cuota']}\n"
+                f"💰 <b>Cuota {analisis.get('casa', '')}:</b> @{analisis['cuota']}\n"
                 f"📈 <b>Ventaja (+EV vs consenso):</b> +{analisis['ev']}%\n"
                 f"💡 <b>Stake Sugerido:</b> {analisis['stake']}/10 unidades\n"
                 f"🧮 <b>Prob. de consenso ({analisis.get('n_casas', '?')} casas):</b> {analisis['prob_modelo']}\n"
                 f"📊 <b>Filtro de Racha:</b> {analisis['form_info']['resumen']}\n"
                 f"📈 <b>Dinámica:</b> {analisis['form_info']['tendencia']}\n\n"
-                f"⚡ <i>Apex Quant Engine • Cuotas reales Winamax</i>"
+                f"⚡ <i>Apex Quant Engine • Cuotas reales de mercado</i>"
             )
             enviar_telegram(alerta_msg, url_accion=APP_URL, texto_boton="📱 Abrir en Web App")
             alertas_acumuladas.append({
@@ -1185,6 +1205,7 @@ def ejecutar_ciclo():
                 "tipo_mercado": analisis["tipo_mercado"],
                 "categoria_visual": analisis.get("categoria_visual", "doble_oportunidad"),
                 "equipo_pronosticado": analisis.get("equipo_pronosticado"),
+                "casa": analisis.get("casa"),
                 "cuota": f"@{analisis['cuota']}",
                 "ev": f"+{analisis['ev']}%",
                 "stake": f"{analisis['stake']}/10",
