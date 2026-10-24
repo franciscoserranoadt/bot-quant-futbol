@@ -60,17 +60,20 @@
         <div>
           <h1 class="text-lg font-extrabold tracking-tight text-white flex items-center gap-2">
             Apex Quant
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              24/7 ONLINE
+            <span id="badgeOnline" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+              <span id="badgeDot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span id="badgeTxt">24/7 ONLINE</span>
             </span>
           </h1>
           <p class="text-[11px] font-medium text-slate-400">Motor Predictivo Just-In-Time (+EV)</p>
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <button id="btnOled" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition flex items-center gap-1.5">
-          <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> OLED
+        <button id="btnHist" class="w-8 h-8 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-brand-primary border border-slate-700/60 flex items-center justify-center transition active:scale-95" title="Histórico acumulado">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3v18h18M7 14l4-4 3 3 5-6"></path></svg>
+        </button>
+        <button id="btnOled" class="w-8 h-8 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 flex items-center justify-center transition active:scale-95" title="Modo OLED">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
         </button>
         <button id="btnRefresh" class="w-8 h-8 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 flex items-center justify-center transition active:scale-95" title="Actualizar datos">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,6 +82,13 @@
         </button>
       </div>
     </header>
+
+    <!-- BARRA DE ESTADO DEL BOT -->
+    <div class="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-slate-900/70 border border-slate-800 text-[10px] font-mono text-slate-400">
+      <span class="flex items-center gap-1.5 min-w-0"><span id="stDot" class="w-2 h-2 rounded-full bg-slate-500 flex-shrink-0"></span><span id="stBot" class="truncate">Bot: --</span></span>
+      <span id="stApi" class="whitespace-nowrap">Cuotas: --</span>
+      <span id="stCred" class="whitespace-nowrap">💳 --</span>
+    </div>
 
     <!-- BANNER CANAL TELEGRAM INTERACTIVO -->
     <a href="https://t.me/apex_quant_alertas" target="_blank" rel="noopener noreferrer" class="block p-3.5 rounded-2xl bg-gradient-to-r from-[#0088cc]/15 via-slate-900 to-slate-900 border border-[#0088cc]/40 hover:border-[#0088cc] transition group shadow-lg shadow-[#0088cc]/5 active:scale-[0.99]">
@@ -333,6 +343,8 @@
           <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span> EN VIVO
         </button>
         <button data-filter="all" class="filter-btn active px-3.5 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-brand-primary text-slate-950 shadow-sm transition">Todas</button>
+        <button data-filter="PICK" class="filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:text-white transition">Con pick</button>
+        <button data-filter="ALERTA" class="filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:text-white transition">Con alerta</button>
         <button data-filter="laliga" class="filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:text-white transition">LaLiga (ESP)</button>
         <button data-filter="laliga2" class="filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:text-white transition">LaLiga 2 (ESP)</button>
         <button data-filter="premier" class="filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:text-white transition">Premier (ENG)</button>
@@ -359,6 +371,28 @@
       </div>
     </div>
 
+    <!-- AVISO LEGAL / JUEGO RESPONSABLE -->
+    <footer class="pt-4 pb-2 text-center space-y-1">
+      <p class="text-[10px] text-slate-500 leading-relaxed">🔞 Solo mayores de 18 años. El juego puede crear adicción: juega con responsabilidad y solo con dinero que puedas permitirte perder.</p>
+      <p class="text-[10px] text-slate-600 leading-relaxed">Contenido informativo y estadístico, no constituye asesoramiento ni garantiza resultados. Ayuda y autoexclusión: jugarbien.es</p>
+    </footer>
+
+  </div>
+
+  <!-- MODAL HISTÓRICO -->
+  <div id="modalHist" class="hidden fixed inset-0 z-50 bg-black/80 items-end justify-center">
+    <div class="w-full max-w-md max-h-[88vh] overflow-y-auto rounded-t-3xl bg-brand-surface border border-brand-border p-4 space-y-3 custom-scroll">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-extrabold text-white uppercase tracking-wider">Histórico acumulado</h2>
+          <p class="text-[10px] text-slate-400">No se reinicia los lunes</p>
+        </div>
+        <button id="btnCerrarHist" class="w-8 h-8 rounded-lg bg-slate-800/80 text-slate-300 border border-slate-700/60 flex items-center justify-center" title="Cerrar">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <div id="histContenido" class="space-y-3"></div>
+    </div>
   </div>
 
   <script>
@@ -487,8 +521,12 @@
         state.lunesSemana = data.lunes_semana || '';
         state.domingoSemana = data.domingo_semana || '';
         state.ultimaActualizacion = data.ultima_actualizacion || '';
+        state.ultimaActualizacionUtc = data.ultima_actualizacion_utc || '';
+        state.creditosOdds = (data.creditos_odds_restantes !== undefined) ? data.creditos_odds_restantes : null;
+        state.apiCuotas = data.api_cuotas_estado || '';
 
         actualizarMetricas();
+        actualizarEstadoBot();
         renderizar();
       } catch (err) {
         console.error('Error cargando datos.json:', err);
@@ -672,6 +710,176 @@
       dibujarCurvaGenerica('equityPathGlobal', puntosGlobal, '#38bdf8');
     }
 
+
+    // =========================================================================
+    // ESTADO DEL BOT (frescura de datos, API de cuotas, créditos)
+    // =========================================================================
+    function actualizarEstadoBot() {
+      const dot = document.getElementById('stDot');
+      if (!dot) return;
+      let mins = null;
+      if (state.ultimaActualizacionUtc) {
+        const t = Date.parse(state.ultimaActualizacionUtc);
+        if (!isNaN(t)) mins = Math.max(0, Math.round((Date.now() - t) / 60000));
+      }
+      const nivel = mins === null ? 'gris' : (mins <= 90 ? 'ok' : (mins <= 180 ? 'aviso' : 'error'));
+      const coloresDot = { ok: 'bg-emerald-400', aviso: 'bg-amber-400', error: 'bg-rose-500', gris: 'bg-slate-500' };
+      dot.className = 'w-2 h-2 rounded-full flex-shrink-0 ' + coloresDot[nivel];
+
+      let txt = 'Bot: sin datos';
+      if (mins !== null) txt = 'Bot: ' + (mins < 60 ? `hace ${mins} min` : `hace ${Math.floor(mins / 60)} h ${mins % 60} min`);
+      document.getElementById('stBot').innerText = txt;
+
+      const api = state.apiCuotas || '';
+      const elApi = document.getElementById('stApi');
+      if (api === 'ok') { elApi.innerText = 'Cuotas OK'; elApi.className = 'whitespace-nowrap text-emerald-400'; }
+      else if (api.startsWith('error')) { elApi.innerText = 'Cuotas ERROR'; elApi.className = 'whitespace-nowrap text-rose-400'; }
+      else if (api === 'sin_clave') { elApi.innerText = 'Sin clave API'; elApi.className = 'whitespace-nowrap text-rose-400'; }
+      else { elApi.innerText = 'Cuotas --'; elApi.className = 'whitespace-nowrap text-slate-400'; }
+
+      const elCred = document.getElementById('stCred');
+      if (typeof state.creditosOdds === 'number') {
+        elCred.innerText = `💳 ${Math.round(state.creditosOdds)}`;
+        elCred.className = 'whitespace-nowrap ' + (state.creditosOdds < 25 ? 'text-rose-400' : (state.creditosOdds < 60 ? 'text-amber-400' : 'text-slate-300'));
+      } else { elCred.innerText = '💳 --'; elCred.className = 'whitespace-nowrap text-slate-400'; }
+
+      const badge = document.getElementById('badgeOnline');
+      const bdot = document.getElementById('badgeDot');
+      const btxt = document.getElementById('badgeTxt');
+      const base = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ';
+      if (nivel === 'ok') { badge.className = base + 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'; bdot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse'; btxt.innerText = '24/7 ONLINE'; }
+      else if (nivel === 'aviso') { badge.className = base + 'bg-amber-500/10 text-amber-400 border-amber-500/30'; bdot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400'; btxt.innerText = 'RETRASADO'; }
+      else if (nivel === 'error') { badge.className = base + 'bg-rose-500/10 text-rose-400 border-rose-500/30'; bdot.className = 'w-1.5 h-1.5 rounded-full bg-rose-500'; btxt.innerText = 'SIN ACTUALIZAR'; }
+      else { badge.className = base + 'bg-slate-700/30 text-slate-300 border-slate-600/40'; bdot.className = 'w-1.5 h-1.5 rounded-full bg-slate-400'; btxt.innerText = 'ESPERANDO DATOS'; }
+    }
+
+    function toggleDetalle(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('hidden');
+    }
+
+    // =========================================================================
+    // HISTÓRICO ACUMULADO (libro mayor historico_picks.json)
+    // =========================================================================
+    const MESES_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+    function resumenPicks(picks) {
+      let n = 0, w = 0, stake = 0, net = 0;
+      picks.forEach(p => {
+        n++; stake += p.stake;
+        if (p.acertado) { w++; net += p.stake * (p.cuota - 1); } else { net -= p.stake; }
+      });
+      return { n, w, stake, net, roi: stake > 0 ? (net / stake) * 100 : 0, pct: n > 0 ? (w / n) * 100 : 0 };
+    }
+
+    function serieAcumulada(picks) {
+      const ord = picks.slice().sort((a, b) => (a.fecha || '').localeCompare(b.fecha || ''));
+      let acc = 0; const serie = [0];
+      ord.forEach(p => { acc += p.acertado ? p.stake * (p.cuota - 1) : -p.stake; serie.push(Math.round(acc * 100) / 100); });
+      return serie;
+    }
+
+    function fmtU(v) { return (v >= 0 ? '+' : '') + v.toFixed(2) + ' U.'; }
+    function fmtPct(v) { return (v >= 0 ? '+' : '') + v.toFixed(1) + '%'; }
+    function colorNum(v) { return v >= 0 ? 'text-emerald-400' : 'text-rose-400'; }
+
+    function tarjetaGrupo(titulo, color, r) {
+      return `
+        <div class="p-3 rounded-2xl bg-brand-card border border-brand-border">
+          <span class="text-[10px] font-bold uppercase tracking-wide block" style="color:${color}">${titulo}</span>
+          <span class="text-base font-extrabold font-mono block mt-0.5 ${colorNum(r.net)}">${fmtU(r.net)}</span>
+          <span class="text-[10px] text-slate-400 font-mono block">ROI ${fmtPct(r.roi)}</span>
+          <span class="text-[10px] text-slate-400 font-mono block">${r.w}V - ${r.n - r.w}D (${r.n ? r.pct.toFixed(0) : '--'}%)</span>
+          <span class="text-[10px] text-slate-500 font-mono block">Stake ${r.stake.toFixed(1)} U.</span>
+        </div>`;
+    }
+
+    function trazarSerie(serie, min, rango, color) {
+      if (serie.length < 2) return '';
+      const d = serie.map((v, i) => `${i === 0 ? 'M' : 'L'} ${((i / (serie.length - 1)) * 100).toFixed(1)} ${(36 - ((v - min) / rango) * 32).toFixed(1)}`).join(' ');
+      return `<path d="${d}" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`;
+    }
+
+    function renderizarHistorico(picks) {
+      const cont = document.getElementById('histContenido');
+      if (!picks.length) {
+        cont.innerHTML = `<div class="p-6 text-center text-xs text-slate-400">Aún no hay picks liquidadas con cuotas reales. El histórico se irá llenando a medida que terminen los partidos.</div>`;
+        return;
+      }
+      const tg = picks.filter(p => p.grupo === 'TG');
+      const ct = picks.filter(p => p.grupo === 'CONTROL');
+      const rTG = resumenPicks(tg), rCT = resumenPicks(ct);
+
+      const sTG = serieAcumulada(tg), sCT = serieAcumulada(ct);
+      const todos = sTG.concat(sCT);
+      const min = Math.min(0, ...todos), max = Math.max(1, ...todos);
+      const rango = (max - min) || 1;
+      const ceroY = (36 - ((0 - min) / rango) * 32).toFixed(1);
+
+      const meses = {};
+      picks.forEach(p => { const m = p.mes || 'S/D'; (meses[m] = meses[m] || { TG: [], CONTROL: [] })[p.grupo].push(p); });
+      const filas = Object.keys(meses).sort().reverse().map(m => {
+        const a = resumenPicks(meses[m].TG), b = resumenPicks(meses[m].CONTROL);
+        const [y, mm] = m.split('-');
+        const nombre = mm ? `${MESES_ES[parseInt(mm, 10) - 1] || mm} ${y}` : m;
+        return `<tr class="border-t border-slate-800/80">
+          <td class="py-1.5 pr-2 text-slate-300 whitespace-nowrap">${nombre}</td>
+          <td class="py-1.5 text-right ${colorNum(a.net)}">${a.n ? fmtU(a.net) : '--'}<span class="text-slate-500"> (${a.n})</span></td>
+          <td class="py-1.5 text-right ${colorNum(b.net)}">${b.n ? fmtU(b.net) : '--'}<span class="text-slate-500"> (${b.n})</span></td>
+        </tr>`;
+      }).join('');
+
+      const aviso = (rTG.n + rCT.n) < 50
+        ? `<div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[10px] text-amber-300">Muestra pequeña (${rTG.n + rCT.n} picks). Con menos de ~50 picks el resultado es sobre todo azar: no saques conclusiones todavía.</div>` : '';
+
+      cont.innerHTML = `
+        <div class="grid grid-cols-2 gap-2">
+          ${tarjetaGrupo('Telegram', '#00f59b', rTG)}
+          ${tarjetaGrupo('Control (descartadas)', '#94a3b8', rCT)}
+        </div>
+        <div class="p-3 rounded-2xl bg-brand-card border border-brand-border">
+          <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1.5">
+            <span class="font-bold uppercase tracking-wide">Beneficio acumulado</span>
+            <span class="flex items-center gap-2"><span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full" style="background:#00f59b"></span>TG</span><span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full" style="background:#94a3b8"></span>Control</span></span>
+          </div>
+          <div class="h-20 w-full bg-slate-900/80 rounded-xl p-1">
+            <svg class="w-full h-full overflow-visible" viewBox="0 0 100 40" preserveAspectRatio="none">
+              <line x1="0" y1="${ceroY}" x2="100" y2="${ceroY}" stroke="#334155" stroke-width="0.6" stroke-dasharray="2 2"/>
+              ${trazarSerie(sCT, min, rango, '#94a3b8')}
+              ${trazarSerie(sTG, min, rango, '#00f59b')}
+            </svg>
+          </div>
+        </div>
+        <div class="p-3 rounded-2xl bg-brand-card border border-brand-border">
+          <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 block mb-1.5">Por mes (unidades y nº de picks)</span>
+          <table class="w-full text-[11px] font-mono">
+            <thead><tr class="text-[9px] uppercase text-slate-500"><th class="text-left font-bold">Mes</th><th class="text-right font-bold">Telegram</th><th class="text-right font-bold">Control</th></tr></thead>
+            <tbody>${filas}</tbody>
+          </table>
+        </div>
+        ${aviso}
+        <p class="text-[9px] text-slate-500 leading-relaxed">Solo picks liquidadas con cuotas reales de mercado. Si Telegram rinde mejor que Control de forma sostenida, el filtro de valor + estadística aporta algo; si rinden igual, no.</p>`;
+    }
+
+    async function abrirHistorico() {
+      const modal = document.getElementById('modalHist');
+      modal.classList.remove('hidden'); modal.classList.add('flex');
+      document.getElementById('histContenido').innerHTML = `<div class="p-6 text-center text-xs text-slate-400">Cargando histórico...</div>`;
+      try {
+        const resp = await fetch('historico_picks.json?t=' + Date.now());
+        if (!resp.ok) throw new Error('sin archivo');
+        const data = await resp.json();
+        renderizarHistorico(data.picks || []);
+      } catch (e) {
+        renderizarHistorico([]);
+      }
+    }
+
+    function cerrarHistorico() {
+      const modal = document.getElementById('modalHist');
+      modal.classList.add('hidden'); modal.classList.remove('flex');
+    }
+
     function renderizar() {
       const container = document.getElementById('matchesContainer');
       const title = document.getElementById('activeSectionTitle');
@@ -694,6 +902,10 @@
 
       if (state.currentFilter === 'LIVE') {
         lista = lista.filter(p => p.estado === 'IN_PLAY' || p.estado === 'PAUSED' || p.estado === 'HT');
+      } else if (state.currentFilter === 'PICK') {
+        lista = lista.filter(p => p.tiene_pronostico && p.mercado);
+      } else if (state.currentFilter === 'ALERTA') {
+        lista = lista.filter(p => p.telegram_enviado === true && p.tiene_pronostico);
       } else if (state.currentFilter !== 'all') {
         lista = lista.filter(p => p.liga_key === state.currentFilter);
       }
@@ -758,6 +970,31 @@
       const notaSin = p.analizado
         ? (p.nota_cuotas || 'Sin valor detectado')
         : 'El análisis con cuotas reales se genera ~90 min antes del inicio';
+
+      if (!tienePron) {
+        const idDet = 'det-' + p.id;
+        return `
+        <div onclick="toggleDetalle('${idDet}')" class="px-3.5 py-3 rounded-2xl bg-brand-card/80 border border-brand-border/70 hover:border-slate-700 transition space-y-2 cursor-pointer">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700 whitespace-nowrap">${p.liga || 'Competición'}</span>
+              <span class="text-[11px] text-slate-400 font-mono whitespace-nowrap">${fechaHoraDisplay}</span>
+            </div>
+            <div class="flex-shrink-0">${badgeEstado}</div>
+          </div>
+          <div class="flex items-center gap-1.5 text-[13px] font-bold text-slate-100 min-w-0">
+            ${p.escudo_local ? `<img src="${p.escudo_local}" class="w-4 h-4 object-contain flex-shrink-0" alt="">` : ''}
+            <span class="truncate">${p.local}</span>
+            <span class="text-slate-500 font-medium text-[11px]">vs</span>
+            ${p.escudo_visitante ? `<img src="${p.escudo_visitante}" class="w-4 h-4 object-contain flex-shrink-0" alt="">` : ''}
+            <span class="truncate">${p.visitante}</span>
+          </div>
+          <div id="${idDet}" class="hidden pt-1 space-y-1 border-t border-slate-800/80">
+            <div class="text-[11px] text-slate-400 pt-1.5">${notaSin}</div>
+            ${rachaHtml}
+          </div>
+        </div>`;
+      }
 
       const bloqueAnalisis = tienePron ? `
           <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800/90 space-y-2">
@@ -1017,6 +1254,10 @@
           setTimeout(() => icon.classList.remove('animate-spin'), 600);
         });
       });
+
+      document.getElementById('btnHist').addEventListener('click', abrirHistorico);
+      document.getElementById('btnCerrarHist').addEventListener('click', cerrarHistorico);
+      document.getElementById('modalHist').addEventListener('click', (e) => { if (e.target.id === 'modalHist') cerrarHistorico(); });
 
       document.getElementById('btnOled').addEventListener('click', () => {
         document.body.classList.toggle('bg-black');

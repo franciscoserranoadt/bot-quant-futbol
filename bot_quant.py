@@ -714,13 +714,16 @@ def reconstruir_analisis(prev, form_info):
     }
 
 
+AVISO_JUEGO = "🔞 <i>+18 • Juega con responsabilidad • Información estadística, no es asesoramiento • jugarbien.es</i>"
+
+
 def enviar_telegram(mensaje, url_accion=None, texto_boton="📱 Abrir en Web App"):
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         return False
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
-        "text": mensaje,
+        "text": f"{mensaje}\n\n{AVISO_JUEGO}",
         "parse_mode": "HTML",
         "disable_web_page_preview": True
     }
@@ -1095,6 +1098,70 @@ def formatear_fecha_corta(fecha_str):
             return f"{partes[2]}/{partes[1]}"
     return fecha_str
 
+ARCHIVO_LEDGER = "historico_picks.json"
+
+
+def _a_float(txt, defecto):
+    try:
+        return float(str(txt).split("/")[0].replace("@", "").replace("U", "").replace("+", "").replace("%", "").strip())
+    except Exception:
+        return defecto
+
+
+def actualizar_ledger(alertas, partidos):
+    """Libro mayor permanente (no se reinicia los lunes) con todas las picks liquidadas con cuotas reales:
+    grupo TG = alertas enviadas a Telegram; grupo CONTROL = picks analizadas y descartadas."""
+    ledger = {"version": 1, "picks": []}
+    if os.path.exists(ARCHIVO_LEDGER):
+        try:
+            with open(ARCHIVO_LEDGER, "r", encoding="utf-8") as f:
+                ledger = json.load(f)
+        except Exception:
+            ledger = {"version": 1, "picks": []}
+    picks = ledger.get("picks", [])
+    ids = {p.get("id") for p in picks}
+    nuevas = 0
+
+    for a in alertas:
+        if not (a.get("finalizado") and a.get("acertado") is not None and a.get("cuotas_reales")):
+            continue
+        pid = f"TG_{a.get('id_alerta')}"
+        if pid in ids:
+            continue
+        picks.append({"id": pid, "grupo": "TG", "fecha": a.get("fecha"), "mes": (a.get("fecha") or "")[:7],
+                      "semana_id": a.get("semana_id"), "partido": a.get("partido"), "mercado": a.get("mercado"),
+                      "casa": a.get("casa"), "cuota": _a_float(a.get("cuota"), 2.0), "stake": _a_float(a.get("stake"), 1.0),
+                      "ev": _a_float(a.get("ev"), 0.0), "confirmado_stats": a.get("confirmado_stats"),
+                      "acertado": bool(a.get("acertado")), "marcador": a.get("marcador_final")})
+        ids.add(pid)
+        nuevas += 1
+
+    for p in partidos:
+        if not (p.get("estado") == "FINISHED" and p.get("acertado") is not None and p.get("tiene_pronostico")
+                and p.get("analizado") and not p.get("telegram_enviado")):
+            continue
+        pid = f"CTRL_{p.get('id')}_{p.get('tipo_mercado')}"
+        if pid in ids:
+            continue
+        picks.append({"id": pid, "grupo": "CONTROL", "fecha": p.get("fecha"), "mes": (p.get("fecha") or "")[:7],
+                      "semana_id": p.get("semana_id"), "partido": f"{p.get('local')} vs {p.get('visitante')}",
+                      "mercado": p.get("mercado"), "casa": p.get("casa"), "cuota": _a_float(p.get("cuota"), 2.0),
+                      "stake": _a_float(p.get("stake"), 1.0), "ev": _a_float(p.get("ev_numero"), 0.0),
+                      "confirmado_stats": p.get("confirmado_stats"), "acertado": bool(p.get("acertado")),
+                      "marcador": p.get("marcador")})
+        ids.add(pid)
+        nuevas += 1
+
+    if nuevas:
+        ledger["picks"] = picks
+        try:
+            with open(ARCHIVO_LEDGER, "w", encoding="utf-8") as f:
+                json.dump(ledger, f, ensure_ascii=False, separators=(",", ":"))
+            print(f"📒 Libro mayor actualizado: +{nuevas} picks liquidadas (total {len(picks)})")
+        except Exception as e:
+            print(f"Aviso guardando libro mayor: {e}")
+
+
 def ejecutar_ciclo():
     ahora_utc = datetime.now(timezone.utc)
     ahora_madrid = ahora_utc.astimezone(TZ_MADRID)
@@ -1351,6 +1418,8 @@ def ejecutar_ciclo():
                 "categoria_visual": analisis.get("categoria_visual", "doble_oportunidad"),
                 "equipo_pronosticado": analisis.get("equipo_pronosticado"),
                 "casa": analisis.get("casa"),
+                "cuotas_reales": True,
+                "confirmado_stats": analisis.get("confirmado_stats"),
                 "cuota": f"@{analisis['cuota']}",
                 "ev": f"+{analisis['ev']}%",
                 "stake": f"{analisis['stake']}/10",
@@ -1605,6 +1674,7 @@ def ejecutar_ciclo():
 
     datos_completos = {
         "ultima_actualizacion": hora_madrid_str,
+        "ultima_actualizacion_utc": ahora_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "huso_horario": "Europe/Madrid",
         "semana_activa": semana_guardada,
         "lunes_semana": lunes_semana_str,
@@ -1618,6 +1688,8 @@ def ejecutar_ciclo():
         "api_cuotas_estado": estado_api_cuotas,
         "alertas": alertas_acumuladas[-70:]
     }
+
+    actualizar_ledger(alertas_acumuladas, partidos_guardar)
 
     with open("datos.json", "w", encoding="utf-8") as f:
         json.dump(datos_completos, f, ensure_ascii=False, indent=2)
