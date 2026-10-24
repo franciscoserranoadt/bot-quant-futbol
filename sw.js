@@ -1,39 +1,32 @@
-// Service Worker Optimizado PWA para GitHub Pages
-// Apex Quant Analytics
+// Service Worker PWA - Apex Quant Analytics
+const CACHE_NAME = 'apex-quant-v3';
+const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
-const CACHE_NAME = 'apex-quant-v2';
-
-self.addEventListener('install', (event) => {
+self.addEventListener('install', (e) => {
+  e.waitUntil(caches.open(CACHE_NAME).then((c) => c.addAll(SHELL)).catch(() => {}));
   self.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
-      );
-    }).then(() => self.clients.claim())
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
 });
 
-self.addEventListener('fetch', (event) => {
-  // Estrategia Network First con fallback a Cache para no bloquear navegación ni datos.json
-  event.respondWith(
-    fetch(event.request)
-      .then((networkResponse) => {
-        // Si la respuesta es válida, clonamos y guardamos en caché
-        if (networkResponse && networkResponse.status === 200 && event.request.method === 'GET') {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
+self.addEventListener('fetch', (e) => {
+  const req = e.request;
+  if (req.method !== 'GET' || !req.url.startsWith('http')) return;
+  e.respondWith(
+    fetch(req)
+      .then((res) => {
+        if (res && res.status === 200) {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(req, copy));
         }
-        return networkResponse;
+        return res;
       })
-      .catch(() => {
-        // Si no hay conexión o falla la red, servimos desde la caché
-        return caches.match(event.request);
-      })
+      .catch(() => caches.match(req).then((r) => r || caches.match('./index.html')))
   );
 });

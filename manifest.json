@@ -1,25 +1,19 @@
 {
+  "id": "/bot-quant-futbol/",
   "name": "Apex Quant Analytics",
   "short_name": "ApexQuant",
   "description": "Motor predictivo de fútbol cuantitativo y pronósticos +EV en tiempo real",
+  "lang": "es",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#070e1d",
   "theme_color": "#0c1322",
+  "categories": ["sports"],
   "icons": [
-    {
-      "src": "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%23070e1d'/%3E%3Ccircle cx='256' cy='256' r='200' fill='none' stroke='%2300f59b' stroke-width='16' stroke-opacity='0.3'/%3E%3Cpath d='M160 340 L256 160 L352 340 Z' fill='none' stroke='%2300f59b' stroke-width='28' stroke-linejoin='round'/%3E%3Ccircle cx='256' cy='275' r='24' fill='%2300f59b'/%3E%3Ctext x='256' y='425' font-family='sans-serif' font-size='44' font-weight='900' fill='%23ffffff' text-anchor='middle' letter-spacing='4'%3EAPEX%3C/text%3E%3C/svg%3E",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%23070e1d'/%3E%3Ccircle cx='256' cy='256' r='200' fill='none' stroke='%2300f59b' stroke-width='16' stroke-opacity='0.3'/%3E%3Cpath d='M160 340 L256 160 L352 340 Z' fill='none' stroke='%2300f59b' stroke-width='28' stroke-linejoin='round'/%3E%3Ccircle cx='256' cy='275' r='24' fill='%2300f59b'/%3E%3Ctext x='256' y='425' font-family='sans-serif' font-size='44' font-weight='900' fill='%23ffffff' text-anchor='middle' letter-spacing='4'%3EAPEX%3C/text%3E%3C/svg%3E",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

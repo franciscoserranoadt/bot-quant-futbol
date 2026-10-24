@@ -6,6 +6,8 @@
   <title>Apex Quant Analytics</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0c1322">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -918,6 +920,10 @@
           alert('¡Pronóstico copiado al portapapeles!');
         });
       }
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
     }
 
     document.addEventListener('DOMContentLoaded', () => {
