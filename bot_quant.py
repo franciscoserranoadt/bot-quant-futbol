@@ -4,6 +4,7 @@ import hashlib
 import requests
 import time
 import unicodedata
+import math
 import difflib
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
@@ -317,6 +318,8 @@ MIN_CASAS_CONSENSO = int(os.getenv("ODDS_MIN_CASAS", "4"))
 CREDITOS_RESERVA = float(os.getenv("ODDS_MIN_CREDITS", "20"))
 MAX_CONSULTAS_CICLO = int(os.getenv("ODDS_MAX_CALLS", "10"))
 EV_MINIMO_PCT = float(os.getenv("EV_MINIMO_PCT", "3.0"))     # filtro de alerta (+EV >= 3% por defecto)
+CUOTA_MAXIMA = float(os.getenv("ODDS_MAX_CUOTA", "3.5"))   # sin alertas a cuotas "locas" (resultados muy improbables)
+PROB_MINIMA = float(os.getenv("ODDS_MIN_PROB", "0.30"))    # probabilidad mínima de consenso para alertar
 EV_MAXIMO_PCT = 20.0    # por encima se considera dato sospechoso (cuota errónea / línea distinta)
 VENTANA_MIN = 15
 VENTANA_MAX = 90
@@ -478,7 +481,106 @@ def ev_y_stake(cuota, prob):
     return round(ev * 100, 1), stake
 
 
-def generar_candidatos(ev_odds, local, visitante):
+# ==============================================================================
+# MODELO ESTADÍSTICO PROPIO (Poisson con corrección Dixon-Coles simplificada)
+# Usa los resultados reales de la temporada en football-data.org (1 llamada por liga y ciclo).
+# Una apuesta solo se confirma si el modelo, por sí solo, también ve valor a esa cuota.
+# ==============================================================================
+STATS_PESO_MERCADO = float(os.getenv("STATS_PESO_MERCADO", "0.65"))   # peso del consenso en la probabilidad final
+STATS_OBLIGATORIAS = os.getenv("STATS_OBLIGATORIAS", "1") == "1"      # alerta solo con respaldo estadístico
+STATS_MIN_PARTIDOS = int(os.getenv("STATS_MIN_PARTIDOS", "5"))        # partidos mínimos por equipo
+STATS_PRIOR_PARTIDOS = 6.0                                            # "partidos virtuales" de regresión a la media
+DC_RHO = -0.05
+
+
+def construir_fuerzas(matches):
+    equipos, gh, ga, n = {}, 0, 0, 0
+    for m in matches:
+        ft = (m.get("score") or {}).get("fullTime") or {}
+        h, a = ft.get("home"), ft.get("away")
+        hid = (m.get("homeTeam") or {}).get("id")
+        aid = (m.get("awayTeam") or {}).get("id")
+        if h is None or a is None or hid is None or aid is None:
+            continue
+        gh += h
+        ga += a
+        n += 1
+        for tid, gf, gc in ((hid, h, a), (aid, a, h)):
+            e = equipos.setdefault(tid, {"gf": 0, "gc": 0, "n": 0})
+            e["gf"] += gf
+            e["gc"] += gc
+            e["n"] += 1
+    if n < 20:
+        return None
+    return {"equipos": equipos, "mu_home": gh / n, "mu_away": ga / n, "mu": (gh + ga) / (2.0 * n)}
+
+
+def obtener_fuerzas_liga(comp_code, cache_stats):
+    if comp_code in cache_stats:
+        return cache_stats[comp_code]
+    headers = {"X-Auth-Token": FOOTBALL_DATA_TOKEN}
+    url = f"https://api.football-data.org/v4/competitions/{comp_code}/matches?status=FINISHED"
+    fuerzas = None
+    for intento in range(2):
+        try:
+            res = requests.get(url, headers=headers, timeout=15)
+            if res.status_code == 200:
+                fuerzas = construir_fuerzas(res.json().get("matches", []))
+                break
+            if res.status_code == 429:
+                time.sleep(4)
+                continue
+            print(f"   Aviso estadísticas {comp_code}: HTTP {res.status_code}")
+            break
+        except Exception as e:
+            print(f"   Aviso estadísticas {comp_code}: {e}")
+            time.sleep(1.5)
+    cache_stats[comp_code] = fuerzas
+    time.sleep(1.0)
+    return fuerzas
+
+
+def _poisson(k, lam):
+    return math.exp(-lam) * (lam ** k) / math.factorial(k)
+
+
+def calcular_modelo_estadistico(comp_code, local_id, visitante_id, cache_stats):
+    f = obtener_fuerzas_liga(comp_code, cache_stats)
+    if not f or local_id not in f["equipos"] or visitante_id not in f["equipos"]:
+        return None
+    el, ev_ = f["equipos"][local_id], f["equipos"][visitante_id]
+    if el["n"] < STATS_MIN_PARTIDOS or ev_["n"] < STATS_MIN_PARTIDOS:
+        return None
+    mu, K = f["mu"], STATS_PRIOR_PARTIDOS
+
+    def tasa(e, clave):
+        return (e[clave] + K * mu) / (e["n"] + K)
+
+    lam_h = f["mu_home"] * (tasa(el, "gf") / mu) * (tasa(ev_, "gc") / mu)
+    lam_a = f["mu_away"] * (tasa(ev_, "gf") / mu) * (tasa(el, "gc") / mu)
+    lam_h, lam_a = max(0.2, min(4.5, lam_h)), max(0.2, min(4.5, lam_a))
+
+    N = 10
+    mat = [[_poisson(i, lam_h) * _poisson(j, lam_a) for j in range(N)] for i in range(N)]
+    mat[0][0] *= max(0.0, 1.0 - lam_h * lam_a * DC_RHO)
+    mat[0][1] *= max(0.0, 1.0 + lam_h * DC_RHO)
+    mat[1][0] *= max(0.0, 1.0 + lam_a * DC_RHO)
+    mat[1][1] *= max(0.0, 1.0 - DC_RHO)
+    tot = sum(sum(r) for r in mat)
+    mat = [[v / tot for v in r] for r in mat]
+
+    def suma(cond):
+        return sum(mat[i][j] for i in range(N) for j in range(N) if cond(i, j))
+
+    return {
+        "p1": suma(lambda i, j: i > j), "pX": suma(lambda i, j: i == j), "p2": suma(lambda i, j: i < j),
+        "o15": suma(lambda i, j: i + j >= 2), "o25": suma(lambda i, j: i + j >= 3),
+        "btts": suma(lambda i, j: i >= 1 and j >= 1),
+        "xg_local": round(lam_h, 2), "xg_visitante": round(lam_a, 2),
+    }
+
+
+def generar_candidatos(ev_odds, local, visitante, modelo=None):
     books, titulos = {}, {}
     for bk in ev_odds.get("bookmakers", []):
         books[bk["key"]] = parsear_bookmaker(bk, ev_odds)
@@ -488,52 +590,67 @@ def generar_candidatos(ev_odds, local, visitante):
     if not objetivos:
         return [], 0, "Ninguna casa objetivo ofrece cuotas de este partido"
 
-    mejores = {}   # nombre de mercado -> mejor candidato entre todas las casas objetivo
+    def mm(*claves):
+        return sum(modelo[c] for c in claves) if modelo else None
+
+    mejores = {}
     n_max = 0
 
     for tk in objetivos:
         obj = books[tk]
         casa = titulos[tk]
         grupo = tk.split("_")[0]
-        # consenso con todas las demás casas (se excluye la propia casa y sus variantes, p.ej. winamax_fr/winamax_de)
         otros = [(k, b) for k, b in books.items() if k.split("_")[0] != grupo]
 
-        def add(nombre, tipo, cat, equipo, cuota, prob, icono, n):
-            if cuota is None or prob is None:
+        def add(nombre, tipo, cat, equipo, cuota, p_mercado, p_mod, icono, n):
+            if cuota is None or p_mercado is None:
                 return
+            if p_mod is not None:
+                prob = STATS_PESO_MERCADO * p_mercado + (1.0 - STATS_PESO_MERCADO) * p_mod
+                confirmado = (p_mod * cuota) > 1.0      # el modelo, por sí solo, también ve valor
+            else:
+                prob, confirmado = p_mercado, False
             ev, stake = ev_y_stake(cuota, prob)
             if ev <= 0 or ev > EV_MAXIMO_PCT:
+                return
+            if cuota > CUOTA_MAXIMA or prob < PROB_MINIMA:
                 return
             cand = {"mercado": nombre, "tipo_mercado": tipo, "categoria_visual": cat,
                     "equipo_pronosticado": equipo, "cuota": round(cuota, 2),
                     "prob_modelo": f"{round(prob * 100, 1)}%", "ev": ev, "stake": stake,
+                    "prob_mercado": round(p_mercado * 100, 1),
+                    "prob_estadistica": round(p_mod * 100, 1) if p_mod is not None else None,
+                    "confirmado_stats": bool(confirmado),
+                    "xg_local": modelo["xg_local"] if modelo else None,
+                    "xg_visitante": modelo["xg_visitante"] if modelo else None,
                     "icono_tg": icono, "n_casas": n, "casa": casa}
-            if nombre not in mejores or ev > mejores[nombre]["ev"]:
+            previo = mejores.get(nombre)
+            if previo is None or (cand["confirmado_stats"], cand["ev"]) > (previo["confirmado_stats"], previo["ev"]):
                 mejores[nombre] = cand
 
         h2h, n = _consenso(otros, lambda b: b["h2h"] if len(b["h2h"]) == 3 else None)
         n_max = max(n_max, n)
         if h2h:
-            add(f"Victoria {local} (1X2)", "1X2", "1x2", local, obj["h2h"].get("1"), h2h["1"], "⚽", n)
-            add(f"Victoria {visitante} (1X2)", "1X2", "1x2", visitante, obj["h2h"].get("2"), h2h["2"], "⚽", n)
+            add(f"Victoria {local} (1X2)", "1X2", "1x2", local, obj["h2h"].get("1"), h2h["1"], mm("p1"), "⚽", n)
+            add(f"Victoria {visitante} (1X2)", "1X2", "1x2", visitante, obj["h2h"].get("2"), h2h["2"], mm("p2"), "⚽", n)
             add(f"Doble Oportunidad: 1X ({local} o Empate)", "DOUBLE_CHANCE_1X", "doble_oportunidad", local,
-                obj["dc"].get("1X"), h2h["1"] + h2h["X"], "🛡️", n)
+                obj["dc"].get("1X"), h2h["1"] + h2h["X"], mm("p1", "pX"), "🛡️", n)
             add(f"Doble Oportunidad: X2 (Empate o {visitante})", "DOUBLE_CHANCE_X2", "doble_oportunidad", visitante,
-                obj["dc"].get("X2"), h2h["X"] + h2h["2"], "🛡️", n)
+                obj["dc"].get("X2"), h2h["X"] + h2h["2"], mm("pX", "p2"), "🛡️", n)
             add(f"Doble Oportunidad: 12 ({local} o {visitante} - Sin Empate)", "DOUBLE_CHANCE_12", "doble_oportunidad", None,
-                obj["dc"].get("12"), h2h["1"] + h2h["2"], "🛡️", n)
+                obj["dc"].get("12"), h2h["1"] + h2h["2"], mm("p1", "p2"), "🛡️", n)
 
-        for punto, nombre, tipo, cat in [(1.5, "Más de 1.5 Goles (Over 1.5)", "OVER_15", "over15"),
-                                         (2.5, "Más de 2.5 Goles (Over 2.5)", "GOLES", "goles")]:
+        for punto, nombre, tipo, cat, clave in [(1.5, "Más de 1.5 Goles (Over 1.5)", "OVER_15", "over15", "o15"),
+                                                (2.5, "Más de 2.5 Goles (Over 2.5)", "GOLES", "goles", "o25")]:
             cons, n = _consenso(otros, lambda b, p=punto: b["totals"].get(p) if len(b["totals"].get(p, {})) == 2 else None)
             n_max = max(n_max, n)
             if cons:
-                add(nombre, tipo, cat, None, obj["totals"].get(punto, {}).get("O"), cons["O"], "🥅", n)
+                add(nombre, tipo, cat, None, obj["totals"].get(punto, {}).get("O"), cons["O"], mm(clave), "🥅", n)
 
         cons, n = _consenso(otros, lambda b: b["btts"] if len(b["btts"]) == 2 else None)
         n_max = max(n_max, n)
         if cons:
-            add("Ambos Equipos Marcan (Sí)", "BTTS", "btts", None, obj["btts"].get("SI"), cons["SI"], "🤝", n)
+            add("Ambos Equipos Marcan (Sí)", "BTTS", "btts", None, obj["btts"].get("SI"), cons["SI"], mm("btts"), "🤝", n)
 
     cands = list(mejores.values())
     if not cands:
@@ -543,7 +660,8 @@ def generar_candidatos(ev_odds, local, visitante):
     return cands, n_max, None
 
 
-def analizar_partido_con_cuotas(comp_code, local, visitante, inicio_utc, form_info, cache_eventos):
+def analizar_partido_con_cuotas(comp_code, local, visitante, inicio_utc, form_info, cache_eventos,
+                                local_id=None, visitante_id=None, cache_stats=None):
     """Devuelve (analisis|None, definitivo, nota). definitivo=False -> se reintenta en el siguiente ciclo."""
     sport_key = ODDS_SPORT_KEYS.get(comp_code)
     if not THE_ODDS_API_KEY or not sport_key:
@@ -555,15 +673,22 @@ def analizar_partido_con_cuotas(comp_code, local, visitante, inicio_utc, form_in
     ev = buscar_evento_odds(sport_key, local, visitante, inicio_utc, cache_eventos)
     if not ev:
         return None, False, "Evento no encontrado en The Odds API"
+    modelo = None
+    if local_id is not None and visitante_id is not None and cache_stats is not None:
+        modelo = calcular_modelo_estadistico(comp_code, local_id, visitante_id, cache_stats)
     datos = consultar_cuotas_evento(sport_key, ev.get("id"))
     if not datos:
         return None, False, "Sin respuesta de cuotas"
-    cands, n_casas, nota = generar_candidatos(datos, local, visitante)
+    cands, n_casas, nota = generar_candidatos(datos, local, visitante, modelo)
     if not cands:
         return None, True, nota
-    mejor = max(cands, key=lambda c: c["ev"])
+    mejor = max(cands, key=lambda c: (c["confirmado_stats"], c["ev"]))
     mejor["form_info"] = form_info
-    return mejor, True, None
+    if modelo is None:
+        mejor["nota"] = "Sin datos estadísticos suficientes para confirmar"
+    elif not mejor["confirmado_stats"]:
+        mejor["nota"] = "El modelo estadístico no respalda la apuesta"
+    return mejor, True, mejor.get("nota")
 
 
 def reconstruir_analisis(prev, form_info):
@@ -580,6 +705,11 @@ def reconstruir_analisis(prev, form_info):
         "stake": prev.get("stake"),
         "n_casas": prev.get("n_casas"),
         "casa": prev.get("casa"),
+        "prob_mercado": prev.get("prob_mercado"),
+        "prob_estadistica": prev.get("prob_estadistica"),
+        "confirmado_stats": prev.get("confirmado_stats"),
+        "xg_local": prev.get("xg_local"),
+        "xg_visitante": prev.get("xg_visitante"),
         "form_info": form_info,
     }
 
@@ -1021,6 +1151,7 @@ def ejecutar_ciclo():
     partidos_map_por_nombres = {}
     partidos_previos_map = {str(x.get('id')): x for x in partidos_previos}
     cache_eventos_odds = {}
+    cache_stats_liga = {}
 
     for p in partidos_raw:
         comp_code = p.get("competition", {}).get("code", "")
@@ -1161,7 +1292,7 @@ def ejecutar_ciclo():
             analisis = reconstruir_analisis(prev, form_info)
         elif (not es_finalizado) and (not es_en_juego) and VENTANA_MIN <= minutos_restantes <= VENTANA_MAX:
             inicio_dt = datetime.fromtimestamp(timestamp_inicio_ms / 1000.0, timezone.utc) if timestamp_inicio_ms else None
-            analisis, definitivo, nota = analizar_partido_con_cuotas(comp_code, nombre_local, nombre_visitante, inicio_dt, form_info, cache_eventos_odds)
+            analisis, definitivo, nota = analizar_partido_con_cuotas(comp_code, nombre_local, nombre_visitante, inicio_dt, form_info, cache_eventos_odds, home_team_data.get("id"), away_team_data.get("id"), cache_stats_liga)
             nota_cuotas = nota
             if definitivo:
                 analizado = True
@@ -1189,7 +1320,7 @@ def ejecutar_ciclo():
         fue_enviado_telegram = False
 
         # ALERTA OFICIAL: mejor cuota real entre las casas objetivo con +EV >= 3% frente al consenso (T-90m a T-15m)
-        if analisis_nuevo and analisis["ev"] >= EV_MINIMO_PCT and not ya_registrada:
+        if analisis_nuevo and analisis["ev"] >= EV_MINIMO_PCT and (analisis.get("confirmado_stats") or not STATS_OBLIGATORIAS) and not ya_registrada:
             fue_enviado_telegram = True
             alerta_msg = (
                 f"🎯 <b>ALERTA CUANTITATIVA (+EV) — [PRE-PARTIDO]</b>\n\n"
@@ -1200,7 +1331,8 @@ def ejecutar_ciclo():
                 f"💰 <b>Cuota {analisis.get('casa', '')}:</b> @{analisis['cuota']}\n"
                 f"📈 <b>Ventaja (+EV vs consenso):</b> +{analisis['ev']}%\n"
                 f"💡 <b>Stake Sugerido:</b> {analisis['stake']}/10 unidades\n"
-                f"🧮 <b>Prob. de consenso ({analisis.get('n_casas', '?')} casas):</b> {analisis['prob_modelo']}\n"
+                f"🧮 <b>Prob. combinada:</b> {analisis['prob_modelo']} (mercado {analisis.get('prob_mercado')}% · modelo {analisis.get('prob_estadistica')}%)\n"
+                f"📐 <b>Respaldo estadístico:</b> {'✅ sí' if analisis.get('confirmado_stats') else '—'} • xG {analisis.get('xg_local')} - {analisis.get('xg_visitante')} • consenso de {analisis.get('n_casas', '?')} casas\n"
                 f"📊 <b>Filtro de Racha:</b> {analisis['form_info']['resumen']}\n"
                 f"📈 <b>Dinámica:</b> {analisis['form_info']['tendencia']}\n\n"
                 f"⚡ <i>Apex Quant Engine • Cuotas reales de mercado</i>"
@@ -1268,6 +1400,11 @@ def ejecutar_ciclo():
             "stake": analisis["stake"] if tiene_pron else None,
             "n_casas": analisis.get("n_casas") if tiene_pron else None,
             "casa": analisis.get("casa") if tiene_pron else None,
+            "prob_mercado": analisis.get("prob_mercado") if tiene_pron else None,
+            "prob_estadistica": analisis.get("prob_estadistica") if tiene_pron else None,
+            "confirmado_stats": analisis.get("confirmado_stats") if tiene_pron else None,
+            "xg_local": analisis.get("xg_local") if tiene_pron else None,
+            "xg_visitante": analisis.get("xg_visitante") if tiene_pron else None,
             "tiene_pronostico": tiene_pron,
             "analizado": analizado,
             "nota_cuotas": nota_cuotas,
