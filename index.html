@@ -680,10 +680,12 @@
 
       if (state.activeTab === 'hoy') {
         title.innerText = 'Encuentros Programados y en Vivo';
-        lista = state.partidos.filter(p => p.estado !== 'FINISHED');
+        lista = state.partidos.filter(p => p.estado !== 'FINISHED')
+          .sort((a, b) => (a.timestamp_ms || 0) - (b.timestamp_ms || 0));
       } else if (state.activeTab === 'finalizados') {
         title.innerText = 'Partidos Finalizados Recientes';
-        lista = state.partidos.filter(p => p.estado === 'FINISHED');
+        lista = state.partidos.filter(p => p.estado === 'FINISHED')
+          .sort((a, b) => (b.timestamp_ms || 0) - (a.timestamp_ms || 0));
       } else if (state.activeTab === 'alertas') {
         title.innerText = 'Historial de Alertas Telegram Emitidas';
         renderizarAlertas();
