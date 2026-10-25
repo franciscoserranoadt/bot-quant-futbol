@@ -533,7 +533,7 @@ def obtener_fuerzas_liga(comp_code, cache_stats):
     fuerzas = None
     for intento in range(2):
         try:
-            res = requests.get(url, headers=headers, timeout=15)
+            res = fd_get(url, headers=headers, timeout=15)
             if res.status_code == 200:
                 fuerzas = construir_fuerzas(res.json().get("matches", []))
                 break
@@ -784,13 +784,84 @@ def normalizar_texto(texto):
         t = t.replace(drop, " ")
     return " ".join(t.split())
 
+FD_VENTANA = []   # marcas de tiempo de las últimas peticiones a football-data.org
+MAX_REFRESCOS_ID = int(os.getenv("FD_MAX_REFRESCOS", "8"))
+ESTADOS_CERRADOS = ("FINISHED", "FINALIZADO", "AWARDED", "CANCELLED", "POSTPONED")
+
+
+def fd_get(url, **kw):
+    """GET a football-data.org respetando el límite de 10 peticiones por minuto."""
+    ahora = time.time()
+    while FD_VENTANA and ahora - FD_VENTANA[0] > 60:
+        FD_VENTANA.pop(0)
+    if len(FD_VENTANA) >= 9:
+        espera = 61 - (ahora - FD_VENTANA[0])
+        if espera > 0:
+            print(f"   ⏳ Límite football-data: esperando {espera:.0f}s")
+            time.sleep(espera)
+    FD_VENTANA.append(time.time())
+    return requests.get(url, **kw)
+
+
+def _minutos_desde_inicio(utc_str, ahora_utc):
+    try:
+        ini = datetime.fromisoformat((utc_str or "").replace("Z", "+00:00"))
+        return (ahora_utc - ini).total_seconds() / 60.0
+    except Exception:
+        return None
+
+
+def refrescar_partidos_atascados(partidos_raw, partidos_previos, ahora_utc):
+    """Los listados por fecha de la API gratuita a veces tardan horas en actualizar resultados o dejan de
+    devolver algún partido. Para los partidos que llevan más de 135 min sin cerrarse, o que han desaparecido
+    del listado, se consulta la ficha individual (/matches/{id}) y se sustituye el dato antiguo.
+    Devuelve un diccionario con contadores de diagnóstico."""
+    diag = {"atascados": 0, "ausentes": 0, "refrescados": 0}
+    presentes = {m.get("id"): m for m in partidos_raw if m.get("id")}
+    candidatos = []   # (minutos desde el inicio, id)
+    for m in partidos_raw:
+        if m.get("status") in ESTADOS_CERRADOS:
+            continue
+        mins = _minutos_desde_inicio(m.get("utcDate"), ahora_utc)
+        if mins is not None and mins > 135:
+            candidatos.append((mins, m.get("id")))
+            diag["atascados"] += 1
+    for pv in partidos_previos:
+        pid = pv.get("id")
+        if pid in presentes or pv.get("estado") in ("FINISHED",):
+            continue
+        mins = _minutos_desde_inicio(pv.get("utcDate") or pv.get("hora_utc"), ahora_utc)
+        if mins is not None and mins > 135:
+            candidatos.append((mins, pid))
+            diag["ausentes"] += 1
+    candidatos.sort(reverse=True)
+    headers = {"X-Auth-Token": FOOTBALL_DATA_TOKEN}
+    for mins, pid in candidatos[:MAX_REFRESCOS_ID]:
+        try:
+            res = fd_get(f"https://api.football-data.org/v4/matches/{pid}", headers=headers, timeout=12)
+            if res.status_code != 200:
+                print(f"   Aviso refresco partido {pid}: HTTP {res.status_code}")
+                continue
+            data = res.json()
+            m = data if data.get("homeTeam") else (data.get("match") or {})
+            if not m.get("homeTeam") or not m.get("id"):
+                continue
+            partidos_raw[:] = [x for x in partidos_raw if x.get("id") != m["id"]]
+            partidos_raw.append(m)
+            diag["refrescados"] += 1
+            print(f"   🔄 Partido {pid} refrescado por ficha individual: {m.get('status')}")
+        except Exception as e:
+            print(f"   Aviso refresco partido {pid}: {e}")
+    return diag
+
+
 def obtener_partidos_por_rango(date_from, date_to):
     headers = {"X-Auth-Token": FOOTBALL_DATA_TOKEN}
     url = f"https://api.football-data.org/v4/matches?dateFrom={date_from}&dateTo={date_to}"
     print(f"📡 [Football-Data.org] Petición intervalo: {date_from} al {date_to}")
     for intento in range(3):
         try:
-            res = requests.get(url, headers=headers, timeout=12)
+            res = fd_get(url, headers=headers, timeout=12)
             print(f"   Código HTTP ({date_from}..{date_to}): {res.status_code}")
             if res.status_code == 200:
                 return res.json().get("matches", [])
@@ -831,7 +902,7 @@ def obtener_partidos_completos(lunes_semana_str, domingo_semana_str):
     url_live = "https://api.football-data.org/v4/matches?status=IN_PLAY,PAUSED"
     headers = {"X-Auth-Token": FOOTBALL_DATA_TOKEN}
     try:
-        res_live = requests.get(url_live, headers=headers, timeout=10)
+        res_live = fd_get(url_live, headers=headers, timeout=10)
         if res_live.status_code == 200:
             live_list = res_live.json().get("matches", [])
             print(f"📡 Partidos en vivo reportados: {len(live_list)}")
@@ -1378,6 +1449,10 @@ def ejecutar_ciclo():
 
     # OBTENCIÓN DE PARTIDOS (DESDE EL LUNES DE LA SEMANA HASTA DÍAS FUTUROS)
     partidos_raw = obtener_partidos_completos(lunes_semana_str, domingo_semana_str)
+    partidos_api_n = len(partidos_raw)
+    diag_refresco = refrescar_partidos_atascados(partidos_raw, partidos_previos, ahora_utc)
+    print(f"🩺 Diagnóstico partidos: API={partidos_api_n} | atascados={diag_refresco['atascados']} | "
+          f"ausentes={diag_refresco['ausentes']} | refrescados por ficha={diag_refresco['refrescados']}")
     historial_equipos = construir_historial_resultados_equipos(partidos_raw)
     print(f"📊 Historial real indexado para {len(historial_equipos)} clubes.")
 
@@ -1656,6 +1731,15 @@ def ejecutar_ciclo():
         }
         partidos_para_web.append(item)
 
+    # Un partido ya finalizado no puede "retroceder" a programado/en juego por un dato atrasado de la API
+    for i, it in enumerate(partidos_para_web):
+        pv = partidos_previos_map.get(str(it.get("id")))
+        if pv and pv.get("estado") == "FINISHED" and it.get("estado") != "FINISHED" and pv.get("marcador"):
+            restaurado = dict(pv)
+            restaurado["minutos_restantes"] = it.get("minutos_restantes")
+            restaurado["telegram_enviado"] = bool(pv.get("telegram_enviado") or it.get("telegram_enviado"))
+            partidos_para_web[i] = restaurado
+
     # COMBINADAS DE FAVORITOS (máx. 3 partidos, misma casa, +EV conjunto y respaldo estadístico)
     if COMBI_ACTIVA:
         mejor_combi = buscar_mejor_combinada(partidos_para_web, alertas_acumuladas)
@@ -1870,6 +1954,8 @@ def ejecutar_ciclo():
         "partidos": partidos_guardar,
         "creditos_odds_restantes": ODDS_ESTADO["restantes"],
         "api_cuotas_estado": estado_api_cuotas,
+        "diagnostico": {"partidos_api": partidos_api_n, "atascados": diag_refresco["atascados"],
+                        "ausentes": diag_refresco["ausentes"], "refrescados": diag_refresco["refrescados"]},
         "alertas": alertas_acumuladas[-70:]
     }
 
