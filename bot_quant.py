@@ -2054,4 +2054,11 @@ def ejecutar_ciclo():
     actualizar_ledger(alertas_acumuladas, partidos_guardar)
 
     with open("datos.json", "w", encoding="utf-8") as f:
-        json.dump(datos_c
+        json.dump(datos_completos, f, ensure_ascii=False, indent=2)
+
+    total_fin = sum(1 for p in partidos_guardar if p.get("estado") == "FINISHED")
+    print(f"💳 The Odds API: {ODDS_ESTADO['consultas']} consultas de cuotas en este ciclo | créditos restantes: {ODDS_ESTADO['restantes']}")
+    print(f"📁 datos.json guardado. Partidos semana: {len(partidos_guardar)} (Finalizados: {total_fin}) | Alertas: {len(alertas_acumuladas)} | Semana: {semana_guardada}")
+
+if __name__ == "__main__":
+    ejecutar_ciclo()
