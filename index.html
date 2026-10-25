@@ -808,44 +808,48 @@
       }
       const tg = picks.filter(p => p.grupo === 'TG');
       const ct = picks.filter(p => p.grupo === 'CONTROL');
-      const rTG = resumenPicks(tg), rCT = resumenPicks(ct);
+      const cb = picks.filter(p => p.grupo === 'COMBI');
+      const rTG = resumenPicks(tg), rCT = resumenPicks(ct), rCB = resumenPicks(cb);
 
-      const sTG = serieAcumulada(tg), sCT = serieAcumulada(ct);
-      const todos = sTG.concat(sCT);
+      const sTG = serieAcumulada(tg), sCT = serieAcumulada(ct), sCB = serieAcumulada(cb);
+      const todos = sTG.concat(sCT, sCB);
       const min = Math.min(0, ...todos), max = Math.max(1, ...todos);
       const rango = (max - min) || 1;
       const ceroY = (36 - ((0 - min) / rango) * 32).toFixed(1);
 
       const meses = {};
-      picks.forEach(p => { const m = p.mes || 'S/D'; (meses[m] = meses[m] || { TG: [], CONTROL: [] })[p.grupo].push(p); });
+      picks.forEach(p => { const m = p.mes || 'S/D'; (meses[m] = meses[m] || { TG: [], CONTROL: [], COMBI: [] })[p.grupo].push(p); });
       const filas = Object.keys(meses).sort().reverse().map(m => {
-        const a = resumenPicks(meses[m].TG), b = resumenPicks(meses[m].CONTROL);
+        const a = resumenPicks(meses[m].TG), b = resumenPicks(meses[m].CONTROL), c = resumenPicks(meses[m].COMBI);
         const [y, mm] = m.split('-');
         const nombre = mm ? `${MESES_ES[parseInt(mm, 10) - 1] || mm} ${y}` : m;
         return `<tr class="border-t border-slate-800/80">
           <td class="py-1.5 pr-2 text-slate-300 whitespace-nowrap">${nombre}</td>
           <td class="py-1.5 text-right ${colorNum(a.net)}">${a.n ? fmtU(a.net) : '--'}<span class="text-slate-500"> (${a.n})</span></td>
           <td class="py-1.5 text-right ${colorNum(b.net)}">${b.n ? fmtU(b.net) : '--'}<span class="text-slate-500"> (${b.n})</span></td>
+          ${cb.length ? `<td class="py-1.5 text-right ${colorNum(c.net)}">${c.n ? fmtU(c.net) : '--'}<span class="text-slate-500"> (${c.n})</span></td>` : ''}
         </tr>`;
       }).join('');
 
-      const aviso = (rTG.n + rCT.n) < 50
-        ? `<div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[10px] text-amber-300">Muestra pequeña (${rTG.n + rCT.n} picks). Con menos de ~50 picks el resultado es sobre todo azar: no saques conclusiones todavía.</div>` : '';
+      const aviso = (rTG.n + rCT.n + rCB.n) < 50
+        ? `<div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[10px] text-amber-300">Muestra pequeña (${rTG.n + rCT.n + rCB.n} picks). Con menos de ~50 picks el resultado es sobre todo azar: no saques conclusiones todavía.</div>` : '';
 
       cont.innerHTML = `
-        <div class="grid grid-cols-2 gap-2">
+        <div class="grid ${cb.length ? 'grid-cols-3' : 'grid-cols-2'} gap-2">
           ${tarjetaGrupo('Telegram', '#00f59b', rTG)}
           ${tarjetaGrupo('Control (descartadas)', '#94a3b8', rCT)}
+          ${cb.length ? tarjetaGrupo('Combinadas', '#a78bfa', rCB) : ''}
         </div>
         <div class="p-3 rounded-2xl bg-brand-card border border-brand-border">
           <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1.5">
             <span class="font-bold uppercase tracking-wide">Beneficio acumulado</span>
-            <span class="flex items-center gap-2"><span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full" style="background:#00f59b"></span>TG</span><span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full" style="background:#94a3b8"></span>Control</span></span>
+            <span class="flex items-center gap-2"><span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full" style="background:#00f59b"></span>TG</span><span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full" style="background:#94a3b8"></span>Control</span>${cb.length ? '<span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full" style="background:#a78bfa"></span>Combi</span>' : ''}</span>
           </div>
           <div class="h-20 w-full bg-slate-900/80 rounded-xl p-1">
             <svg class="w-full h-full overflow-visible" viewBox="0 0 100 40" preserveAspectRatio="none">
               <line x1="0" y1="${ceroY}" x2="100" y2="${ceroY}" stroke="#334155" stroke-width="0.6" stroke-dasharray="2 2"/>
               ${trazarSerie(sCT, min, rango, '#94a3b8')}
+              ${trazarSerie(sCB, min, rango, '#a78bfa')}
               ${trazarSerie(sTG, min, rango, '#00f59b')}
             </svg>
           </div>
@@ -853,7 +857,7 @@
         <div class="p-3 rounded-2xl bg-brand-card border border-brand-border">
           <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 block mb-1.5">Por mes (unidades y nº de picks)</span>
           <table class="w-full text-[11px] font-mono">
-            <thead><tr class="text-[9px] uppercase text-slate-500"><th class="text-left font-bold">Mes</th><th class="text-right font-bold">Telegram</th><th class="text-right font-bold">Control</th></tr></thead>
+            <thead><tr class="text-[9px] uppercase text-slate-500"><th class="text-left font-bold">Mes</th><th class="text-right font-bold">Telegram</th><th class="text-right font-bold">Control</th>${cb.length ? '<th class="text-right font-bold">Combi</th>' : ''}</tr></thead>
             <tbody>${filas}</tbody>
           </table>
         </div>
@@ -1155,9 +1159,23 @@
               <div class="flex-shrink-0">${badgeLiquidacion}</div>
             </div>
 
+            ${a.es_combinada && a.legs ? `
+            <div class="text-sm font-extrabold text-white flex items-center gap-2 flex-wrap">
+              <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-violet-500/20 text-violet-300 border border-violet-500/40">COMBINADA ×${a.legs.length}</span>
+              <span class="text-[11px] text-slate-400 font-medium">${a.casa || ''}</span>
+            </div>
+            <div class="space-y-1">
+              ${a.legs.map(l => `
+                <div class="flex items-center justify-between gap-2 text-[12px]">
+                  <span class="text-slate-200 min-w-0 truncate">${l.res === true ? '✅' : (l.res === false ? '❌' : '⏳')} <strong class="text-brand-primary">${l.equipo}</strong> <span class="text-slate-500 text-[10px]">${l.partido}</span></span>
+                  <span class="font-mono text-slate-300 whitespace-nowrap">@${l.cuota}</span>
+                </div>`).join('')}
+            </div>
+            ${a.prob_combinada ? `<div class="text-[10px] text-slate-400 font-mono">Prob. de acierto ${a.prob_combinada}% · deben acertar todas</div>` : ''}
+            ` : `
             <div class="text-sm font-extrabold text-white">
               ${a.partido} — <span class="text-brand-primary">${a.mercado}</span>
-            </div>
+            </div>`}
 
             <div class="flex items-center justify-between pt-1 border-t border-slate-800/80 text-xs font-mono text-slate-300">
               <div class="flex items-center gap-3">

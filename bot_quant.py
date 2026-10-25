@@ -5,6 +5,7 @@ import requests
 import time
 import unicodedata
 import math
+import itertools
 import difflib
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
@@ -318,8 +319,17 @@ MIN_CASAS_CONSENSO = int(os.getenv("ODDS_MIN_CASAS", "4"))
 CREDITOS_RESERVA = float(os.getenv("ODDS_MIN_CREDITS", "20"))
 MAX_CONSULTAS_CICLO = int(os.getenv("ODDS_MAX_CALLS", "10"))
 EV_MINIMO_PCT = float(os.getenv("EV_MINIMO_PCT", "3.0"))     # filtro de alerta (+EV >= 3% por defecto)
-CUOTA_MAXIMA = float(os.getenv("ODDS_MAX_CUOTA", "3.5"))   # sin alertas a cuotas "locas" (resultados muy improbables)
-PROB_MINIMA = float(os.getenv("ODDS_MIN_PROB", "0.30"))    # probabilidad mínima de consenso para alertar
+CUOTA_MAXIMA = float(os.getenv("ODDS_MAX_CUOTA", "3.0"))   # sin alertas a cuotas "locas" (resultados muy improbables)
+PROB_MINIMA = float(os.getenv("ODDS_MIN_PROB", "0.40"))    # probabilidad mínima para alertar (nada de apuestas "a la lotería")
+
+# Combinadas de favoritos (máximo 3 partidos, todas las selecciones en la misma casa)
+COMBI_ACTIVA = os.getenv("COMBI_ACTIVA", "1") == "1"
+COMBI_MAX_PATAS = 3
+COMBI_EV_PATA_MIN = float(os.getenv("COMBI_EV_PATA_MIN", "1.0"))       # cada selección debe tener al menos +1% de ventaja
+COMBI_PROB_PATA_MIN = float(os.getenv("COMBI_PROB_PATA_MIN", "0.50"))  # y ser claramente favorita
+COMBI_CUOTA_PATA = (1.25, 2.30)
+COMBI_PROB_MIN = float(os.getenv("COMBI_PROB_MIN", "0.30"))            # probabilidad conjunta mínima
+COMBI_EV_MIN = float(os.getenv("COMBI_EV_MIN", "6.0"))                 # ventaja conjunta mínima (%)
 EV_MAXIMO_PCT = 20.0    # por encima se considera dato sospechoso (cuota errónea / línea distinta)
 VENTANA_MIN = 15
 VENTANA_MAX = 90
@@ -580,6 +590,13 @@ def calcular_modelo_estadistico(comp_code, local_id, visitante_id, cache_stats):
     }
 
 
+def evaluar_seleccion(cuota, p_mercado, p_mod):
+    """Mezcla consenso y modelo estadístico. Devuelve (prob_final, confirmado_por_el_modelo)."""
+    if p_mod is not None:
+        return STATS_PESO_MERCADO * p_mercado + (1.0 - STATS_PESO_MERCADO) * p_mod, (p_mod * cuota) > 1.0
+    return p_mercado, False
+
+
 def generar_candidatos(ev_odds, local, visitante, modelo=None):
     books, titulos = {}, {}
     for bk in ev_odds.get("bookmakers", []):
@@ -588,12 +605,13 @@ def generar_candidatos(ev_odds, local, visitante, modelo=None):
     print(f"   Casas disponibles en {local} vs {visitante}: {', '.join(sorted(books)) or 'ninguna'}")
     objetivos = [k for k in BOOKMAKERS_OBJETIVO if k in books]
     if not objetivos:
-        return [], 0, "Ninguna casa objetivo ofrece cuotas de este partido"
+        return [], 0, "Ninguna casa objetivo ofrece cuotas de este partido", None
 
     def mm(*claves):
         return sum(modelo[c] for c in claves) if modelo else None
 
     mejores = {}
+    fav_por_casa = {}
     n_max = 0
 
     for tk in objetivos:
@@ -605,11 +623,7 @@ def generar_candidatos(ev_odds, local, visitante, modelo=None):
         def add(nombre, tipo, cat, equipo, cuota, p_mercado, p_mod, icono, n):
             if cuota is None or p_mercado is None:
                 return
-            if p_mod is not None:
-                prob = STATS_PESO_MERCADO * p_mercado + (1.0 - STATS_PESO_MERCADO) * p_mod
-                confirmado = (p_mod * cuota) > 1.0      # el modelo, por sí solo, también ve valor
-            else:
-                prob, confirmado = p_mercado, False
+            prob, confirmado = evaluar_seleccion(cuota, p_mercado, p_mod)
             ev, stake = ev_y_stake(cuota, prob)
             if ev <= 0 or ev > EV_MAXIMO_PCT:
                 return
@@ -623,7 +637,8 @@ def generar_candidatos(ev_odds, local, visitante, modelo=None):
                     "confirmado_stats": bool(confirmado),
                     "xg_local": modelo["xg_local"] if modelo else None,
                     "xg_visitante": modelo["xg_visitante"] if modelo else None,
-                    "icono_tg": icono, "n_casas": n, "casa": casa}
+                    "icono_tg": icono, "n_casas": n, "casa": casa,
+                    "prob_final": round(prob, 4), "score": round(ev * math.sqrt(prob), 3)}
             previo = mejores.get(nombre)
             if previo is None or (cand["confirmado_stats"], cand["ev"]) > (previo["confirmado_stats"], previo["ev"]):
                 mejores[nombre] = cand
@@ -631,6 +646,16 @@ def generar_candidatos(ev_odds, local, visitante, modelo=None):
         h2h, n = _consenso(otros, lambda b: b["h2h"] if len(b["h2h"]) == 3 else None)
         n_max = max(n_max, n)
         if h2h:
+            # Favorito del partido (para las combinadas): selección 1X2 con más probabilidad de consenso
+            lado = "1" if h2h["1"] >= h2h["2"] else "2"
+            cuota_f = obj["h2h"].get(lado)
+            if cuota_f:
+                p_mod_f = mm("p1") if lado == "1" else mm("p2")
+                prob_f, conf_f = evaluar_seleccion(cuota_f, h2h[lado], p_mod_f)
+                fav_por_casa[casa] = {"equipo": local if lado == "1" else visitante, "cuota": round(cuota_f, 2),
+                                      "prob": round(prob_f, 4), "ev": round((prob_f * cuota_f - 1.0) * 100, 1),
+                                      "confirmado": bool(conf_f), "prob_mercado": round(h2h[lado] * 100, 1),
+                                      "prob_estadistica": round(p_mod_f * 100, 1) if p_mod_f is not None else None}
             add(f"Victoria {local} (1X2)", "1X2", "1x2", local, obj["h2h"].get("1"), h2h["1"], mm("p1"), "⚽", n)
             add(f"Victoria {visitante} (1X2)", "1X2", "1x2", visitante, obj["h2h"].get("2"), h2h["2"], mm("p2"), "⚽", n)
             add(f"Doble Oportunidad: 1X ({local} o Empate)", "DOUBLE_CHANCE_1X", "doble_oportunidad", local,
@@ -652,43 +677,47 @@ def generar_candidatos(ev_odds, local, visitante, modelo=None):
         if cons:
             add("Ambos Equipos Marcan (Sí)", "BTTS", "btts", None, obj["btts"].get("SI"), cons["SI"], mm("btts"), "🤝", n)
 
+    fav = {"por_casa": fav_por_casa} if fav_por_casa else None
     cands = list(mejores.values())
     if not cands:
         if n_max < MIN_CASAS_CONSENSO:
-            return [], n_max, f"Pocas casas para el consenso ({n_max}/{MIN_CASAS_CONSENSO})"
-        return [], n_max, "Sin valor: ninguna casa supera al consenso del mercado"
-    return cands, n_max, None
+            return [], n_max, f"Pocas casas para el consenso ({n_max}/{MIN_CASAS_CONSENSO})", fav
+        return [], n_max, "Sin valor: ninguna casa supera al consenso del mercado", fav
+    return cands, n_max, None, fav
 
 
 def analizar_partido_con_cuotas(comp_code, local, visitante, inicio_utc, form_info, cache_eventos,
                                 local_id=None, visitante_id=None, cache_stats=None):
-    """Devuelve (analisis|None, definitivo, nota). definitivo=False -> se reintenta en el siguiente ciclo."""
+    """Devuelve (analisis|None, definitivo, nota, fav). definitivo=False -> se reintenta en el siguiente ciclo.
+    Se elige la mejor opción entre TODOS los mercados (no solo la victoria): primero las respaldadas por el modelo
+    estadístico y, entre ellas, la de mayor valor ajustado por probabilidad (ventaja x raíz de la probabilidad),
+    para no premiar resultados muy improbables."""
     sport_key = ODDS_SPORT_KEYS.get(comp_code)
     if not THE_ODDS_API_KEY or not sport_key:
-        return None, False, "Sin API de cuotas configurada"
+        return None, False, "Sin API de cuotas configurada", None
     if ODDS_ESTADO["consultas"] >= MAX_CONSULTAS_CICLO:
-        return None, False, "Límite de consultas por ciclo"
+        return None, False, "Límite de consultas por ciclo", None
     if ODDS_ESTADO["restantes"] is not None and ODDS_ESTADO["restantes"] <= CREDITOS_RESERVA:
-        return None, False, "Créditos de The Odds API en reserva"
+        return None, False, "Créditos de The Odds API en reserva", None
     ev = buscar_evento_odds(sport_key, local, visitante, inicio_utc, cache_eventos)
     if not ev:
-        return None, False, "Evento no encontrado en The Odds API"
+        return None, False, "Evento no encontrado en The Odds API", None
     modelo = None
     if local_id is not None and visitante_id is not None and cache_stats is not None:
         modelo = calcular_modelo_estadistico(comp_code, local_id, visitante_id, cache_stats)
     datos = consultar_cuotas_evento(sport_key, ev.get("id"))
     if not datos:
-        return None, False, "Sin respuesta de cuotas"
-    cands, n_casas, nota = generar_candidatos(datos, local, visitante, modelo)
+        return None, False, "Sin respuesta de cuotas", None
+    cands, n_casas, nota, fav = generar_candidatos(datos, local, visitante, modelo)
     if not cands:
-        return None, True, nota
-    mejor = max(cands, key=lambda c: (c["confirmado_stats"], c["ev"]))
+        return None, True, nota, fav
+    mejor = max(cands, key=lambda c: (c["confirmado_stats"], c["score"]))
     mejor["form_info"] = form_info
     if modelo is None:
         mejor["nota"] = "Sin datos estadísticos suficientes para confirmar"
     elif not mejor["confirmado_stats"]:
         mejor["nota"] = "El modelo estadístico no respalda la apuesta"
-    return mejor, True, mejor.get("nota")
+    return mejor, True, mejor.get("nota"), fav
 
 
 def reconstruir_analisis(prev, form_info):
@@ -1098,6 +1127,144 @@ def formatear_fecha_corta(fecha_str):
             return f"{partes[2]}/{partes[1]}"
     return fecha_str
 
+def buscar_mejor_combinada(partidos, alertas):
+    """Busca la mejor combinada de 2-3 victorias de favoritos, con todas las selecciones en la MISMA casa.
+    Cada selección debe ser claramente favorita, tener ventaja positiva y respaldo del modelo estadístico;
+    la combinada debe superar la ventaja y la probabilidad conjuntas mínimas."""
+    usados = set()
+    for a in alertas:
+        if a.get("es_combinada"):
+            usados.update(str(l.get("id")) for l in a.get("legs", []))
+    por_casa = {}
+    for p in partidos:
+        fav = p.get("fav")
+        if not fav or p.get("estado") not in ("TIMED", "SCHEDULED") or p.get("minutos_restantes", 0) < 10:
+            continue
+        if str(p.get("id")) in usados or p.get("telegram_enviado"):
+            continue   # si el partido ya tiene su alerta individual, no se repite la exposición en una combinada
+        for casa, d in fav.get("por_casa", {}).items():
+            if (COMBI_CUOTA_PATA[0] <= d["cuota"] <= COMBI_CUOTA_PATA[1] and d["prob"] >= COMBI_PROB_PATA_MIN
+                    and d["ev"] >= COMBI_EV_PATA_MIN and d.get("confirmado")):
+                por_casa.setdefault(casa, []).append({
+                    "id": p.get("id"), "partido": f"{p.get('local')} vs {p.get('visitante')}", "equipo": d["equipo"],
+                    "cuota": d["cuota"], "prob": d["prob"], "ev": d["ev"], "timestamp_ms": p.get("timestamp_ms", 0),
+                    "fecha": p.get("fecha"), "fecha_hora_display": p.get("fecha_hora_display"), "liga": p.get("liga")})
+    mejor = None
+    for casa, legs in por_casa.items():
+        legs = sorted(legs, key=lambda l: l["ev"], reverse=True)[:8]
+        for k in range(2, COMBI_MAX_PATAS + 1):
+            for combo in itertools.combinations(legs, k):
+                cuota = math.prod(l["cuota"] for l in combo)
+                prob = math.prod(l["prob"] for l in combo)
+                ev = (prob * cuota - 1.0) * 100
+                if prob < COMBI_PROB_MIN or ev < COMBI_EV_MIN:
+                    continue
+                score = ev * math.sqrt(prob)
+                if mejor is None or score > mejor["score"]:
+                    mejor = {"casa": casa, "legs": list(combo), "cuota": cuota, "prob": prob, "ev": ev, "score": score}
+    return mejor
+
+
+def crear_alerta_combinada(c, semana_id):
+    legs = sorted(c["legs"], key=lambda l: l["timestamp_ms"])
+    primero = legs[0]
+    ids = "-".join(str(l["id"]) for l in legs)
+    return {
+        "id_partido": "",
+        "id_alerta": f"COMBI_{semana_id}_{ids}",
+        "partido": f"Combinada de favoritos ×{len(legs)}",
+        "mercado": " + ".join(f"Victoria {l['equipo']}" for l in legs),
+        "tipo_mercado": "COMBINADA",
+        "categoria_visual": "combinada",
+        "es_combinada": True,
+        "legs": [{"id": l["id"], "partido": l["partido"], "equipo": l["equipo"], "cuota": l["cuota"],
+                  "fecha_hora_display": l["fecha_hora_display"], "res": None, "marcador": None} for l in legs],
+        "casa": c["casa"],
+        "cuota": f"@{round(c['cuota'], 2)}",
+        "ev": f"+{round(c['ev'], 1)}%",
+        "prob_combinada": round(c["prob"] * 100, 1),
+        "stake": "1/10",
+        "hora": first_hora(primero),
+        "fecha": primero["fecha"],
+        "fecha_hora_display": primero["fecha_hora_display"],
+        "semana_id": semana_id,
+        "es_ht": False,
+        "es_semana_actual": True,
+        "estado_partido": "TIMED",
+        "marcador": None,
+        "marcador_final": None,
+        "finalizado": False,
+        "acertado": None,
+        "liquidada_telegram": False,
+        "cuotas_reales": True,
+    }
+
+
+def first_hora(leg):
+    txt = leg.get("fecha_hora_display") or ""
+    return txt.split("•")[-1].strip() if "•" in txt else txt
+
+
+def mensaje_combinada(a):
+    lineas = []
+    for i, l in enumerate(a["legs"], 1):
+        lineas.append(f"{i}️⃣ <b>Victoria {l['equipo']}</b> — {l['partido']} ({l['fecha_hora_display']}) @{l['cuota']}")
+    return (
+        f"🎯 <b>COMBINADA DE FAVORITOS (+EV) ×{len(a['legs'])}</b>\n\n"
+        + "\n".join(lineas) + "\n\n"
+        f"🏦 <b>Casa:</b> {a['casa']} (todas las selecciones en la misma casa)\n"
+        f"💰 <b>Cuota total:</b> {a['cuota']}\n"
+        f"📈 <b>Ventaja combinada (+EV):</b> {a['ev']}\n"
+        f"🎲 <b>Probabilidad de acierto:</b> {a['prob_combinada']}% (deben acertar todas)\n"
+        f"💡 <b>Stake Sugerido:</b> {a['stake']} unidades\n\n"
+        f"⚡ <i>Apex Quant Engine • Combinada de favoritos con respaldo estadístico</i>"
+    )
+
+
+def liquidar_combinadas(alertas, mapa_por_id):
+    for a in alertas:
+        if not a.get("es_combinada") or a.get("finalizado"):
+            continue
+        legs = a.get("legs", [])
+        aciertos, pendientes, fallo, en_juego = 0, 0, False, False
+        for leg in legs:
+            info = mapa_por_id.get(str(leg.get("id")))
+            if not info:
+                pendientes += 1
+                continue
+            if info["estado"] == "FINISHED" and info["goles_local"] is not None and info["goles_visitante"] is not None:
+                ok = verificar_acierto(f"Victoria {leg['equipo']} (1X2)", "1X2", info["goles_local"], info["goles_visitante"],
+                                       nombre_local=info["local"], nombre_visitante=info["visitante"],
+                                       equipo_pronosticado=leg["equipo"])
+                leg["res"] = bool(ok)
+                leg["marcador"] = info["marcador"]
+                if ok:
+                    aciertos += 1
+                else:
+                    fallo = True
+            else:
+                pendientes += 1
+                if info["estado"] in ("IN_PLAY", "HT", "PAUSED"):
+                    en_juego = True
+        if fallo or pendientes == 0:
+            a["finalizado"] = True
+            a["acertado"] = (not fallo) and pendientes == 0
+            a["marcador_final"] = f"{aciertos}/{len(legs)} aciertos"
+            a["estado_partido"] = "FINISHED"
+            if not a.get("liquidada_telegram"):
+                detalle = "\n".join(
+                    f"{'✅' if l.get('res') else ('❌' if l.get('res') is False else '⏳')} {l['equipo']} ({l['partido']}) {l.get('marcador') or ''}".rstrip()
+                    for l in legs)
+                titulo = "✅ <b>Resultado:</b> ACERTADA" if a["acertado"] else "❌ <b>Resultado:</b> PERDIDA"
+                enviar_telegram(
+                    f"🎯 <b>COMBINADA DE FAVORITOS ×{len(legs)}</b>\n{detalle}\n\n{titulo}\n"
+                    f"💰 <b>Cuota:</b> {a['cuota']} • 💡 <b>Stake:</b> {a['stake']}\n\n⚡ <i>Apex Quant Engine</i>",
+                    url_accion=APP_URL, texto_boton="📱 Ver en la Web App")
+                a["liquidada_telegram"] = True
+        elif en_juego or aciertos > 0:
+            a["estado_partido"] = "IN_PLAY"
+
+
 ARCHIVO_LEDGER = "historico_picks.json"
 
 
@@ -1125,10 +1292,11 @@ def actualizar_ledger(alertas, partidos):
     for a in alertas:
         if not (a.get("finalizado") and a.get("acertado") is not None and a.get("cuotas_reales")):
             continue
-        pid = f"TG_{a.get('id_alerta')}"
+        es_combi = bool(a.get("es_combinada"))
+        pid = str(a.get("id_alerta")) if es_combi else f"TG_{a.get('id_alerta')}"
         if pid in ids:
             continue
-        picks.append({"id": pid, "grupo": "TG", "fecha": a.get("fecha"), "mes": (a.get("fecha") or "")[:7],
+        picks.append({"id": pid, "grupo": "COMBI" if es_combi else "TG", "fecha": a.get("fecha"), "mes": (a.get("fecha") or "")[:7],
                       "semana_id": a.get("semana_id"), "partido": a.get("partido"), "mercado": a.get("mercado"),
                       "casa": a.get("casa"), "cuota": _a_float(a.get("cuota"), 2.0), "stake": _a_float(a.get("stake"), 1.0),
                       "ev": _a_float(a.get("ev"), 0.0), "confirmado_stats": a.get("confirmado_stats"),
@@ -1354,16 +1522,18 @@ def ejecutar_ciclo():
         nota_cuotas = prev.get("nota_cuotas") if prev else None
         analisis = None
         analisis_nuevo = False
+        fav_info = prev.get("fav") if (prev and prev.get("analizado")) else None
 
         if analizado:
             analisis = reconstruir_analisis(prev, form_info)
         elif (not es_finalizado) and (not es_en_juego) and VENTANA_MIN <= minutos_restantes <= VENTANA_MAX:
             inicio_dt = datetime.fromtimestamp(timestamp_inicio_ms / 1000.0, timezone.utc) if timestamp_inicio_ms else None
-            analisis, definitivo, nota = analizar_partido_con_cuotas(comp_code, nombre_local, nombre_visitante, inicio_dt, form_info, cache_eventos_odds, home_team_data.get("id"), away_team_data.get("id"), cache_stats_liga)
+            analisis, definitivo, nota, fav_nuevo = analizar_partido_con_cuotas(comp_code, nombre_local, nombre_visitante, inicio_dt, form_info, cache_eventos_odds, home_team_data.get("id"), away_team_data.get("id"), cache_stats_liga)
             nota_cuotas = nota
             if definitivo:
                 analizado = True
                 analisis_nuevo = analisis is not None
+                fav_info = fav_nuevo
             else:
                 analisis = None
 
@@ -1477,6 +1647,7 @@ def ejecutar_ciclo():
             "tiene_pronostico": tiene_pron,
             "analizado": analizado,
             "nota_cuotas": nota_cuotas,
+            "fav": fav_info,
             "semana_id": semana_actual_id,
             "telegram_enviado": bool(fue_enviado_telegram or ya_registrada or (prev and prev.get("telegram_enviado"))),
             "es_empate_ht": False,
@@ -1485,8 +1656,21 @@ def ejecutar_ciclo():
         }
         partidos_para_web.append(item)
 
+    # COMBINADAS DE FAVORITOS (máx. 3 partidos, misma casa, +EV conjunto y respaldo estadístico)
+    if COMBI_ACTIVA:
+        mejor_combi = buscar_mejor_combinada(partidos_para_web, alertas_acumuladas)
+        if mejor_combi:
+            alerta_combi = crear_alerta_combinada(mejor_combi, semana_actual_id)
+            if not any(a.get("id_alerta") == alerta_combi["id_alerta"] for a in alertas_acumuladas):
+                enviar_telegram(mensaje_combinada(alerta_combi), url_accion=APP_URL, texto_boton="📱 Abrir en Web App")
+                alertas_acumuladas.append(alerta_combi)
+                print(f"🎯 Combinada creada: {alerta_combi['mercado']} {alerta_combi['cuota']} (EV {alerta_combi['ev']})")
+
     # RECONCILIACIÓN Y LIQUIDACIÓN
+    liquidar_combinadas(alertas_acumuladas, partidos_map_por_id)
     for alerta in alertas_acumuladas:
+        if alerta.get("es_combinada"):
+            continue
         p_id = str(alerta.get("id_partido", ""))
         p_nombre = alerta.get("partido", "")
         p_norm = normalizar_texto(p_nombre)
