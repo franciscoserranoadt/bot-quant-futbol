@@ -37,255 +37,6 @@ LEAGUES_MAP = {
 # BASE DE DATOS MAESTRA: 5 ÚLTIMOS PARTIDOS OFICIALES REALES DE CADA CLUB
 # Estricto orden cronológico (5 resultados exactos reales: W, D, L)
 # ==============================================================================
-RACHAS_BASE_REALES = {
-    # LaLiga EA Sports (ESP)
-    "atletico de madrid": ["W", "W", "W", "W", "W"],
-    "club atletico de madrid": ["W", "W", "W", "W", "W"],
-    "atletico": ["W", "W", "W", "W", "W"],
-    "real madrid": ["W", "W", "W", "D", "W"],
-    "barcelona": ["W", "W", "W", "W", "L"],
-    "fc barcelona": ["W", "W", "W", "W", "L"],
-    "villarreal": ["W", "W", "L", "W", "D"],
-    "villarreal cf": ["W", "W", "L", "W", "D"],
-    "athletic club": ["W", "D", "W", "W", "L"],
-    "athletic": ["W", "D", "W", "W", "L"],
-    "osasuna": ["W", "D", "W", "L", "D"],
-    "ca osasuna": ["W", "D", "W", "L", "D"],
-    "mallorca": ["W", "W", "W", "L", "L"],
-    "rcd mallorca": ["W", "W", "W", "L", "L"],
-    "real betis": ["W", "L", "W", "D", "L"],
-    "betis": ["W", "L", "W", "D", "L"],
-    "celta de vigo": ["L", "D", "W", "L", "D"],
-    "celta": ["L", "D", "W", "L", "D"],
-    "rayo vallecano": ["D", "D", "W", "D", "L"],
-    "rayo": ["D", "D", "W", "D", "L"],
-    "real sociedad": ["W", "D", "W", "L", "D"],
-    "sevilla": ["W", "W", "L", "D", "W"],
-    "sevilla fc": ["W", "W", "L", "D", "W"],
-    "girona": ["W", "D", "L", "D", "W"],
-    "girona fc": ["W", "D", "L", "D", "W"],
-    "alaves": ["L", "L", "L", "W", "W"],
-    "deportivo alaves": ["L", "L", "L", "W", "W"],
-    "espanyol": ["L", "L", "L", "W", "L"],
-    "rcd espanyol": ["L", "L", "L", "W", "L"],
-    "rcd espanyol de barcelona": ["L", "L", "L", "W", "L"],
-    "getafe": ["D", "W", "L", "D", "L"],
-    "getafe cf": ["D", "W", "L", "D", "L"],
-    "leganes": ["D", "D", "L", "L", "D"],
-    "cd leganes": ["D", "D", "L", "L", "D"],
-    "valladolid": ["L", "L", "L", "D", "L"],
-    "real valladolid": ["L", "L", "L", "D", "L"],
-    "valencia": ["D", "L", "D", "W", "L"],
-    "valencia cf": ["D", "L", "D", "W", "L"],
-    "las palmas": ["L", "D", "L", "L", "D"],
-    "ud las palmas": ["L", "D", "L", "L", "D"],
-
-    # LaLiga Hypermotion (ESP - Segunda División)
-    "racing santander": ["W", "W", "W", "L", "W"],
-    "real racing club": ["W", "W", "W", "L", "W"],
-    "levante": ["W", "D", "W", "L", "D"],
-    "levante ud": ["W", "D", "W", "L", "D"],
-    "huesca": ["D", "W", "L", "W", "L"],
-    "sd huesca": ["D", "W", "L", "W", "L"],
-    "real zaragoza": ["L", "W", "L", "W", "L"],
-    "zaragoza": ["L", "W", "L", "W", "L"],
-    "burgos": ["L", "D", "W", "W", "L"],
-    "burgos cf": ["L", "D", "W", "W", "L"],
-    "eibar": ["W", "L", "D", "W", "D"],
-    "sd eibar": ["W", "L", "D", "W", "D"],
-    "sporting gijon": ["W", "W", "W", "L", "D"],
-    "real sporting": ["W", "W", "W", "L", "D"],
-    "oviedo": ["D", "W", "W", "D", "L"],
-    "real oviedo": ["D", "W", "W", "D", "L"],
-    "granada": ["W", "W", "D", "D", "D"],
-    "granada cf": ["W", "W", "D", "D", "D"],
-    "almeria": ["W", "L", "W", "L", "D"],
-    "ud almeria": ["W", "L", "W", "L", "D"],
-    "cadiz": ["D", "L", "W", "L", "D"],
-    "cadiz cf": ["D", "L", "W", "L", "D"],
-    "deportivo la coruna": ["D", "D", "L", "W", "L"],
-    "rc deportivo la coruna": ["D", "D", "L", "W", "L"],
-    "malaga": ["D", "D", "L", "D", "W"],
-    "malaga cf": ["D", "D", "L", "D", "W"],
-    "elche": ["D", "L", "W", "W", "L"],
-    "elche cf": ["D", "L", "W", "W", "L"],
-    "albacete": ["D", "L", "L", "W", "D"],
-    "albacete bp": ["D", "L", "L", "W", "D"],
-    "cordoba": ["D", "W", "L", "L", "W"],
-    "cordoba cf": ["D", "W", "L", "L", "W"],
-    "castellon": ["L", "W", "W", "L", "W"],
-    "cd castellon": ["L", "W", "W", "L", "W"],
-    "ferrol": ["W", "W", "D", "L", "L"],
-    "racing ferrol": ["W", "W", "D", "L", "L"],
-    "mirandes": ["W", "L", "W", "L", "D"],
-    "cd mirandes": ["W", "L", "W", "L", "D"],
-    "eldense": ["L", "L", "D", "W", "L"],
-    "cd eldense": ["L", "L", "D", "W", "L"],
-    "tenerife": ["L", "W", "L", "L", "D"],
-    "cd tenerife": ["L", "W", "L", "L", "D"],
-    "cartagena": ["L", "L", "L", "W", "L"],
-    "fc cartagena": ["L", "L", "L", "W", "L"],
-
-    # Premier League (ENG)
-    "liverpool": ["W", "W", "W", "W", "W"],
-    "liverpool fc": ["W", "W", "W", "W", "W"],
-    "manchester city": ["W", "W", "D", "D", "W"],
-    "man city": ["W", "W", "D", "D", "W"],
-    "arsenal": ["W", "W", "W", "D", "W"],
-    "arsenal fc": ["W", "W", "W", "D", "W"],
-    "chelsea": ["D", "W", "W", "W", "D"],
-    "chelsea fc": ["D", "W", "W", "W", "D"],
-    "aston villa": ["D", "D", "W", "W", "W"],
-    "brighton": ["W", "L", "D", "D", "W"],
-    "brighton & hove albion": ["W", "L", "D", "D", "W"],
-    "newcastle": ["D", "D", "L", "W", "D"],
-    "newcastle united": ["D", "D", "L", "W", "D"],
-    "fulham": ["L", "W", "W", "D", "W"],
-    "fulham fc": ["L", "W", "W", "D", "W"],
-    "tottenham": ["L", "W", "W", "L", "W"],
-    "tottenham hotspur": ["L", "W", "W", "L", "W"],
-    "nottingham forest": ["D", "L", "D", "W", "D"],
-    "nottingham": ["D", "L", "D", "W", "D"],
-    "brentford": ["W", "D", "L", "L", "W"],
-    "brentford fc": ["W", "D", "L", "L", "W"],
-    "west ham": ["W", "D", "L", "D", "L"],
-    "west ham united": ["W", "D", "L", "D", "L"],
-    "bournemouth": ["L", "W", "L", "L", "D"],
-    "afc bournemouth": ["L", "W", "L", "L", "D"],
-    "manchester united": ["D", "D", "L", "D", "W"],
-    "man united": ["D", "D", "L", "D", "W"],
-    "leicester": ["W", "L", "D", "D", "L"],
-    "leicester city": ["W", "L", "D", "D", "L"],
-    "everton": ["D", "W", "D", "L", "L"],
-    "everton fc": ["D", "W", "D", "L", "L"],
-    "ipswich": ["L", "D", "D", "D", "D"],
-    "ipswich town": ["L", "D", "D", "D", "D"],
-    "crystal palace": ["L", "L", "D", "D", "D"],
-    "southampton": ["L", "L", "L", "D", "L"],
-    "southampton fc": ["L", "L", "L", "D", "L"],
-    "wolves": ["L", "L", "L", "L", "D"],
-    "wolverhampton wanderers": ["L", "L", "L", "L", "D"],
-
-    # Bundesliga (GER)
-    "bayern": ["D", "D", "W", "W", "W"],
-    "fc bayern munchen": ["D", "D", "W", "W", "W"],
-    "bayern munich": ["D", "D", "W", "W", "W"],
-    "rb leipzig": ["W", "W", "D", "W", "W"],
-    "leipzig": ["W", "W", "D", "W", "W"],
-    "frankfurt": ["D", "W", "W", "W", "W"],
-    "eintracht frankfurt": ["D", "W", "W", "W", "W"],
-    "leverkusen": ["D", "W", "D", "W", "W"],
-    "bayer 04 leverkusen": ["D", "W", "D", "W", "W"],
-    "bayer leverkusen": ["D", "W", "D", "W", "W"],
-    "dortmund": ["W", "L", "W", "L", "W"],
-    "borussia dortmund": ["W", "L", "W", "L", "W"],
-    "freiburg": ["W", "W", "L", "W", "W"],
-    "sc freiburg": ["W", "W", "L", "W", "W"],
-    "union berlin": ["W", "L", "W", "D", "W"],
-    "1. fc union berlin": ["W", "L", "W", "D", "W"],
-    "stuttgart": ["D", "D", "W", "W", "D"],
-    "vfb stuttgart": ["D", "D", "W", "W", "D"],
-    "heidenheim": ["L", "W", "L", "L", "W"],
-    "1. fc heidenheim 1846": ["L", "W", "L", "L", "W"],
-    "werder bremen": ["L", "W", "L", "W", "D"],
-    "werder": ["L", "W", "L", "W", "D"],
-    "augsburg": ["W", "L", "W", "L", "L"],
-    "fc augsburg": ["W", "L", "W", "L", "L"],
-    "wolfsburg": ["W", "D", "L", "L", "W"],
-    "vfl wolfsburg": ["W", "D", "L", "L", "W"],
-    "monchengladbach": ["L", "W", "L", "W", "L"],
-    "borussia monchengladbach": ["L", "W", "L", "W", "L"],
-    "mainz": ["W", "L", "W", "L", "D"],
-    "1. fsv mainz 05": ["W", "L", "W", "L", "D"],
-    "st pauli": ["L", "W", "D", "L", "L"],
-    "fc st. pauli": ["L", "W", "D", "L", "L"],
-    "hoffenheim": ["D", "L", "L", "L", "W"],
-    "tsg 1899 hoffenheim": ["D", "L", "L", "L", "W"],
-    "holstein kiel": ["D", "L", "D", "L", "L"],
-    "bochum": ["L", "L", "D", "L", "L"],
-    "vfl bochum 1848": ["L", "L", "D", "L", "L"],
-
-    # Serie A (ITA)
-    "napoli": ["W", "W", "W", "D", "W"],
-    "ssc napoli": ["W", "W", "W", "D", "W"],
-    "inter": ["W", "W", "L", "W", "W"],
-    "fc internazionale milano": ["W", "W", "L", "W", "W"],
-    "juventus": ["D", "W", "D", "D", "W"],
-    "juventus fc": ["D", "W", "D", "D", "W"],
-    "lazio": ["W", "W", "L", "W", "D"],
-    "ss lazio": ["W", "W", "L", "W", "D"],
-    "udinese": ["W", "L", "L", "W", "W"],
-    "udinese calcio": ["W", "L", "L", "W", "W"],
-    "milan": ["L", "W", "W", "W", "D"],
-    "ac milan": ["L", "W", "W", "W", "D"],
-    "torino": ["L", "L", "W", "D", "W"],
-    "torino fc": ["L", "L", "W", "D", "W"],
-    "atalanta": ["W", "W", "D", "L", "W"],
-    "atalanta bc": ["W", "W", "D", "L", "W"],
-    "roma": ["D", "W", "W", "D", "L"],
-    "as roma": ["D", "W", "W", "D", "L"],
-    "empoli": ["L", "D", "W", "D", "D"],
-    "empoli fc": ["L", "D", "W", "D", "D"],
-    "fiorentina": ["W", "D", "W", "D", "D"],
-    "acf fiorentina": ["W", "D", "W", "D", "D"],
-    "verona": ["W", "L", "L", "L", "W"],
-    "hellas verona": ["W", "L", "L", "L", "W"],
-    "bologna": ["D", "D", "W", "D", "D"],
-    "bologna fc 1909": ["D", "D", "W", "D", "D"],
-    "como": ["L", "W", "W", "D", "L"],
-    "como 1907": ["L", "W", "W", "D", "L"],
-    "parma": ["D", "D", "L", "L", "W"],
-    "parma calcio 1913": ["D", "D", "L", "L", "W"],
-    "cagliari": ["W", "W", "L", "L", "D"],
-    "cagliari calcio": ["W", "W", "L", "L", "D"],
-    "lecce": ["L", "L", "D", "D", "W"],
-    "us lecce": ["L", "L", "D", "D", "W"],
-    "genoa": ["L", "D", "L", "L", "D"],
-    "genoa cfc": ["L", "D", "L", "L", "D"],
-    "monza": ["D", "D", "L", "D", "D"],
-    "ac monza": ["D", "D", "L", "D", "D"],
-    "venezia": ["L", "L", "W", "L", "L"],
-    "venezia fc": ["L", "L", "W", "L", "L"],
-
-    # Ligue 1 (FRA)
-    "psg": ["D", "W", "D", "W", "W"],
-    "paris saint germain": ["D", "W", "D", "W", "W"],
-    "paris saint-germain fc": ["D", "W", "D", "W", "W"],
-    "monaco": ["W", "D", "W", "W", "W"],
-    "as monaco": ["W", "D", "W", "W", "W"],
-    "marseille": ["D", "L", "W", "W", "W"],
-    "olympique de marseille": ["D", "L", "W", "W", "W"],
-    "reims": ["W", "W", "D", "W", "W"],
-    "stade de reims": ["W", "W", "D", "W", "W"],
-    "lille": ["W", "W", "D", "L", "L"],
-    "lille osc": ["W", "W", "D", "L", "L"],
-    "lens": ["D", "D", "D", "D", "W"],
-    "rc lens": ["D", "D", "D", "D", "W"],
-    "strasbourg": ["D", "W", "D", "D", "L"],
-    "rc strasbourg alsace": ["D", "W", "D", "D", "L"],
-    "lyon": ["W", "W", "W", "L", "W"],
-    "olympique lyonnais": ["W", "W", "W", "L", "W"],
-    "nice": ["D", "D", "W", "L", "W"],
-    "ogc nice": ["D", "D", "W", "L", "W"],
-    "brest": ["W", "L", "W", "W", "L"],
-    "stade brestois 29": ["W", "L", "W", "W", "L"],
-    "rennes": ["L", "L", "D", "W", "L"],
-    "stade rennais fc 1901": ["L", "L", "D", "W", "L"],
-    "nantes": ["L", "D", "D", "L", "W"],
-    "fc nantes": ["L", "D", "D", "L", "W"],
-    "auxerre": ["L", "W", "L", "L", "L"],
-    "aj auxerre": ["L", "W", "L", "L", "L"],
-    "toulouse": ["L", "L", "L", "W", "D"],
-    "toulouse fc": ["L", "L", "L", "W", "D"],
-    "le havre": ["L", "L", "L", "L", "W"],
-    "le havre ac": ["L", "L", "L", "L", "W"],
-    "saint-etienne": ["W", "D", "L", "W", "L"],
-    "as saint-etienne": ["W", "D", "L", "W", "L"],
-    "angers": ["D", "L", "D", "D", "L"],
-    "angers sco": ["D", "L", "D", "D", "L"],
-    "montpellier": ["L", "L", "W", "L", "L"],
-    "montpellier hsc": ["L", "L", "W", "L", "L"]
-}
 
 # ==============================================================================
 # CUOTAS REALES (THE ODDS API) - WINAMAX vs CONSENSO DEL MERCADO
@@ -403,7 +154,7 @@ def buscar_evento_odds(sport_key, local, visitante, inicio_utc, cache_eventos):
 # Perfiles de mercados (cada mercado consultado cuesta 1 crédito por región y partido)
 # ---------------------------------------------------------------------------
 PERFILES_MERCADOS = {
-    "reducido": "h2h,totals,alternate_totals,btts",   # 1X2 + goles totales (1.5/2.5/3.5) + ambos marcan = 4 créditos/partido
+    "reducido": "h2h,totals,alternate_totals,btts,double_chance",   # 1X2 + doble oportunidad + goles (1.5/2.5/3.5) + ambos marcan = 5 créditos/partido
     "basico": "h2h,totals,btts,double_chance",
     "medio": "h2h,totals,btts,double_chance,h2h_h1,totals_h1,alternate_totals,team_totals,spreads",
     "completo": ("h2h,h2h_h1,double_chance,double_chance_h1,totals,totals_h1,alternate_totals,alternate_totals_h1,"
@@ -411,7 +162,7 @@ PERFILES_MERCADOS = {
 }
 ODDS_PERFIL = os.getenv("ODDS_PERFIL", "reducido")      # reducido | auto | basico | medio | completo
 # Familias de mercado que se analizan (el resto se ignora aunque la casa los ofrezca)
-MERCADOS_ACTIVOS = {m.strip().upper() for m in os.getenv("MERCADOS_ACTIVOS", "1X2,TOT,BTTS").split(",") if m.strip()}
+MERCADOS_ACTIVOS = {m.strip().upper() for m in os.getenv("MERCADOS_ACTIVOS", "1X2,DC,TOT,BTTS").split(",") if m.strip()}
 ESCALAS_ACTIVAS = {m.strip().upper() for m in os.getenv("ESCALAS_ACTIVAS", "FT").split(",") if m.strip()}
 ODDS_MARKETS_FORZADOS = os.getenv("ODDS_MARKETS", "")   # si se define, sustituye al perfil
 
@@ -435,7 +186,7 @@ def consultar_cuotas_evento(sport_key, event_id):
     perfil = ODDS_ESTADO.get("perfil") or ODDS_PERFIL
     if not ODDS_MARKETS_FORZADOS and perfil in orden:
         intentos += [PERFILES_MERCADOS[k] for k in orden[orden.index(perfil) + 1:]]
-    intentos += ["h2h,totals,btts", "h2h,totals"]
+    intentos += ["h2h,totals,btts,double_chance", "h2h,totals,btts", "h2h,totals"]
     vistos, ODDS_ESTADO["consultas"] = [], ODDS_ESTADO["consultas"] + 1
     for mk in intentos:
         if mk in vistos:
@@ -577,6 +328,7 @@ DC_RHO = -0.05
 
 def construir_fuerzas(matches):
     equipos, gh, ga, n = {}, 0, 0, 0
+    res = []   # (fecha UTC, id local, id visitante, goles local, goles visitante)
     for m in matches:
         ft = (m.get("score") or {}).get("fullTime") or {}
         h, a = ft.get("home"), ft.get("away")
@@ -587,14 +339,15 @@ def construir_fuerzas(matches):
         gh += h
         ga += a
         n += 1
+        res.append((m.get("utcDate") or "", hid, aid, h, a))
         for tid, gf, gc in ((hid, h, a), (aid, a, h)):
             e = equipos.setdefault(tid, {"gf": 0, "gc": 0, "n": 0})
             e["gf"] += gf
             e["gc"] += gc
             e["n"] += 1
     if n < 20:
-        return None
-    return {"equipos": equipos, "mu_home": gh / n, "mu_away": ga / n, "mu": (gh + ga) / (2.0 * n)}
+        return {"valido": False, "equipos": equipos, "res": res, "mu_home": 1.4, "mu_away": 1.1, "mu": 1.25}
+    return {"valido": True, "equipos": equipos, "res": res, "mu_home": gh / n, "mu_away": ga / n, "mu": (gh + ga) / (2.0 * n)}
 
 
 def obtener_fuerzas_liga(comp_code, cache_stats):
@@ -631,7 +384,7 @@ STATS_H1_SHARE = float(os.getenv("STATS_H1_SHARE", "0.44"))   # parte de los gol
 
 def calcular_modelo_estadistico(comp_code, local_id, visitante_id, cache_stats):
     f = obtener_fuerzas_liga(comp_code, cache_stats)
-    if not f or local_id not in f["equipos"] or visitante_id not in f["equipos"]:
+    if not f or not f.get("valido") or local_id not in f["equipos"] or visitante_id not in f["equipos"]:
         return None
     el, ev_ = f["equipos"][local_id], f["equipos"][visitante_id]
     if el["n"] < STATS_MIN_PARTIDOS or ev_["n"] < STATS_MIN_PARTIDOS:
@@ -1278,144 +1031,6 @@ def obtener_partidos_completos(lunes_semana_str, domingo_semana_str):
 
     return list(matches_dict.values())
 
-def construir_historial_resultados_equipos(todos_los_partidos):
-    historial = {}
-
-    partidos_finalizados = [
-        p for p in todos_los_partidos 
-        if p.get("status") in ["FINISHED", "FINALIZADO", "AWARDED"]
-    ]
-
-    def obtener_timestamp(p):
-        d_str = p.get("utcDate", "")
-        if d_str:
-            try:
-                return datetime.fromisoformat(d_str.replace("Z", "+00:00")).timestamp()
-            except Exception:
-                pass
-        return 0
-
-    partidos_finalizados.sort(key=obtener_timestamp, reverse=True)
-
-    for p in partidos_finalizados:
-        home_name = p.get("homeTeam", {}).get("name", "")
-        away_name = p.get("awayTeam", {}).get("name", "")
-        if not home_name or not away_name:
-            continue
-
-        score_data = p.get("score", {})
-        full_time = score_data.get("fullTime", {})
-        regular_time = score_data.get("regularTime", {})
-        
-        g_home = full_time.get("home")
-        g_away = full_time.get("away")
-        if (g_home is None or g_away is None) and regular_time.get("home") is not None:
-            g_home = regular_time.get("home")
-            g_away = regular_time.get("away")
-
-        if g_home is None or g_away is None:
-            continue
-
-        k_home = normalizar_texto(home_name)
-        k_away = normalizar_texto(away_name)
-
-        if k_home not in historial: historial[k_home] = []
-        if k_away not in historial: historial[k_away] = []
-
-        if g_home > g_away:
-            historial[k_home].append('W')
-            historial[k_away].append('L')
-        elif g_home < g_away:
-            historial[k_home].append('L')
-            historial[k_away].append('W')
-        else:
-            historial[k_home].append('D')
-            historial[k_away].append('D')
-
-    return historial
-
-def resolver_racha_real_equipo(nombre_equipo, partidos_recientes_api):
-    norm = normalizar_texto(nombre_equipo)
-    
-    if "atletico" in norm:
-        return ["W", "W", "W", "W", "W"]
-
-    racha_base = None
-    for club_key, r in RACHAS_BASE_REALES.items():
-        if club_key == norm or (club_key in norm and len(club_key) > 4) or (norm in club_key and len(norm) > 4):
-            racha_base = list(r)
-            break
-
-    if not racha_base:
-        racha_base = ["D", "W", "L", "D", "W"]
-
-    if partidos_recientes_api and len(partidos_recientes_api) > 0:
-        lista_final = list(partidos_recientes_api)
-        for res in racha_base:
-            if len(lista_final) < 5:
-                lista_final.append(res)
-        return lista_final[:5]
-
-    return racha_base[:5]
-
-def calcular_factor_racha_real(partido_id, local, visitante, historial_equipos=None):
-    historial_equipos = historial_equipos or {}
-    k_loc = normalizar_texto(local)
-    k_vis = normalizar_texto(visitante)
-
-    resultados_loc_api = []
-    resultados_vis_api = []
-
-    for k, v in historial_equipos.items():
-        if k == k_loc or (k in k_loc and len(k) > 4) or (k_loc in k and len(k_loc) > 4):
-            resultados_loc_api = v
-            break
-
-    for k, v in historial_equipos.items():
-        if k == k_vis or (k in k_vis and len(k) > 4) or (k_vis in k and len(k_vis) > 4):
-            resultados_vis_api = v
-            break
-
-    ultimos_loc = resolver_racha_real_equipo(local, resultados_loc_api)
-    ultimos_vis = resolver_racha_real_equipo(visitante, resultados_vis_api)
-
-    racha_local = "-".join(ultimos_loc)
-    racha_visitante = "-".join(ultimos_vis)
-
-    puntos_local = ultimos_loc.count('W') * 3 + ultimos_loc.count('D') * 1
-    puntos_visitante = ultimos_vis.count('W') * 3 + ultimos_vis.count('D') * 1
-    diferencia_forma = puntos_local - puntos_visitante
-
-    ajuste_prob = round(diferencia_forma * 0.003, 3)
-
-    etiqueta = f"Local: {racha_local} ({puntos_local} pts) vs Vis: {racha_visitante} ({puntos_visitante} pts)"
-    if diferencia_forma >= 5:
-        tendencia = "🔥 Racha Favorable Local (+Dinámica)"
-    elif diferencia_forma <= -5:
-        tendencia = "🔥 Racha Favorable Visitante (+Dinámica)"
-    elif diferencia_forma <= -3:
-        tendencia = "⚠️ Visitante en Alza (+Dinámica)"
-    elif diferencia_forma >= 3:
-        tendencia = "⚖️ Ligera Ventaja Local"
-    elif diferencia_forma <= -1:
-        tendencia = "⚖️ Ligera Ventaja Visitante"
-    else:
-        tendencia = "⚖️ Tendencia Equilibrada"
-
-    es_club_top_local = any(top in k_loc for top in ["real madrid", "barcelona", "atletico", "bayern", "manchester city", "arsenal", "liverpool", "psg", "inter", "juventus", "napoli", "leverkusen"])
-    es_club_top_vis = any(top in k_vis for top in ["real madrid", "barcelona", "atletico", "bayern", "manchester city", "arsenal", "liverpool", "psg", "inter", "juventus", "napoli", "leverkusen"])
-
-    return {
-        "ajuste_prob": ajuste_prob,
-        "racha_local": racha_local,
-        "racha_visitante": racha_visitante,
-        "tendencia": tendencia,
-        "resumen": etiqueta,
-        "diferencia_forma": diferencia_forma,
-        "es_club_top_local": es_club_top_local,
-        "es_club_top_vis": es_club_top_vis
-    }
-
 def verificar_acierto(mercado_texto, tipo_mercado, goles_local, goles_visitante, nombre_local="", nombre_visitante="", equipo_pronosticado=None):
     if goles_local is None or goles_visitante is None:
         return False
@@ -1781,6 +1396,73 @@ def actualizar_ledger(alertas, partidos):
             print(f"Aviso guardando libro mayor: {e}")
 
 
+COMPS_FORMA = ["PL", "PD", "BL1", "SA", "FL1", "CL"]
+FORMAS_TTL_MIN = int(os.getenv("FORMAS_TTL_MIN", "90"))
+
+
+def calcular_formas(cache_stats):
+    """Últimos 5 resultados REALES de cada equipo (liga + Champions), del más antiguo al más reciente."""
+    por_equipo = {}
+    for comp in COMPS_FORMA:
+        f = obtener_fuerzas_liga(comp, cache_stats)
+        if not f:
+            continue
+        for utc, hid, aid, gh, ga in f.get("res", []):
+            r_h = "W" if gh > ga else ("L" if gh < ga else "D")
+            r_a = "L" if gh > ga else ("W" if gh < ga else "D")
+            por_equipo.setdefault(hid, []).append((utc, r_h))
+            por_equipo.setdefault(aid, []).append((utc, r_a))
+    formas = {}
+    for tid, lst in por_equipo.items():
+        lst.sort(key=lambda x: x[0])
+        formas[str(tid)] = "-".join(r for _, r in lst[-5:])
+    return formas
+
+
+def actualizar_formas(formas_prev, cache_stats, ahora_utc):
+    """Reutiliza la forma guardada si es reciente; si no, la recalcula con los resultados de la temporada."""
+    try:
+        t = datetime.fromisoformat((formas_prev or {}).get("t", "").replace("Z", "+00:00"))
+        if formas_prev.get("e") and (ahora_utc - t).total_seconds() < FORMAS_TTL_MIN * 60:
+            return formas_prev
+    except Exception:
+        pass
+    nuevas = calcular_formas(cache_stats)
+    if nuevas:
+        print(f"📈 Forma real recalculada para {len(nuevas)} equipos")
+        return {"t": ahora_utc.strftime("%Y-%m-%dT%H:%M:%SZ"), "e": nuevas}
+    return formas_prev or {"t": "", "e": {}}
+
+
+def construir_form_info(formas, hid, aid):
+    rl, rv = formas.get(str(hid)), formas.get(str(aid))
+    if not rl or not rv or len(rl.split("-")) < 3 or len(rv.split("-")) < 3:
+        return {"ajuste_prob": 0.0, "racha_local": rl or "", "racha_visitante": rv or "", "tendencia": "",
+                "resumen": "Sin datos de forma suficientes", "diferencia_forma": 0,
+                "es_club_top_local": False, "es_club_top_vis": False, "real": False}
+
+    def pts(r):
+        return sum(3 if c == "W" else (1 if c == "D" else 0) for c in r.split("-"))
+
+    pl, pv = pts(rl), pts(rv)
+    dif = pl - pv
+    if dif >= 5:
+        tendencia = "🔥 Racha Favorable Local (+Dinámica)"
+    elif dif <= -5:
+        tendencia = "🔥 Racha Favorable Visitante (+Dinámica)"
+    elif dif <= -3:
+        tendencia = "⚠️ Visitante en Alza (+Dinámica)"
+    elif dif >= 3:
+        tendencia = "⚖️ Ligera Ventaja Local"
+    elif dif <= -1:
+        tendencia = "⚖️ Ligera Ventaja Visitante"
+    else:
+        tendencia = "⚖️ Tendencia Equilibrada"
+    return {"ajuste_prob": 0.0, "racha_local": rl, "racha_visitante": rv, "tendencia": tendencia,
+            "resumen": f"Local: {rl} ({pl} pts) vs Vis: {rv} ({pv} pts)", "diferencia_forma": dif,
+            "es_club_top_local": False, "es_club_top_vis": False, "real": True}
+
+
 def ejecutar_ciclo():
     ahora_utc = datetime.now(timezone.utc)
     ahora_madrid = ahora_utc.astimezone(TZ_MADRID)
@@ -1834,8 +1516,6 @@ def ejecutar_ciclo():
     diag_refresco = refrescar_partidos_atascados(partidos_raw, partidos_previos, ahora_utc)
     print(f"🩺 Diagnóstico partidos: API={partidos_api_n} | atascados={diag_refresco['atascados']} | "
           f"ausentes={diag_refresco['ausentes']} | refrescados por ficha={diag_refresco['refrescados']}")
-    historial_equipos = construir_historial_resultados_equipos(partidos_raw)
-    print(f"📊 Historial real indexado para {len(historial_equipos)} clubes.")
 
     partidos_para_web = []
     partidos_map_por_id = {}
@@ -1843,6 +1523,7 @@ def ejecutar_ciclo():
     partidos_previos_map = {str(x.get('id')): x for x in partidos_previos}
     cache_eventos_odds = {}
     cache_stats_liga = {}
+    formas_equipos = actualizar_formas(datos_previos.get("formas_equipos"), cache_stats_liga, ahora_utc)
 
     for p in partidos_raw:
         comp_code = p.get("competition", {}).get("code", "")
@@ -1974,7 +1655,7 @@ def ejecutar_ciclo():
         key_norm = f"{normalizar_texto(nombre_local)} vs {normalizar_texto(nombre_visitante)}"
         partidos_map_por_nombres[key_norm] = info_partido_actual
 
-        form_info = calcular_factor_racha_real(p.get("id", 0), nombre_local, nombre_visitante, historial_equipos)
+        form_info = construir_form_info(formas_equipos.get("e", {}), home_team_data.get("id"), away_team_data.get("id"))
         prev = partidos_previos_map.get(str(p.get("id")))
         analizado = bool(prev and prev.get("analizado"))
         nota_cuotas = prev.get("nota_cuotas") if prev else None
@@ -2150,4 +1831,227 @@ def ejecutar_ciclo():
                 alertas_acumuladas.append(alerta_combi)
                 print(f"🎯 Combinada creada: {alerta_combi['mercado']} {alerta_combi['cuota']} (EV {alerta_combi['ev']})")
 
-    # 
+    # RECONCILIACIÓN Y LIQUIDACIÓN
+    liquidar_combinadas(alertas_acumuladas, partidos_map_por_id)
+    for alerta in alertas_acumuladas:
+        if alerta.get("es_combinada"):
+            continue
+        p_id = str(alerta.get("id_partido", ""))
+        p_nombre = alerta.get("partido", "")
+        p_norm = normalizar_texto(p_nombre)
+
+        partido_encontrado = None
+        if p_id and p_id in partidos_map_por_id:
+            partido_encontrado = partidos_map_por_id[p_id]
+        elif p_nombre in partidos_map_por_nombres:
+            partido_encontrado = partidos_map_por_nombres[p_nombre]
+        else:
+            for k, info in partidos_map_por_nombres.items():
+                if normalizar_texto(k) == p_norm or (info["local"] in p_nombre and info["visitante"] in p_nombre):
+                    partido_encontrado = info
+                    break
+
+        if partido_encontrado:
+            alerta["estado_partido"] = partido_encontrado["estado"]
+            if partido_encontrado["marcador"]:
+                alerta["marcador"] = partido_encontrado["marcador"]
+
+            if partido_encontrado["estado"] == "FINISHED":
+                g_loc = partido_encontrado["goles_local"]
+                g_vis = partido_encontrado["goles_visitante"]
+                marcador_fin = partido_encontrado["marcador"] or (f"{g_loc} - {g_vis}" if g_loc is not None else None)
+                
+                res_pick = evaluar_pick(
+                    alerta.get("sel"), alerta["mercado"], alerta.get("tipo_mercado", ""), g_loc, g_vis,
+                    partido_encontrado.get("ht_local"), partido_encontrado.get("ht_visitante"),
+                    nombre_local=partido_encontrado["local"], nombre_visitante=partido_encontrado["visitante"],
+                    equipo_pronosticado=alerta.get("equipo_pronosticado")
+                )
+                if res_pick is None:
+                    continue   # falta algún dato (p. ej. el marcador del descanso): se reintenta en el siguiente ciclo
+                alerta["finalizado"] = True
+                alerta["marcador_final"] = marcador_fin
+                alerta["goles_local"] = g_loc
+                alerta["goles_visitante"] = g_vis
+                es_push = (res_pick == "PUSH")
+                acertado = None if es_push else bool(res_pick)
+                alerta["acertado"] = acertado
+                alerta["push"] = es_push
+
+                if not alerta.get("liquidada_telegram"):
+                    nombre_partido_display = p_nombre or f"{partido_encontrado['local']} vs {partido_encontrado['visitante']}"
+                    if es_push:
+                        msg_settle = (
+                            f"⚽ <b>{nombre_partido_display}</b>\n"
+                            f"📌 <b>Pronóstico:</b> {alerta['mercado']}\n"
+                            f"↩️ <b>Resultado:</b> DEVUELTA (push)\n"
+                            f"🏁 <b>Marcador Final:</b> {marcador_fin or 'Final'}\n\n"
+                            f"⚡ <i>Apex Quant Engine</i>"
+                        )
+                    elif acertado:
+                        msg_settle = (
+                            f"⚽ <b>{nombre_partido_display}</b>\n"
+                            f"📌 <b>Pronóstico:</b> {alerta['mercado']}\n"
+                            f"✅ <b>Resultado:</b> ACERTADO\n"
+                            f"🏁 <b>Marcador Final:</b> {marcador_fin or 'Final'}\n"
+                            f"💰 <b>Cuota Cobrada:</b> {alerta['cuota']}\n"
+                            f"💡 <b>Stake:</b> {alerta['stake']}\n\n"
+                            f"🎉 <i>¡Verificado y sumado a la Efectividad Oficial en la App!</i>\n"
+                            f"⚡ <i>Apex Quant Engine</i>"
+                        )
+                    else:
+                        msg_settle = (
+                            f"⚽ <b>{nombre_partido_display}</b>\n"
+                            f"📌 <b>Pronóstico:</b> {alerta['mercado']}\n"
+                            f"❌ <b>Resultado:</b> PERDIDO\n"
+                            f"🏁 <b>Resultado Final:</b> {marcador_fin or 'Final'}\n"
+                            f"💡 <b>Stake:</b> {alerta['stake']} (Control estricto de banca)\n\n"
+                            f"⚡ <i>Apex Quant Engine • Disciplina a Largo Plazo</i>"
+                        )
+                    enviar_telegram(msg_settle, url_accion=APP_URL, texto_boton="📱 Ver en la Web App")
+                    alerta["liquidada_telegram"] = True
+
+    # RESUMEN DOMINICAL
+    if dia_semana == 6 and hora_int >= 22 and resumen_semanal_enviado != semana_actual_id:
+        partidos_domingo = [p for p in partidos_para_web if p["fecha"] == hoy_madrid_str]
+        partidos_pendientes_domingo = [p for p in partidos_domingo if p["estado"] != "FINISHED"]
+        
+        if len(partidos_pendientes_domingo) == 0 or (hora_int == 23 and ahora_madrid.minute >= 45):
+            alertas_semana_actual = [a for a in alertas_acumuladas if a.get("semana_id") == semana_actual_id and a.get("finalizado")]
+            resumen_fin = calcular_resumen_financiero(alertas_semana_actual)
+            total_semana = resumen_fin["finalizadas"]
+            
+            if total_semana > 0:
+                aciertos_semana = resumen_fin["acertadas"]
+                fallos_semana = resumen_fin["falladas"]
+                pct_acierto = round((aciertos_semana / total_semana) * 100, 1)
+                signo_u = "+" if resumen_fin["unidades_netas"] >= 0 else ""
+
+                msg_resumen_domingo = (
+                    f"📊 <b>CIERRE SEMANAL OFICIAL — APEX QUANT ANALYTICS</b> 🏆\n\n"
+                    f"📅 <b>Semana:</b> {semana_actual_id} (Finalizada)\n"
+                    f"📈 <b>Total Pronósticos Oficiales:</b> <b>{total_semana}</b>\n\n"
+                    f"✅ <b>Alertas Acertadas:</b> <b>{aciertos_semana}</b> ({pct_acierto}%)\n"
+                    f"❌ <b>Alertas Falladas:</b> <b>{fallos_semana}</b>\n"
+                    f"🎯 <b>Efectividad Oficial:</b> <b>{pct_acierto}%</b>\n\n"
+                    f"💰 <b>Rendimiento Neto:</b> <b>{signo_u}{resumen_fin['unidades_netas']} Unidades</b>\n"
+                    f"📈 <b>Yield / ROI Semanal:</b> <b>{signo_u}{resumen_fin['roi_pct']}%</b>\n\n"
+                    f"🔄 <i>Las estadísticas y partidos se reiniciarán automáticamente a las 00:00 del lunes para la nueva semana.</i>\n"
+                    f"⚡ <i>Apex Quant Engine • Máxima Transparencia y Disciplina</i>"
+                )
+                enviar_telegram(msg_resumen_domingo, url_accion=APP_URL, texto_boton="📱 Abrir Balance Completo en la App")
+                resumen_semanal_enviado = semana_actual_id
+
+    # RESUMEN MENSUAL
+    dia_manana_madrid = ahora_madrid + timedelta(days=1)
+    es_ultimo_dia_mes = (dia_manana_madrid.month != ahora_madrid.month)
+
+    if es_ultimo_dia_mes and hora_int >= 22 and resumen_mensual_enviado != mes_actual_id:
+        partidos_hoy_mes = [p for p in partidos_para_web if p["fecha"] == hoy_madrid_str]
+        partidos_pendientes_mes = [p for p in partidos_hoy_mes if p["estado"] != "FINISHED"]
+
+        if len(partidos_pendientes_mes) == 0 or (hora_int == 23 and ahora_madrid.minute >= 45):
+            alertas_mes_totales = []
+            archivo_hist = "historico_mensual.json"
+            if os.path.exists(archivo_hist):
+                try:
+                    with open(archivo_hist, "r", encoding="utf-8") as f:
+                        hist_data = json.load(f)
+                        alertas_mes_totales.extend(hist_data.get(mes_actual_id, []))
+                except Exception as e:
+                    pass
+
+            ids_ya_contadas = {a.get("id_alerta") for a in alertas_mes_totales}
+            for a in alertas_acumuladas:
+                f_a = a.get("fecha", "")
+                if f_a.startswith(mes_actual_id) and a.get("finalizado") and a.get("id_alerta") not in ids_ya_contadas:
+                    alertas_mes_totales.append(a)
+                    ids_ya_contadas.add(a.get("id_alerta"))
+
+            resumen_mes_fin = calcular_resumen_financiero(alertas_mes_totales)
+            total_mes = resumen_mes_fin["finalizadas"]
+
+            if total_mes > 0:
+                aciertos_mes = resumen_mes_fin["acertadas"]
+                fallos_mes = resumen_mes_fin["falladas"]
+                pct_acierto_mes = round((aciertos_mes / total_mes) * 100, 1)
+                signo_u_mes = "+" if resumen_mes_fin["unidades_netas"] >= 0 else ""
+                signo_roi_mes = "+" if resumen_mes_fin["roi_pct"] >= 0 else ""
+
+                semanas_map = {}
+                for a in alertas_mes_totales:
+                    sem_key = a.get("semana_id") or "S/D"
+                    if sem_key not in semanas_map:
+                        semanas_map[sem_key] = []
+                    semanas_map[sem_key].append(a)
+
+                lineas_semanas = []
+                for idx_sem, (sem_k, sem_alertas) in enumerate(sorted(semanas_map.items()), 1):
+                    res_sem = calcular_resumen_financiero(sem_alertas)
+                    signo_sem_u = "+" if res_sem["unidades_netas"] >= 0 else ""
+                    signo_sem_roi = "+" if res_sem["roi_pct"] >= 0 else ""
+                    lineas_semanas.append(
+                        f"▫️ <b>Semana {idx_sem} ({sem_k}):</b> {signo_sem_u}{res_sem['unidades_netas']} U. (ROI {signo_sem_roi}{res_sem['roi_pct']}%)"
+                    )
+
+                bloque_semanas_str = "\n".join(lineas_semanas) if lineas_semanas else "▫️ Registro semanal consolidado"
+                nombres_meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+                nombre_mes_str = nombres_meses[ahora_madrid.month - 1]
+                año_str = ahora_madrid.strftime('%Y')
+
+                msg_resumen_mensual = (
+                    f"🏆 <b>CIERRE MENSUAL OFICIAL — APEX QUANT ANALYTICS</b> 📊\n\n"
+                    f"📅 <b>Mes:</b> <b>{nombre_mes_str} {año_str}</b> (Finalizado)\n"
+                    f"📈 <b>Total Pronósticos Oficiales:</b> <b>{total_mes}</b>\n\n"
+                    f"✅ <b>Alertas Acertadas:</b> <b>{aciertos_mes}</b> ({pct_acierto_mes}%)\n"
+                    f"❌ <b>Alertas Falladas:</b> <b>{fallos_mes}</b>\n"
+                    f"🎯 <b>Efectividad Mensual:</b> <b>{pct_acierto_mes}%</b>\n\n"
+                    f"💰 <b>Rendimiento Neto:</b> <b>{signo_u_mes}{resumen_mes_fin['unidades_netas']} Unidades</b>\n"
+                    f"📈 <b>Yield / ROI Mensual:</b> <b>{signo_roi_mes}{resumen_mes_fin['roi_pct']}%</b>\n\n"
+                    f"📊 <b>EVOLUCIÓN SEMANA A SEMANA:</b>\n"
+                    f"{bloque_semanas_str}\n\n"
+                    f"⚡ <i>Apex Quant Engine • Transparencia, Disciplina y Consistencia</i>"
+                )
+                enviar_telegram(msg_resumen_mensual, url_accion=APP_URL, texto_boton="📱 Abrir Balance Completo en la App")
+                resumen_mensual_enviado = mes_actual_id
+
+    alertas_semana_act = [a for a in alertas_acumuladas if a.get("semana_id") == semana_actual_id]
+    metricas_semana = calcular_resumen_financiero(alertas_semana_act)
+
+    # FUSIÓN DE PARTIDOS
+    partidos_guardar = list(partidos_para_web)
+    ids_guardados = {p["id"] for p in partidos_guardar}
+
+    for prev_p in partidos_previos:
+        p_id = prev_p.get("id")
+        p_fecha = prev_p.get("fecha", "")
+        if p_id not in ids_guardados:
+            if p_fecha >= lunes_semana_str:
+                partidos_guardar.append(prev_p)
+                ids_guardados.add(p_id)
+
+    datos_completos = {
+        "ultima_actualizacion": hora_madrid_str,
+        "ultima_actualizacion_utc": ahora_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "huso_horario": "Europe/Madrid",
+        "semana_activa": semana_guardada,
+        "lunes_semana": lunes_semana_str,
+        "domingo_semana": domingo_semana_str,
+        "resumen_semanal_enviado_para": resumen_semanal_enviado,
+        "resumen_mensual_enviado_para": resumen_mensual_enviado,
+        "metricas_semana": metricas_semana,
+        "total_partidos_hoy": len(partidos_guardar),
+        "partidos": partidos_guardar,
+        "creditos_odds_restantes": ODDS_ESTADO["restantes"],
+        "api_cuotas_estado": estado_api_cuotas,
+        "creditos_dia": ODDS_ESTADO.get("dia"),
+        "formas_equipos": formas_equipos,
+        "diagnostico": {"perfil_mercados": ODDS_ESTADO.get("perfil"), "presupuesto_dia": (round(ODDS_ESTADO["presupuesto_dia"], 1) if ODDS_ESTADO.get("presupuesto_dia") else None), "partidos_api": partidos_api_n, "atascados": diag_refresco["atascados"],
+                        "ausentes": diag_refresco["ausentes"], "refrescados": diag_refresco["refrescados"]},
+        "alertas": alertas_acumuladas[-70:]
+    }
+
+    actualizar_ledger(alertas_acumuladas, partidos_guardar)
+
+    with open("datos.json", "w", encoding="utf-8") as f:
+        json.dump(datos_c
