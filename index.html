@@ -45,9 +45,44 @@
     }
     .custom-scroll::-webkit-scrollbar { display: none; }
     .custom-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* ---------- SPLASH ANIMADO ---------- */
+    #splash { background: radial-gradient(circle at 50% 42%, #0c1a2e 0%, #070e1d 70%); transition: opacity .55s ease; }
+    #splash .sp-ring { fill: none; stroke: #00f59b; stroke-opacity: .28; stroke-width: 3; stroke-dasharray: 540; stroke-dashoffset: 540; animation: spDraw 1.2s ease-out forwards; }
+    #splash .sp-orbit { transform-origin: 100px 100px; animation: spSpin 2.6s linear infinite; }
+    #splash .sp-tri { fill: none; stroke: url(#gSplash); stroke-width: 9; stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 320; stroke-dashoffset: 320; animation: spDraw 1.05s .3s ease-out forwards; }
+    #splash .sp-dot { fill: #00f59b; opacity: 0; transform-origin: 100px 108px; animation: spFade .35s 1.1s forwards, spPulse 1.3s 1.45s ease-in-out infinite; }
+    #splash .sp-glow { animation: spGlow 2.2s ease-in-out infinite; }
+    #splash .sp-title { opacity: 0; letter-spacing: .6em; animation: spTitle .9s .9s ease-out forwards; }
+    #splash .sp-bar span { display: block; height: 100%; width: 40%; border-radius: 9999px; background: linear-gradient(90deg, transparent, #00f59b, transparent); animation: spBar 1.2s ease-in-out infinite; }
+    @keyframes spDraw { to { stroke-dashoffset: 0; } }
+    @keyframes spSpin { to { transform: rotate(360deg); } }
+    @keyframes spFade { to { opacity: 1; } }
+    @keyframes spPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.35); } }
+    @keyframes spGlow { 0%,100% { opacity: .35; } 50% { opacity: .9; } }
+    @keyframes spTitle { to { opacity: 1; letter-spacing: .32em; } }
+    @keyframes spBar { 0% { transform: translateX(-120%); } 100% { transform: translateX(320%); } }
+    @media (prefers-reduced-motion: reduce) { #splash * { animation-duration: .01s !important; animation-delay: 0s !important; } }
   </style>
 </head>
 <body class="min-h-screen pb-16 antialiased selection:bg-brand-primary/20 selection:text-brand-primary">
+
+  <!-- SPLASH ANIMADO -->
+  <div id="splash" class="fixed inset-0 z-[70] flex flex-col items-center justify-center">
+    <svg viewBox="0 0 200 200" class="w-44 h-44 overflow-visible">
+      <defs>
+        <linearGradient id="gSplash" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00f59b"/><stop offset="1" stop-color="#00d2ff"/></linearGradient>
+        <radialGradient id="gGlow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#00f59b" stop-opacity=".35"/><stop offset="1" stop-color="#00f59b" stop-opacity="0"/></radialGradient>
+      </defs>
+      <circle class="sp-glow" cx="100" cy="100" r="92" fill="url(#gGlow)"/>
+      <circle class="sp-ring" cx="100" cy="100" r="86"/>
+      <g class="sp-orbit"><circle cx="100" cy="14" r="5" fill="#00d2ff"/></g>
+      <path class="sp-tri" d="M62 132 L100 58 L138 132 Z"/>
+      <circle class="sp-dot" cx="100" cy="108" r="9"/>
+    </svg>
+    <div class="sp-title mt-4 text-white font-extrabold text-lg tracking-widest">APEX QUANT</div>
+    <div class="sp-bar mt-5 w-28 h-1 rounded-full bg-slate-800 overflow-hidden"><span></span></div>
+  </div>
 
   <div class="max-w-md mx-auto px-4 py-4 space-y-4">
 
@@ -65,7 +100,6 @@
               <span id="badgeTxt">24/7 ONLINE</span>
             </span>
           </h1>
-          <p class="text-[11px] font-medium text-slate-400">Motor Predictivo Just-In-Time (+EV)</p>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -114,171 +148,136 @@
       </div>
     </a>
 
+    <!-- AVISO DE JUEGO RESPONSABLE -->
+    <div class="px-3 py-2 rounded-xl bg-slate-900/50 border border-slate-800/80 text-[9px] leading-snug text-slate-500">
+      <span class="text-slate-400 font-semibold">🔞 Solo mayores de 18 años.</span> El juego puede crear adicción: juega con responsabilidad y solo con dinero que puedas permitirte perder. Contenido informativo y estadístico, no constituye asesoramiento ni garantiza resultados. Ayuda y autoexclusión: jugarbien.es
+    </div>
+
     <!-- 3 CAJAS SUPERIORES (FILTRO EV +3.0%) -->
-    <div class="grid grid-cols-3 gap-2 text-center">
-      <div class="p-3 rounded-2xl bg-brand-card/90 border border-brand-border/70 shadow-sm">
-        <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block">Partidos</span>
-        <span id="statPartidos" class="text-lg font-extrabold text-white font-mono mt-0.5 block">--</span>
-        <span class="text-[9px] text-slate-500 font-medium">Monitoreo</span>
+    <div class="grid grid-cols-3 gap-1.5 text-center">
+      <div class="px-2 py-1.5 rounded-xl bg-brand-card/90 border border-brand-border/70">
+        <span class="text-[9px] font-bold tracking-wider text-slate-400 uppercase block">Partidos</span>
+        <span id="statPartidos" class="text-base font-extrabold text-white font-mono block leading-tight">--</span>
+        <span class="text-[8px] text-slate-500 font-medium">Monitoreo</span>
       </div>
-      <div class="p-3 rounded-2xl bg-brand-card/90 border border-brand-border/70 shadow-sm">
-        <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block">Filtro EV</span>
-        <span class="text-lg font-extrabold text-brand-primary font-mono mt-0.5 block">+3.0%</span>
-        <span class="text-[9px] text-slate-500 font-medium">Ventaja</span>
+      <div class="px-2 py-1.5 rounded-xl bg-brand-card/90 border border-brand-border/70">
+        <span class="text-[9px] font-bold tracking-wider text-slate-400 uppercase block">Filtro EV</span>
+        <span class="text-base font-extrabold text-brand-primary font-mono block leading-tight">+3.0%</span>
+        <span class="text-[8px] text-slate-500 font-medium">Ventaja</span>
       </div>
-      <div class="p-3 rounded-2xl bg-brand-card/90 border border-brand-border/70 shadow-sm">
-        <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block">Gestión</span>
-        <span class="text-lg font-extrabold text-brand-highlight font-mono mt-0.5 block">1/4</span>
-        <span class="text-[9px] text-slate-500 font-medium">Kelly</span>
+      <div class="px-2 py-1.5 rounded-xl bg-brand-card/90 border border-brand-border/70">
+        <span class="text-[9px] font-bold tracking-wider text-slate-400 uppercase block">Gestión</span>
+        <span class="text-base font-extrabold text-brand-highlight font-mono block leading-tight">1/4</span>
+        <span class="text-[8px] text-slate-500 font-medium">Kelly</span>
       </div>
     </div>
 
-    <!-- TARJETA 1: RENDIMIENTO SEMANAL (EXCLUSIVO TELEGRAM) -->
-    <div class="p-4 rounded-2xl bg-brand-card border border-brand-border relative overflow-hidden shadow-lg">
-      <div class="flex items-start justify-between">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-xl bg-brand-primary/10 border border-brand-primary/30 flex items-center justify-center text-brand-primary">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+    <!-- TARJETAS DE RENDIMIENTO SEMANAL (COMPACTAS) -->
+    <div class="p-3 rounded-2xl bg-brand-card border border-brand-border relative overflow-hidden shadow-md">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <div class="w-7 h-7 rounded-lg bg-brand-primary/10 border-brand-primary/30 text-brand-primary border flex items-center justify-center flex-shrink-0">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
           </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-extrabold text-white uppercase tracking-wider">Rendimiento Semanal</span>
-              <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">EXCLUSIVO TELEGRAM</span>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-[11px] font-extrabold text-white uppercase tracking-wide">Rendimiento Semanal</span>
+              <span class="px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">EXCLUSIVO TELEGRAM</span>
             </div>
-            <p class="text-[10px] text-slate-400">Curva de Equity & Balance de Unidades</p>
+            <p class="text-[9px] text-slate-400 leading-tight">Curva de Equity &amp; Balance de Unidades</p>
           </div>
         </div>
-        <div class="text-right">
-          <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Balance Neto</span>
-          <span id="balanceNetoTG" class="text-sm font-extrabold text-brand-primary font-mono">+0.00 U.</span>
+        <div class="text-right flex-shrink-0">
+          <span class="text-[8px] text-slate-400 font-bold uppercase tracking-wider block">Balance Neto</span>
+          <span id="balanceNetoTG" class="text-xs font-extrabold text-brand-primary font-mono">+0.00 U.</span>
         </div>
       </div>
-      <div class="mt-2.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800 text-[10px] text-slate-300 flex items-center gap-2">
-        <svg class="w-3.5 h-3.5 text-brand-highlight flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
-        <span>Métricas calculadas <strong>exclusivamente</strong> sobre las alertas oficiales emitidas al <a href="https://t.me/apex_quant_alertas" target="_blank" class="text-brand-highlight underline">canal de Telegram</a>.</span>
+      <div class="mt-1.5 px-2 py-1 rounded-lg bg-slate-900/60 border border-slate-800 text-[9px] text-slate-300 leading-snug">Métricas calculadas <strong>exclusivamente</strong> sobre las alertas oficiales emitidas al <a href="https://t.me/apex_quant_alertas" target="_blank" class="text-brand-highlight underline">canal de Telegram</a>.</div>
+      <div class="grid grid-cols-3 gap-1 mt-1.5 pt-1.5 border-t border-slate-800 text-center">
+        <div><span class="text-[8px] text-slate-400 uppercase font-bold block">Yield / ROI</span><span id="yieldRoiTG" class="text-[11px] font-bold text-brand-primary font-mono">+0.0%</span></div>
+        <div><span class="text-[8px] text-slate-400 uppercase font-bold block">Unidades Ganadas</span><span id="unidadesGanadasTG" class="text-[11px] font-bold text-emerald-400 font-mono">+0.00 U.</span></div>
+        <div><span class="text-[8px] text-slate-400 uppercase font-bold block">Stake Apostado</span><span id="stakeApostadoTG" class="text-[11px] font-bold text-slate-300 font-mono">0.0 U.</span></div>
       </div>
-      <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-slate-800 text-center">
-        <div>
-          <span class="text-[9px] text-slate-400 uppercase font-bold block">Yield / ROI</span>
-          <span id="yieldRoiTG" class="text-xs font-bold text-brand-primary font-mono">+0.0%</span>
-        </div>
-        <div>
-          <span class="text-[9px] text-slate-400 uppercase font-bold block">Unidades Ganadas</span>
-          <span id="unidadesGanadasTG" class="text-xs font-bold text-emerald-400 font-mono">+0.00 U.</span>
-        </div>
-        <div>
-          <span class="text-[9px] text-slate-400 uppercase font-bold block">Stake Apostado</span>
-          <span id="stakeApostadoTG" class="text-xs font-bold text-slate-300 font-mono">0.0 U.</span>
-        </div>
-      </div>
-      <div class="mt-3 pt-2 border-t border-slate-800/80">
-        <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1.5">
-          <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-brand-primary"></span>Curva de Crecimiento Bankroll (Alertas TG)</span>
+      <div class="mt-1.5 pt-1.5 border-t border-slate-800/80">
+        <div class="flex items-center justify-between text-[9px] text-slate-400 mb-1">
+          <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-brand-primary"></span>Curva de Crecimiento Bankroll (Alertas TG)</span>
           <span id="picksTG" class="font-mono text-[9px] text-slate-400">0 picks evaluados</span>
         </div>
-        <div class="h-10 w-full bg-slate-900/80 rounded-xl p-1 relative flex items-end">
+        <div class="h-7 w-full bg-slate-900/80 rounded-lg p-1 flex items-end">
           <svg class="w-full h-full overflow-visible" viewBox="0 0 100 30" preserveAspectRatio="none">
             <path id="equityPathTG" d="M 0 25 L 100 25" fill="none" stroke="#00f59b" stroke-width="2" stroke-linecap="round"/>
           </svg>
         </div>
       </div>
     </div>
-
-    <!-- TARJETA 2: RENDIMIENTO SEMANAL (SIN ALERTA) -->
-    <div class="p-4 rounded-2xl bg-brand-card border border-brand-border relative overflow-hidden shadow-lg">
-      <div class="flex items-start justify-between">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+    <div class="p-3 rounded-2xl bg-brand-card border border-brand-border relative overflow-hidden shadow-md">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <div class="w-7 h-7 rounded-lg bg-slate-800 border-slate-700 text-slate-300 border flex items-center justify-center flex-shrink-0">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
           </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-extrabold text-white uppercase tracking-wider">Rendimiento Semanal</span>
-              <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-800 text-slate-300 border border-slate-700">CONTROL (DESCARTADAS)</span>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-[11px] font-extrabold text-white uppercase tracking-wide">Rendimiento Semanal</span>
+              <span class="px-1.5 py-0.5 rounded text-[8px] font-bold bg-slate-800 text-slate-300 border border-slate-700">CONTROL (DESCARTADAS)</span>
             </div>
-            <p class="text-[10px] text-slate-400">Curva de Equity & Balance de Unidades</p>
+            <p class="text-[9px] text-slate-400 leading-tight">Curva de Equity &amp; Balance de Unidades</p>
           </div>
         </div>
-        <div class="text-right">
-          <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Balance Neto</span>
-          <span id="balanceNetoSin" class="text-sm font-extrabold text-slate-300 font-mono">+0.00 U.</span>
+        <div class="text-right flex-shrink-0">
+          <span class="text-[8px] text-slate-400 font-bold uppercase tracking-wider block">Balance Neto</span>
+          <span id="balanceNetoSin" class="text-xs font-extrabold text-slate-300 font-mono">+0.00 U.</span>
         </div>
       </div>
-      <div class="mt-2.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800 text-[10px] text-slate-300 flex items-center gap-2">
-        <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
-        <span>Control (descartadas): picks analizados con cuotas reales que <strong>no se enviaron</strong> a Telegram (ventaja &lt; 3% o sin respaldo estadístico).</span>
+      <div class="mt-1.5 px-2 py-1 rounded-lg bg-slate-900/60 border border-slate-800 text-[9px] text-slate-300 leading-snug">Control (descartadas): picks analizados con cuotas reales que <strong>no se enviaron</strong> a Telegram (ventaja &lt; 3% o sin respaldo estadístico).</div>
+      <div class="grid grid-cols-3 gap-1 mt-1.5 pt-1.5 border-t border-slate-800 text-center">
+        <div><span class="text-[8px] text-slate-400 uppercase font-bold block">Yield / ROI</span><span id="yieldRoiSin" class="text-[11px] font-bold text-slate-300 font-mono">+0.0%</span></div>
+        <div><span class="text-[8px] text-slate-400 uppercase font-bold block">Unidades Ganadas</span><span id="unidadesGanadasSin" class="text-[11px] font-bold text-slate-200 font-mono">+0.00 U.</span></div>
+        <div><span class="text-[8px] text-slate-400 uppercase font-bold block">Stake Apostado</span><span id="stakeApostadoSin" class="text-[11px] font-bold text-slate-400 font-mono">0.0 U.</span></div>
       </div>
-      <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-slate-800 text-center">
-        <div>
-          <span class="text-[9px] text-slate-400 uppercase font-bold block">Yield / ROI</span>
-          <span id="yieldRoiSin" class="text-xs font-bold text-slate-300 font-mono">+0.0%</span>
-        </div>
-        <div>
-          <span class="text-[9px] text-slate-400 uppercase font-bold block">Unidades Ganadas</span>
-          <span id="unidadesGanadasSin" class="text-xs font-bold text-slate-200 font-mono">+0.00 U.</span>
-        </div>
-        <div>
-          <span class="text-[9px] text-slate-400 uppercase font-bold block">Stake Apostado</span>
-          <span id="stakeApostadoSin" class="text-xs font-bold text-slate-400 font-mono">0.0 U.</span>
-        </div>
-      </div>
-      <div class="mt-3 pt-2 border-t border-slate-800/80">
-        <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1.5">
-          <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>Curva de Crecimiento Bankroll (Control)</span>
+      <div class="mt-1.5 pt-1.5 border-t border-slate-800/80">
+        <div class="flex items-center justify-between text-[9px] text-slate-400 mb-1">
+          <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>Curva de Crecimiento Bankroll (Control)</span>
           <span id="picksSin" class="font-mono text-[9px] text-slate-400">0 picks evaluados</span>
         </div>
-        <div class="h-10 w-full bg-slate-900/80 rounded-xl p-1 relative flex items-end">
+        <div class="h-7 w-full bg-slate-900/80 rounded-lg p-1 flex items-end">
           <svg class="w-full h-full overflow-visible" viewBox="0 0 100 30" preserveAspectRatio="none">
             <path id="equityPathSin" d="M 0 25 L 100 25" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
           </svg>
         </div>
       </div>
     </div>
-
-    <!-- TARJETA 3: RENDIMIENTO SEMANAL (GLOBAL TOTAL) -->
-    <div class="p-4 rounded-2xl bg-brand-card border border-brand-border relative overflow-hidden shadow-lg">
-      <div class="flex items-start justify-between">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <div class="p-3 rounded-2xl bg-brand-card border border-brand-border relative overflow-hidden shadow-md">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <div class="w-7 h-7 rounded-lg bg-sky-500/15 border-sky-500/30 text-sky-400 border flex items-center justify-center flex-shrink-0">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-extrabold text-white uppercase tracking-wider">Rendimiento Semanal</span>
-              <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/30">GLOBAL TOTAL</span>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-[11px] font-extrabold text-white uppercase tracking-wide">Rendimiento Semanal</span>
+              <span class="px-1.5 py-0.5 rounded text-[8px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/30">GLOBAL TOTAL</span>
             </div>
-            <p class="text-[10px] text-slate-400">Curva de Equity & Balance de Unidades</p>
+            <p class="text-[9px] text-slate-400 leading-tight">Curva de Equity &amp; Balance de Unidades</p>
           </div>
         </div>
-        <div class="text-right">
-          <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Balance Neto</span>
-          <span id="balanceNetoGlobal" class="text-sm font-extrabold text-sky-400 font-mono">+0.00 U.</span>
+        <div class="text-right flex-shrink-0">
+          <span class="text-[8px] text-slate-400 font-bold uppercase tracking-wider block">Balance Neto</span>
+          <span id="balanceNetoGlobal" class="text-xs font-extrabold text-sky-400 font-mono">+0.00 U.</span>
         </div>
       </div>
-      <div class="mt-2.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800 text-[10px] text-slate-300 flex items-center gap-2">
-        <svg class="w-3.5 h-3.5 text-sky-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
-        <span>Métricas consolidadas del <strong>universo total</strong> (suma unificada de Telegram + Control).</span>
+      <div class="mt-1.5 px-2 py-1 rounded-lg bg-slate-900/60 border border-slate-800 text-[9px] text-slate-300 leading-snug">Métricas consolidadas del <strong>universo total</strong> (suma unificada de Telegram + Control).</div>
+      <div class="grid grid-cols-3 gap-1 mt-1.5 pt-1.5 border-t border-slate-800 text-center">
+        <div><span class="text-[8px] text-slate-400 uppercase font-bold block">Yield / ROI</span><span id="yieldRoiGlobal" class="text-[11px] font-bold text-sky-400 font-mono">+0.0%</span></div>
+        <div><span class="text-[8px] text-slate-400 uppercase font-bold block">Unidades Ganadas</span><span id="unidadesGanadasGlobal" class="text-[11px] font-bold text-sky-300 font-mono">+0.00 U.</span></div>
+        <div><span class="text-[8px] text-slate-400 uppercase font-bold block">Stake Apostado</span><span id="stakeApostadoGlobal" class="text-[11px] font-bold text-slate-300 font-mono">0.0 U.</span></div>
       </div>
-      <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-slate-800 text-center">
-        <div>
-          <span class="text-[9px] text-slate-400 uppercase font-bold block">Yield / ROI</span>
-          <span id="yieldRoiGlobal" class="text-xs font-bold text-sky-400 font-mono">+0.0%</span>
-        </div>
-        <div>
-          <span class="text-[9px] text-slate-400 uppercase font-bold block">Unidades Ganadas</span>
-          <span id="unidadesGanadasGlobal" class="text-xs font-bold text-sky-300 font-mono">+0.00 U.</span>
-        </div>
-        <div>
-          <span class="text-[9px] text-slate-400 uppercase font-bold block">Stake Apostado</span>
-          <span id="stakeApostadoGlobal" class="text-xs font-bold text-slate-300 font-mono">0.0 U.</span>
-        </div>
-      </div>
-      <div class="mt-3 pt-2 border-t border-slate-800/80">
-        <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1.5">
-          <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>Curva de Crecimiento Bankroll (Global Total)</span>
+      <div class="mt-1.5 pt-1.5 border-t border-slate-800/80">
+        <div class="flex items-center justify-between text-[9px] text-slate-400 mb-1">
+          <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>Curva de Crecimiento Bankroll (Global Total)</span>
           <span id="picksGlobal" class="font-mono text-[9px] text-slate-400">0 picks evaluados</span>
         </div>
-        <div class="h-10 w-full bg-slate-900/80 rounded-xl p-1 relative flex items-end">
+        <div class="h-7 w-full bg-slate-900/80 rounded-lg p-1 flex items-end">
           <svg class="w-full h-full overflow-visible" viewBox="0 0 100 30" preserveAspectRatio="none">
             <path id="equityPathGlobal" d="M 0 25 L 100 25" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"/>
           </svg>
@@ -290,7 +289,6 @@
     <div>
       <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1.5 px-1 font-medium">
         <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-brand-highlight"></span>Semana actual</span>
-        <span class="text-[10px] text-slate-400 font-mono">Reinicio oficial cada lunes 00:00h</span>
       </div>
       <div class="grid grid-cols-3 gap-2 text-center">
         <div class="p-3 rounded-2xl bg-brand-card border border-brand-primary/40 shadow-sm relative overflow-hidden">
@@ -346,7 +344,6 @@
         <button data-filter="PICK" class="filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:text-white transition">Con pick</button>
         <button data-filter="ALERTA" class="filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:text-white transition">Con alerta</button>
         <button data-filter="laliga" class="filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:text-white transition">LaLiga (ESP)</button>
-        <button data-filter="laliga2" class="filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:text-white transition">LaLiga 2 (ESP)</button>
         <button data-filter="premier" class="filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:text-white transition">Premier (ENG)</button>
         <button data-filter="bundesliga" class="filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:text-white transition">Bundesliga</button>
         <button data-filter="seriea" class="filter-btn px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:text-white transition">Serie A</button>
@@ -358,9 +355,6 @@
     <!-- ENCABEZADO DE SECCIÓN ACTIVA -->
     <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 px-1 font-medium">
       <span id="activeSectionTitle" class="uppercase tracking-wider font-extrabold text-slate-300">Encuentros Programados y en Vivo</span>
-      <span class="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> hora peninsular (madrid)
-      </span>
     </div>
 
     <!-- CONTENEDOR DE TARJETAS -->
@@ -370,12 +364,6 @@
         <p class="text-xs font-medium">Sincronizando pronósticos y partidos reales...</p>
       </div>
     </div>
-
-    <!-- AVISO LEGAL / JUEGO RESPONSABLE -->
-    <footer class="pt-4 pb-2 text-center space-y-1">
-      <p class="text-[10px] text-slate-500 leading-relaxed">🔞 Solo mayores de 18 años. El juego puede crear adicción: juega con responsabilidad y solo con dinero que puedas permitirte perder.</p>
-      <p class="text-[10px] text-slate-600 leading-relaxed">Contenido informativo y estadístico, no constituye asesoramiento ni garantiza resultados. Ayuda y autoexclusión: jugarbien.es</p>
-    </footer>
 
   </div>
 
@@ -461,6 +449,21 @@
     }
 
     function obtenerBadgeMercado(partido) {
+      const tipo = (partido.tipo_mercado || '').toUpperCase();
+      const h1 = tipo.endsWith('_H1') || (partido.mercado || '').startsWith('1ª Mitad');
+      const chipH1 = h1 ? `<span class="px-1.5 py-0.5 rounded-md text-[9px] font-extrabold bg-slate-800 text-slate-300 border border-slate-700 whitespace-nowrap">1ª MITAD</span>` : '';
+      const mk = (txt, cls) => `<span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold ${cls} tracking-wider uppercase">${txt}</span>`;
+      let badge;
+      if (tipo === 'COMBO_MERCADOS') badge = mk('🧩 COMBINADO DE MERCADOS', 'bg-violet-950/80 text-violet-300 border border-violet-500/40');
+      else if (tipo === 'HANDICAP') badge = mk('HÁNDICAP', 'bg-cyan-950/80 text-cyan-300 border border-cyan-500/30');
+      else if (tipo === 'TEAM_TOTAL') badge = mk('GOLES POR EQUIPO', 'bg-lime-950/80 text-lime-300 border border-lime-500/30');
+      else if (tipo === 'CORNERS') badge = mk('CÓRNERS', 'bg-orange-950/80 text-orange-300 border border-orange-500/30');
+      else if (tipo === 'TARJETAS') badge = mk('TARJETAS', 'bg-yellow-950/80 text-yellow-300 border border-yellow-500/30');
+      else badge = obtenerBadgeMercadoBase(partido);
+      return `<span class="flex items-center gap-1 flex-wrap">${badge}${chipH1}</span>`;
+    }
+
+    function obtenerBadgeMercadoBase(partido) {
       const mercadoTexto = (partido.mercado || '').toLowerCase();
       const tipoMercado = (partido.tipo_mercado || '').toUpperCase();
 
@@ -555,6 +558,7 @@
         // FILTRADO ESTRICTO DE SEMANA ACTUAL PARA GARANTIZAR REINICIO A CERO CADA LUNES
         if (!esDeLaSemanaActual(item, lunesLimite)) return;
 
+        if (item.push) return;   // apuesta devuelta: no cuenta
         const esFin = item.finalizado === true || (item.acertado !== null && item.acertado !== undefined) || item.estado === 'FINISHED';
         if (!esFin) return;
 
@@ -1074,7 +1078,7 @@
               </div>
             </div>
             <div class="text-right">
-              <span class="text-[9px] uppercase tracking-wider text-slate-500 font-bold block">${tienePron ? ('CUOTA ' + (p.casa || '').toUpperCase()).trim() : 'CUOTA'}</span>
+              <span class="text-[9px] uppercase tracking-wider text-slate-500 font-bold block">${tienePron ? (p.tipo_mercado === 'COMBO_MERCADOS' ? 'CUOTA MÍNIMA' : ('CUOTA ' + (p.casa || '').toUpperCase()).trim()) : 'CUOTA'}</span>
               <span class="text-base font-extrabold ${tienePron ? 'text-brand-primary' : 'text-slate-500'} font-mono">${tienePron ? '@' + p.cuota : '—'}</span>
             </div>
           </div>
@@ -1126,6 +1130,8 @@
               </span>
             </div>
           `;
+        } else if (a.push) {
+          badgeLiquidacion = `<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-slate-500/20 text-slate-300 border border-slate-500/40 whitespace-nowrap">↩ DEVUELTA</span>`;
         } else if (esEnJuego) {
           badgeLiquidacion = `
             <div class="flex items-center gap-1.5">
@@ -1161,13 +1167,13 @@
 
             ${a.es_combinada && a.legs ? `
             <div class="text-sm font-extrabold text-white flex items-center gap-2 flex-wrap">
-              <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-violet-500/20 text-violet-300 border border-violet-500/40">COMBINADA ×${a.legs.length}</span>
+              <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-violet-500/20 text-violet-300 border border-violet-500/40">COMBINADA DE PARTIDOS ×${a.legs.length}</span>
               <span class="text-[11px] text-slate-400 font-medium">${a.casa || ''}</span>
             </div>
             <div class="space-y-1">
               ${a.legs.map(l => `
                 <div class="flex items-center justify-between gap-2 text-[12px]">
-                  <span class="text-slate-200 min-w-0 truncate">${l.res === true ? '✅' : (l.res === false ? '❌' : '⏳')} <strong class="text-brand-primary">${l.equipo}</strong> <span class="text-slate-500 text-[10px]">${l.partido}</span></span>
+                  <span class="text-slate-200 min-w-0 truncate">${l.res === true ? '✅' : (l.res === false ? '❌' : '⏳')} <strong class="text-brand-primary">${l.mercado || ('Victoria ' + l.equipo)}</strong> <span class="text-slate-500 text-[10px]">${l.partido}</span></span>
                   <span class="font-mono text-slate-300 whitespace-nowrap">@${l.cuota}</span>
                 </div>`).join('')}
             </div>
@@ -1179,7 +1185,7 @@
 
             <div class="flex items-center justify-between pt-1 border-t border-slate-800/80 text-xs font-mono text-slate-300">
               <div class="flex items-center gap-3">
-                <span>Cuota${a.casa ? ' ' + a.casa : ''}: <strong class="text-white">${a.cuota}</strong></span>
+                <span>Cuota${a.tipo_mercado === 'COMBO_MERCADOS' ? ' mín.' : (a.casa ? ' ' + a.casa : '')}: <strong class="text-white">${a.cuota}</strong></span>
                 <span>Ventaja: <strong class="text-emerald-400">${a.ev}</strong></span>
                 <span>Stake: <strong class="text-brand-highlight">${a.stake}</strong></span>
               </div>
@@ -1206,7 +1212,15 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      cargarDatos();
+      const t0 = Date.now();
+      const ocultarSplash = () => {
+        const sp = document.getElementById('splash');
+        if (!sp) return;
+        sp.style.opacity = '0';
+        setTimeout(() => sp.remove(), 600);
+      };
+      setTimeout(ocultarSplash, 4500);
+      cargarDatos().finally(() => setTimeout(ocultarSplash, Math.max(0, 2000 - (Date.now() - t0))));
 
       const tabHoy = document.getElementById('tabHoy');
       const tabFin = document.getElementById('tabFinalizados');
