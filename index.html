@@ -413,9 +413,7 @@
         rachaVis = (versus[1] || '').trim();
         tendenciaTexto = partes[1] ? partes[1].trim() : '';
       } else {
-        rachaLocal = 'W-W-D-W-L';
-        rachaVis = 'L-L-D-W-L';
-        tendenciaTexto = '⚖️ Tendencia Equilibrada';
+        return `<div class="text-[10px] text-slate-500 mt-1">📉 Forma reciente: sin datos suficientes</div>`;
       }
 
       function letrasACirculos(cadena) {
