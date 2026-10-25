@@ -403,12 +403,16 @@ def buscar_evento_odds(sport_key, local, visitante, inicio_utc, cache_eventos):
 # Perfiles de mercados (cada mercado consultado cuesta 1 crédito por región y partido)
 # ---------------------------------------------------------------------------
 PERFILES_MERCADOS = {
+    "reducido": "h2h,totals,alternate_totals,btts",   # 1X2 + goles totales (1.5/2.5/3.5) + ambos marcan = 4 créditos/partido
     "basico": "h2h,totals,btts,double_chance",
     "medio": "h2h,totals,btts,double_chance,h2h_h1,totals_h1,alternate_totals,team_totals,spreads",
     "completo": ("h2h,h2h_h1,double_chance,double_chance_h1,totals,totals_h1,alternate_totals,alternate_totals_h1,"
                  "team_totals,alternate_team_totals,btts,spreads,alternate_spreads,alternate_totals_corners,alternate_totals_cards"),
 }
-ODDS_PERFIL = os.getenv("ODDS_PERFIL", "auto")          # auto | basico | medio | completo
+ODDS_PERFIL = os.getenv("ODDS_PERFIL", "reducido")      # reducido | auto | basico | medio | completo
+# Familias de mercado que se analizan (el resto se ignora aunque la casa los ofrezca)
+MERCADOS_ACTIVOS = {m.strip().upper() for m in os.getenv("MERCADOS_ACTIVOS", "1X2,TOT,BTTS").split(",") if m.strip()}
+ESCALAS_ACTIVAS = {m.strip().upper() for m in os.getenv("ESCALAS_ACTIVAS", "FT").split(",") if m.strip()}
 ODDS_MARKETS_FORZADOS = os.getenv("ODDS_MARKETS", "")   # si se define, sustituye al perfil
 
 
@@ -416,6 +420,7 @@ def mercados_a_consultar():
     if ODDS_MARKETS_FORZADOS:
         return ODDS_MARKETS_FORZADOS
     perfil = ODDS_PERFIL
+    ODDS_ESTADO["perfil"] = perfil
     if perfil == "auto":
         r = ODDS_ESTADO["restantes"]
         perfil = "basico" if r is None else ("completo" if r >= 4000 else ("medio" if r >= 1500 else "basico"))
@@ -427,10 +432,10 @@ def consultar_cuotas_evento(sport_key, event_id):
     base = mercados_a_consultar()
     orden = ["completo", "medio", "basico"]
     intentos = [base]
-    perfil = ODDS_ESTADO.get("perfil")
+    perfil = ODDS_ESTADO.get("perfil") or ODDS_PERFIL
     if not ODDS_MARKETS_FORZADOS and perfil in orden:
         intentos += [PERFILES_MERCADOS[k] for k in orden[orden.index(perfil) + 1:]]
-    intentos += [PERFILES_MERCADOS["basico"], "h2h,totals"]
+    intentos += ["h2h,totals,btts", "h2h,totals"]
     vistos, ODDS_ESTADO["consultas"] = [], ODDS_ESTADO["consultas"] + 1
     for mk in intentos:
         if mk in vistos:
@@ -806,7 +811,7 @@ def evaluar_pick(sel, mercado, tipo, gl, gv, hl=None, hv=None, nombre_local="", 
 # ==============================================================================
 # GENERACIÓN DE CANDIDATOS (todos los mercados disponibles)
 # ==============================================================================
-LINEAS_TOTALES = (1.5, 2.5)
+LINEAS_TOTALES = (1.5, 2.5, 3.5)
 LINEAS_EQUIPO = (0.5, 1.5, 2.5)
 LINEAS_HANDICAP = (1.5, 2.0, 2.5)
 ESPERADOS_GRUPO = {"1X2": 3, "TOT": 2, "TT": 2, "BTTS": 2, "HC": 2, "COR": 2, "CARD": 2}
@@ -828,6 +833,8 @@ def evaluar_seleccion(cuota, p_mercado, p_mod, push=0.0):
 
 def _spec_desde_grupo(gk, sel):
     tg, sc = gk[0], gk[1]
+    if tg not in MERCADOS_ACTIVOS or sc not in ESCALAS_ACTIVAS:
+        return None
     if tg == "1X2":
         return {"t": "1X2", "s": sel, "sc": sc}
     if tg == "TOT":
@@ -886,6 +893,8 @@ def generar_candidatos(ev_odds, local, visitante, modelo=None):
         for gk, precios in obj.items():
             tipos_vistos.add(gk[0] + ("_H1" if gk[1] == "H1" else ""))
             if gk[0] == "DC":
+                if "DC" not in MERCADOS_ACTIVOS or gk[1] not in ESCALAS_ACTIVAS:
+                    continue
                 c1, n1 = cons_grupo(("1X2", gk[1]))
                 if not c1:
                     continue
@@ -1003,6 +1012,43 @@ def es_alertable(c):
     return (c["ev"] >= EV_MINIMO_PCT and (c.get("confirmado_stats") or c.get("sin_modelo_ok") or not STATS_OBLIGATORIAS))
 
 
+ODDS_DIA_RESET = int(os.getenv("ODDS_DIA_RESET", "1"))        # día del mes en que se renuevan los créditos
+ODDS_FACTOR_PRESUPUESTO = float(os.getenv("ODDS_FACTOR_PRESUPUESTO", "1.25"))
+
+
+def dias_hasta_reinicio(hoy):
+    """Días (>= 1) que faltan para que se renueven los créditos de The Odds API."""
+    reset = hoy.replace(day=min(ODDS_DIA_RESET, 28))
+    if hoy.day >= reset.day:
+        mes = hoy.month % 12 + 1
+        anio = hoy.year + (1 if hoy.month == 12 else 0)
+        reset = hoy.replace(year=anio, month=mes, day=min(ODDS_DIA_RESET, 28))
+    return max(1, (reset - hoy).days)
+
+
+def preparar_presupuesto(datos_previos, ahora_madrid):
+    """Reparte los créditos que quedan entre los días que faltan para la renovación (lo no gastado un día se acumula)."""
+    r = ODDS_ESTADO["restantes"]
+    hoy_str = ahora_madrid.strftime("%Y-%m-%d")
+    dia = dict(datos_previos.get("creditos_dia") or {})
+    if r is None:
+        ODDS_ESTADO["dia"], ODDS_ESTADO["presupuesto_dia"] = dia or None, None
+        return
+    if dia.get("fecha") != hoy_str or r > dia.get("restante_inicio", r):   # día nuevo o plan renovado
+        dia = {"fecha": hoy_str, "restante_inicio": r}
+    ODDS_ESTADO["dia"] = dia
+    ODDS_ESTADO["presupuesto_dia"] = dia["restante_inicio"] / dias_hasta_reinicio(ahora_madrid.date() if hasattr(ahora_madrid, "date") else ahora_madrid)
+
+
+def presupuesto_agotado():
+    dia, pres, r = ODDS_ESTADO.get("dia"), ODDS_ESTADO.get("presupuesto_dia"), ODDS_ESTADO.get("restantes")
+    if not dia or pres is None or r is None:
+        return False
+    gastado = dia["restante_inicio"] - r
+    coste = len(mercados_a_consultar().split(","))
+    return gastado > 0 and (gastado + coste) > pres * ODDS_FACTOR_PRESUPUESTO
+
+
 def analizar_partido_con_cuotas(comp_code, local, visitante, inicio_utc, form_info, cache_eventos,
                                 local_id=None, visitante_id=None, cache_stats=None):
     """Devuelve (analisis|None, definitivo, nota, fav). definitivo=False -> se reintenta en el siguiente ciclo.
@@ -1016,6 +1062,8 @@ def analizar_partido_con_cuotas(comp_code, local, visitante, inicio_utc, form_in
         return None, False, "Límite de consultas por ciclo", None
     if ODDS_ESTADO["restantes"] is not None and ODDS_ESTADO["restantes"] <= CREDITOS_RESERVA:
         return None, False, "Créditos de The Odds API en reserva", None
+    if presupuesto_agotado():
+        return None, False, "Presupuesto diario de créditos agotado (se reparte el mes)", None
     ev = buscar_evento_odds(sport_key, local, visitante, inicio_utc, cache_eventos)
     if not ev:
         return None, False, "Evento no encontrado en The Odds API", None
@@ -1761,6 +1809,7 @@ def ejecutar_ciclo():
         print("🔑 THE_ODDS_API_KEY no configurada: no habrá cuotas reales ni alertas")
 
     datos_previos = cargar_datos_existentes()
+    preparar_presupuesto(datos_previos, ahora_madrid)
     alertas_acumuladas = datos_previos.get("alertas", [])
     partidos_previos = datos_previos.get("partidos", [])
     semana_guardada = datos_previos.get("semana_activa", semana_actual_id)
@@ -2101,232 +2150,4 @@ def ejecutar_ciclo():
                 alertas_acumuladas.append(alerta_combi)
                 print(f"🎯 Combinada creada: {alerta_combi['mercado']} {alerta_combi['cuota']} (EV {alerta_combi['ev']})")
 
-    # RECONCILIACIÓN Y LIQUIDACIÓN
-    liquidar_combinadas(alertas_acumuladas, partidos_map_por_id)
-    for alerta in alertas_acumuladas:
-        if alerta.get("es_combinada"):
-            continue
-        p_id = str(alerta.get("id_partido", ""))
-        p_nombre = alerta.get("partido", "")
-        p_norm = normalizar_texto(p_nombre)
-
-        partido_encontrado = None
-        if p_id and p_id in partidos_map_por_id:
-            partido_encontrado = partidos_map_por_id[p_id]
-        elif p_nombre in partidos_map_por_nombres:
-            partido_encontrado = partidos_map_por_nombres[p_nombre]
-        else:
-            for k, info in partidos_map_por_nombres.items():
-                if normalizar_texto(k) == p_norm or (info["local"] in p_nombre and info["visitante"] in p_nombre):
-                    partido_encontrado = info
-                    break
-
-        if partido_encontrado:
-            alerta["estado_partido"] = partido_encontrado["estado"]
-            if partido_encontrado["marcador"]:
-                alerta["marcador"] = partido_encontrado["marcador"]
-
-            if partido_encontrado["estado"] == "FINISHED":
-                g_loc = partido_encontrado["goles_local"]
-                g_vis = partido_encontrado["goles_visitante"]
-                marcador_fin = partido_encontrado["marcador"] or (f"{g_loc} - {g_vis}" if g_loc is not None else None)
-                
-                res_pick = evaluar_pick(
-                    alerta.get("sel"), alerta["mercado"], alerta.get("tipo_mercado", ""), g_loc, g_vis,
-                    partido_encontrado.get("ht_local"), partido_encontrado.get("ht_visitante"),
-                    nombre_local=partido_encontrado["local"], nombre_visitante=partido_encontrado["visitante"],
-                    equipo_pronosticado=alerta.get("equipo_pronosticado")
-                )
-                if res_pick is None:
-                    continue   # falta algún dato (p. ej. el marcador del descanso): se reintenta en el siguiente ciclo
-                alerta["finalizado"] = True
-                alerta["marcador_final"] = marcador_fin
-                alerta["goles_local"] = g_loc
-                alerta["goles_visitante"] = g_vis
-                es_push = (res_pick == "PUSH")
-                acertado = None if es_push else bool(res_pick)
-                alerta["acertado"] = acertado
-                alerta["push"] = es_push
-
-                if not alerta.get("liquidada_telegram"):
-                    nombre_partido_display = p_nombre or f"{partido_encontrado['local']} vs {partido_encontrado['visitante']}"
-                    if es_push:
-                        msg_settle = (
-                            f"⚽ <b>{nombre_partido_display}</b>\n"
-                            f"📌 <b>Pronóstico:</b> {alerta['mercado']}\n"
-                            f"↩️ <b>Resultado:</b> DEVUELTA (push)\n"
-                            f"🏁 <b>Marcador Final:</b> {marcador_fin or 'Final'}\n\n"
-                            f"⚡ <i>Apex Quant Engine</i>"
-                        )
-                    elif acertado:
-                        msg_settle = (
-                            f"⚽ <b>{nombre_partido_display}</b>\n"
-                            f"📌 <b>Pronóstico:</b> {alerta['mercado']}\n"
-                            f"✅ <b>Resultado:</b> ACERTADO\n"
-                            f"🏁 <b>Marcador Final:</b> {marcador_fin or 'Final'}\n"
-                            f"💰 <b>Cuota Cobrada:</b> {alerta['cuota']}\n"
-                            f"💡 <b>Stake:</b> {alerta['stake']}\n\n"
-                            f"🎉 <i>¡Verificado y sumado a la Efectividad Oficial en la App!</i>\n"
-                            f"⚡ <i>Apex Quant Engine</i>"
-                        )
-                    else:
-                        msg_settle = (
-                            f"⚽ <b>{nombre_partido_display}</b>\n"
-                            f"📌 <b>Pronóstico:</b> {alerta['mercado']}\n"
-                            f"❌ <b>Resultado:</b> PERDIDO\n"
-                            f"🏁 <b>Resultado Final:</b> {marcador_fin or 'Final'}\n"
-                            f"💡 <b>Stake:</b> {alerta['stake']} (Control estricto de banca)\n\n"
-                            f"⚡ <i>Apex Quant Engine • Disciplina a Largo Plazo</i>"
-                        )
-                    enviar_telegram(msg_settle, url_accion=APP_URL, texto_boton="📱 Ver en la Web App")
-                    alerta["liquidada_telegram"] = True
-
-    # RESUMEN DOMINICAL
-    if dia_semana == 6 and hora_int >= 22 and resumen_semanal_enviado != semana_actual_id:
-        partidos_domingo = [p for p in partidos_para_web if p["fecha"] == hoy_madrid_str]
-        partidos_pendientes_domingo = [p for p in partidos_domingo if p["estado"] != "FINISHED"]
-        
-        if len(partidos_pendientes_domingo) == 0 or (hora_int == 23 and ahora_madrid.minute >= 45):
-            alertas_semana_actual = [a for a in alertas_acumuladas if a.get("semana_id") == semana_actual_id and a.get("finalizado")]
-            resumen_fin = calcular_resumen_financiero(alertas_semana_actual)
-            total_semana = resumen_fin["finalizadas"]
-            
-            if total_semana > 0:
-                aciertos_semana = resumen_fin["acertadas"]
-                fallos_semana = resumen_fin["falladas"]
-                pct_acierto = round((aciertos_semana / total_semana) * 100, 1)
-                signo_u = "+" if resumen_fin["unidades_netas"] >= 0 else ""
-
-                msg_resumen_domingo = (
-                    f"📊 <b>CIERRE SEMANAL OFICIAL — APEX QUANT ANALYTICS</b> 🏆\n\n"
-                    f"📅 <b>Semana:</b> {semana_actual_id} (Finalizada)\n"
-                    f"📈 <b>Total Pronósticos Oficiales:</b> <b>{total_semana}</b>\n\n"
-                    f"✅ <b>Alertas Acertadas:</b> <b>{aciertos_semana}</b> ({pct_acierto}%)\n"
-                    f"❌ <b>Alertas Falladas:</b> <b>{fallos_semana}</b>\n"
-                    f"🎯 <b>Efectividad Oficial:</b> <b>{pct_acierto}%</b>\n\n"
-                    f"💰 <b>Rendimiento Neto:</b> <b>{signo_u}{resumen_fin['unidades_netas']} Unidades</b>\n"
-                    f"📈 <b>Yield / ROI Semanal:</b> <b>{signo_u}{resumen_fin['roi_pct']}%</b>\n\n"
-                    f"🔄 <i>Las estadísticas y partidos se reiniciarán automáticamente a las 00:00 del lunes para la nueva semana.</i>\n"
-                    f"⚡ <i>Apex Quant Engine • Máxima Transparencia y Disciplina</i>"
-                )
-                enviar_telegram(msg_resumen_domingo, url_accion=APP_URL, texto_boton="📱 Abrir Balance Completo en la App")
-                resumen_semanal_enviado = semana_actual_id
-
-    # RESUMEN MENSUAL
-    dia_manana_madrid = ahora_madrid + timedelta(days=1)
-    es_ultimo_dia_mes = (dia_manana_madrid.month != ahora_madrid.month)
-
-    if es_ultimo_dia_mes and hora_int >= 22 and resumen_mensual_enviado != mes_actual_id:
-        partidos_hoy_mes = [p for p in partidos_para_web if p["fecha"] == hoy_madrid_str]
-        partidos_pendientes_mes = [p for p in partidos_hoy_mes if p["estado"] != "FINISHED"]
-
-        if len(partidos_pendientes_mes) == 0 or (hora_int == 23 and ahora_madrid.minute >= 45):
-            alertas_mes_totales = []
-            archivo_hist = "historico_mensual.json"
-            if os.path.exists(archivo_hist):
-                try:
-                    with open(archivo_hist, "r", encoding="utf-8") as f:
-                        hist_data = json.load(f)
-                        alertas_mes_totales.extend(hist_data.get(mes_actual_id, []))
-                except Exception as e:
-                    pass
-
-            ids_ya_contadas = {a.get("id_alerta") for a in alertas_mes_totales}
-            for a in alertas_acumuladas:
-                f_a = a.get("fecha", "")
-                if f_a.startswith(mes_actual_id) and a.get("finalizado") and a.get("id_alerta") not in ids_ya_contadas:
-                    alertas_mes_totales.append(a)
-                    ids_ya_contadas.add(a.get("id_alerta"))
-
-            resumen_mes_fin = calcular_resumen_financiero(alertas_mes_totales)
-            total_mes = resumen_mes_fin["finalizadas"]
-
-            if total_mes > 0:
-                aciertos_mes = resumen_mes_fin["acertadas"]
-                fallos_mes = resumen_mes_fin["falladas"]
-                pct_acierto_mes = round((aciertos_mes / total_mes) * 100, 1)
-                signo_u_mes = "+" if resumen_mes_fin["unidades_netas"] >= 0 else ""
-                signo_roi_mes = "+" if resumen_mes_fin["roi_pct"] >= 0 else ""
-
-                semanas_map = {}
-                for a in alertas_mes_totales:
-                    sem_key = a.get("semana_id") or "S/D"
-                    if sem_key not in semanas_map:
-                        semanas_map[sem_key] = []
-                    semanas_map[sem_key].append(a)
-
-                lineas_semanas = []
-                for idx_sem, (sem_k, sem_alertas) in enumerate(sorted(semanas_map.items()), 1):
-                    res_sem = calcular_resumen_financiero(sem_alertas)
-                    signo_sem_u = "+" if res_sem["unidades_netas"] >= 0 else ""
-                    signo_sem_roi = "+" if res_sem["roi_pct"] >= 0 else ""
-                    lineas_semanas.append(
-                        f"▫️ <b>Semana {idx_sem} ({sem_k}):</b> {signo_sem_u}{res_sem['unidades_netas']} U. (ROI {signo_sem_roi}{res_sem['roi_pct']}%)"
-                    )
-
-                bloque_semanas_str = "\n".join(lineas_semanas) if lineas_semanas else "▫️ Registro semanal consolidado"
-                nombres_meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
-                nombre_mes_str = nombres_meses[ahora_madrid.month - 1]
-                año_str = ahora_madrid.strftime('%Y')
-
-                msg_resumen_mensual = (
-                    f"🏆 <b>CIERRE MENSUAL OFICIAL — APEX QUANT ANALYTICS</b> 📊\n\n"
-                    f"📅 <b>Mes:</b> <b>{nombre_mes_str} {año_str}</b> (Finalizado)\n"
-                    f"📈 <b>Total Pronósticos Oficiales:</b> <b>{total_mes}</b>\n\n"
-                    f"✅ <b>Alertas Acertadas:</b> <b>{aciertos_mes}</b> ({pct_acierto_mes}%)\n"
-                    f"❌ <b>Alertas Falladas:</b> <b>{fallos_mes}</b>\n"
-                    f"🎯 <b>Efectividad Mensual:</b> <b>{pct_acierto_mes}%</b>\n\n"
-                    f"💰 <b>Rendimiento Neto:</b> <b>{signo_u_mes}{resumen_mes_fin['unidades_netas']} Unidades</b>\n"
-                    f"📈 <b>Yield / ROI Mensual:</b> <b>{signo_roi_mes}{resumen_mes_fin['roi_pct']}%</b>\n\n"
-                    f"📊 <b>EVOLUCIÓN SEMANA A SEMANA:</b>\n"
-                    f"{bloque_semanas_str}\n\n"
-                    f"⚡ <i>Apex Quant Engine • Transparencia, Disciplina y Consistencia</i>"
-                )
-                enviar_telegram(msg_resumen_mensual, url_accion=APP_URL, texto_boton="📱 Abrir Balance Completo en la App")
-                resumen_mensual_enviado = mes_actual_id
-
-    alertas_semana_act = [a for a in alertas_acumuladas if a.get("semana_id") == semana_actual_id]
-    metricas_semana = calcular_resumen_financiero(alertas_semana_act)
-
-    # FUSIÓN DE PARTIDOS
-    partidos_guardar = list(partidos_para_web)
-    ids_guardados = {p["id"] for p in partidos_guardar}
-
-    for prev_p in partidos_previos:
-        p_id = prev_p.get("id")
-        p_fecha = prev_p.get("fecha", "")
-        if p_id not in ids_guardados:
-            if p_fecha >= lunes_semana_str:
-                partidos_guardar.append(prev_p)
-                ids_guardados.add(p_id)
-
-    datos_completos = {
-        "ultima_actualizacion": hora_madrid_str,
-        "ultima_actualizacion_utc": ahora_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "huso_horario": "Europe/Madrid",
-        "semana_activa": semana_guardada,
-        "lunes_semana": lunes_semana_str,
-        "domingo_semana": domingo_semana_str,
-        "resumen_semanal_enviado_para": resumen_semanal_enviado,
-        "resumen_mensual_enviado_para": resumen_mensual_enviado,
-        "metricas_semana": metricas_semana,
-        "total_partidos_hoy": len(partidos_guardar),
-        "partidos": partidos_guardar,
-        "creditos_odds_restantes": ODDS_ESTADO["restantes"],
-        "api_cuotas_estado": estado_api_cuotas,
-        "diagnostico": {"perfil_mercados": ODDS_ESTADO.get("perfil"), "partidos_api": partidos_api_n, "atascados": diag_refresco["atascados"],
-                        "ausentes": diag_refresco["ausentes"], "refrescados": diag_refresco["refrescados"]},
-        "alertas": alertas_acumuladas[-70:]
-    }
-
-    actualizar_ledger(alertas_acumuladas, partidos_guardar)
-
-    with open("datos.json", "w", encoding="utf-8") as f:
-        json.dump(datos_completos, f, ensure_ascii=False, indent=2)
-
-    total_fin = sum(1 for p in partidos_guardar if p.get("estado") == "FINISHED")
-    print(f"💳 The Odds API: {ODDS_ESTADO['consultas']} consultas de cuotas en este ciclo | créditos restantes: {ODDS_ESTADO['restantes']}")
-    print(f"📁 datos.json guardado. Partidos semana: {len(partidos_guardar)} (Finalizados: {total_fin}) | Alertas: {len(alertas_acumuladas)} | Semana: {semana_guardada}")
-
-if __name__ == "__main__":
-    ejecutar_ciclo()
+    # 
