@@ -927,15 +927,19 @@ def _minutos_desde_inicio(utc_str, ahora_utc):
         return None
 
 
-def refrescar_partidos_atascados(partidos_raw, partidos_previos, ahora_utc):
+def refrescar_partidos_atascados(partidos_raw, partidos_previos, ahora_utc, alertas=None):
     """Los listados por fecha de la API gratuita a veces tardan horas en actualizar resultados o dejan de
-    devolver algún partido. Para los partidos que llevan más de 135 min sin cerrarse, o que han desaparecido
-    del listado, se consulta la ficha individual (/matches/{id}) y se sustituye el dato antiguo.
+    devolver algún partido. Se consulta la ficha individual (/matches/{id}) de:
+      - partidos de nuestras ligas que llevan más de 135 min sin cerrarse,
+      - partidos guardados que han desaparecido del listado,
+      - partidos de alertas (o patas de combinadas) todavía sin liquidar que ya no aparecen (p. ej. semana anterior).
     Devuelve un diccionario con contadores de diagnóstico."""
-    diag = {"atascados": 0, "ausentes": 0, "refrescados": 0}
+    diag = {"atascados": 0, "ausentes": 0, "alertas": 0, "refrescados": 0}
     presentes = {m.get("id"): m for m in partidos_raw if m.get("id")}
-    candidatos = []   # (minutos desde el inicio, id)
+    candidatos = []   # (prioridad/minutos, id)
     for m in partidos_raw:
+        if (m.get("competition") or {}).get("code") not in LEAGUES_MAP:
+            continue   # competiciones que no analizamos (p. ej. el listado de partidos en vivo de otras ligas)
         if m.get("status") in ESTADOS_CERRADOS:
             continue
         mins = _minutos_desde_inicio(m.get("utcDate"), ahora_utc)
@@ -950,6 +954,20 @@ def refrescar_partidos_atascados(partidos_raw, partidos_previos, ahora_utc):
         if mins is not None and mins > 135:
             candidatos.append((mins, pid))
             diag["ausentes"] += 1
+    ya = {c[1] for c in candidatos}
+    for a in (alertas or []):
+        if a.get("finalizado"):
+            continue
+        ids = [l.get("id") for l in a.get("legs", [])] if a.get("es_combinada") else [a.get("id_partido")]
+        for raw_id in ids:
+            try:
+                pid = int(raw_id)
+            except Exception:
+                continue
+            if pid not in presentes and pid not in ya:
+                candidatos.append((10 ** 6, pid))   # prioridad máxima: hay una apuesta pendiente de liquidar
+                ya.add(pid)
+                diag["alertas"] += 1
     candidatos.sort(reverse=True)
     headers = {"X-Auth-Token": FOOTBALL_DATA_TOKEN}
     for mins, pid in candidatos[:MAX_REFRESCOS_ID]:
@@ -962,6 +980,8 @@ def refrescar_partidos_atascados(partidos_raw, partidos_previos, ahora_utc):
             m = data if data.get("homeTeam") else (data.get("match") or {})
             if not m.get("homeTeam") or not m.get("id"):
                 continue
+            if (m.get("competition") or {}).get("code") not in LEAGUES_MAP:
+                m.setdefault("competition", {})["code"] = "PL"   # solo para que entre en el circuito de liquidación
             partidos_raw[:] = [x for x in partidos_raw if x.get("id") != m["id"]]
             partidos_raw.append(m)
             diag["refrescados"] += 1
@@ -999,7 +1019,7 @@ def obtener_partidos_completos(lunes_semana_str, domingo_semana_str):
 
     matches_dict = {}
 
-    lista_semana_hasta_hoy = obtener_partidos_por_rango(lunes_semana_str, date_hoy)
+    lista_semana_hasta_hoy = obtener_partidos_por_rango(min(lunes_semana_str, date_hoy), date_hoy)
     for m in lista_semana_hasta_hoy:
         m_id = m.get("id")
         if m_id:
@@ -1513,9 +1533,9 @@ def ejecutar_ciclo():
     # OBTENCIÓN DE PARTIDOS (DESDE EL LUNES DE LA SEMANA HASTA DÍAS FUTUROS)
     partidos_raw = obtener_partidos_completos(lunes_semana_str, domingo_semana_str)
     partidos_api_n = len(partidos_raw)
-    diag_refresco = refrescar_partidos_atascados(partidos_raw, partidos_previos, ahora_utc)
+    diag_refresco = refrescar_partidos_atascados(partidos_raw, partidos_previos, ahora_utc, alertas_acumuladas)
     print(f"🩺 Diagnóstico partidos: API={partidos_api_n} | atascados={diag_refresco['atascados']} | "
-          f"ausentes={diag_refresco['ausentes']} | refrescados por ficha={diag_refresco['refrescados']}")
+          f"ausentes={diag_refresco['ausentes']} | alertas pendientes={diag_refresco['alertas']} | refrescados por ficha={diag_refresco['refrescados']}")
 
     partidos_para_web = []
     partidos_map_por_id = {}
@@ -1654,6 +1674,8 @@ def ejecutar_ciclo():
         partidos_map_por_nombres[partido_nombre] = info_partido_actual
         key_norm = f"{normalizar_texto(nombre_local)} vs {normalizar_texto(nombre_visitante)}"
         partidos_map_por_nombres[key_norm] = info_partido_actual
+        if fecha_madrid_partido < lunes_semana_str:
+            continue   # partido de la semana anterior: no se muestra, pero sí liquida alertas pendientes
 
         form_info = construir_form_info(formas_equipos.get("e", {}), home_team_data.get("id"), away_team_data.get("id"))
         prev = partidos_previos_map.get(str(p.get("id")))
@@ -2047,7 +2069,8 @@ def ejecutar_ciclo():
         "creditos_dia": ODDS_ESTADO.get("dia"),
         "formas_equipos": formas_equipos,
         "diagnostico": {"perfil_mercados": ODDS_ESTADO.get("perfil"), "presupuesto_dia": (round(ODDS_ESTADO["presupuesto_dia"], 1) if ODDS_ESTADO.get("presupuesto_dia") else None), "partidos_api": partidos_api_n, "atascados": diag_refresco["atascados"],
-                        "ausentes": diag_refresco["ausentes"], "refrescados": diag_refresco["refrescados"]},
+                        "ausentes": diag_refresco["ausentes"], "alertas_pendientes": diag_refresco["alertas"],
+                        "refrescados": diag_refresco["refrescados"]},
         "alertas": alertas_acumuladas[-70:]
     }
 
