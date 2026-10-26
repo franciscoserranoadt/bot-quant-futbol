@@ -10,32 +10,10 @@
   <link rel="apple-touch-icon" href="icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Plus Jakarta Sans', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          },
-          colors: {
-            brand: {
-              primary: '#00f59b',
-              surface: '#0c1322',
-              card: '#141b2b',
-              border: '#1f293d',
-              highlight: '#00d2ff'
-            }
-          }
-        }
-      }
-    }
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"></noscript>
   <style>
     body {
       background-color: #070e1d;
@@ -47,7 +25,10 @@
     .custom-scroll { -ms-overflow-style: none; scrollbar-width: none; }
 
     /* ---------- SPLASH ANIMADO ---------- */
-    #splash { background: radial-gradient(circle at 50% 42%, #0c1a2e 0%, #070e1d 70%); transition: opacity .55s ease; }
+    #splash { position: fixed; inset: 0; z-index: 70; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 42%, #0c1a2e 0%, #070e1d 70%); transition: opacity .55s ease; }
+    #splash .sp-svg { width: 11rem; height: 11rem; overflow: visible; }
+    #splash .sp-title { margin-top: 1rem; color: #fff; font-weight: 800; font-size: 1.125rem; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
+    #splash .sp-bar { margin-top: 1.25rem; width: 7rem; height: .25rem; border-radius: 9999px; background: #1e293b; overflow: hidden; }
     #splash .sp-ring { fill: none; stroke: #00f59b; stroke-opacity: .28; stroke-width: 3; stroke-dasharray: 540; stroke-dashoffset: 540; animation: spDraw 1.2s ease-out forwards; }
     #splash .sp-orbit { transform-origin: 100px 100px; animation: spSpin 2.6s linear infinite; }
     #splash .sp-tri { fill: none; stroke: url(#gSplash); stroke-width: 9; stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 320; stroke-dashoffset: 320; animation: spDraw 1.05s .3s ease-out forwards; }
@@ -68,8 +49,8 @@
 <body class="min-h-screen pb-16 antialiased selection:bg-brand-primary/20 selection:text-brand-primary">
 
   <!-- SPLASH ANIMADO -->
-  <div id="splash" class="fixed inset-0 z-[70] flex flex-col items-center justify-center">
-    <svg viewBox="0 0 200 200" class="w-44 h-44 overflow-visible">
+  <div id="splash">
+    <svg viewBox="0 0 200 200" class="sp-svg">
       <defs>
         <linearGradient id="gSplash" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00f59b"/><stop offset="1" stop-color="#00d2ff"/></linearGradient>
         <radialGradient id="gGlow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#00f59b" stop-opacity=".35"/><stop offset="1" stop-color="#00f59b" stop-opacity="0"/></radialGradient>
@@ -80,8 +61,8 @@
       <path class="sp-tri" d="M62 132 L100 58 L138 132 Z"/>
       <circle class="sp-dot" cx="100" cy="108" r="9"/>
     </svg>
-    <div class="sp-title mt-4 text-white font-extrabold text-lg tracking-widest">APEX QUANT</div>
-    <div class="sp-bar mt-5 w-28 h-1 rounded-full bg-slate-800 overflow-hidden"><span></span></div>
+    <div class="sp-title">APEX QUANT</div>
+    <div class="sp-bar"><span></span></div>
   </div>
 
   <div class="max-w-md mx-auto px-4 py-4 space-y-4">
@@ -100,7 +81,7 @@
               <span id="badgeTxt">24/7 ONLINE</span>
             </span>
           </h1>
-          <p id="verTxt" class="text-[9px] font-mono text-slate-500 leading-tight">Web v5.3 · Bot --</p>
+          <p id="verTxt" class="text-[9px] font-mono text-slate-500 leading-tight">Web v5.4 · Bot --</p>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -383,6 +364,30 @@
       <div id="histContenido" class="space-y-3"></div>
     </div>
   </div>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              primary: '#00f59b',
+              surface: '#0c1322',
+              card: '#141b2b',
+              border: '#1f293d',
+              highlight: '#00d2ff'
+            }
+          }
+        }
+      }
+    }
+  </script>
 
   <script>
     let state = {
@@ -719,7 +724,7 @@
     // =========================================================================
     // ESTADO DEL BOT (frescura de datos, API de cuotas, créditos)
     // =========================================================================
-    const VERSION_WEB = '5.3';
+    const VERSION_WEB = '5.4';
     function actualizarVersion() {
       const el = document.getElementById('verTxt');
       if (!el) return;
@@ -1228,8 +1233,12 @@
         sp.style.opacity = '0';
         setTimeout(() => sp.remove(), 600);
       };
-      setTimeout(ocultarSplash, 4500);
-      cargarDatos().finally(() => setTimeout(ocultarSplash, Math.max(0, 2000 - (Date.now() - t0))));
+      const esperarEstilos = (fn, ini = Date.now()) => {
+        if (typeof tailwind !== 'undefined' || Date.now() - ini > 3000) return fn();
+        setTimeout(() => esperarEstilos(fn, ini), 100);
+      };
+      setTimeout(ocultarSplash, 5000);
+      cargarDatos().finally(() => setTimeout(() => esperarEstilos(ocultarSplash), Math.max(0, 2000 - (Date.now() - t0))));
 
       const tabHoy = document.getElementById('tabHoy');
       const tabFin = document.getElementById('tabFinalizados');

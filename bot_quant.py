@@ -10,7 +10,7 @@ import difflib
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 
-VERSION = "5.3"
+VERSION = "5.4"
 
 # ==============================================================================
 # CONFIGURACIÓN DE APIS Y TELEGRAM (CANAL OFICIAL)
@@ -1384,7 +1384,7 @@ def actualizar_ledger(alertas, partidos):
         pid = str(a.get("id_alerta")) if es_combi else f"TG_{a.get('id_alerta')}"
         if pid in ids:
             continue
-        picks.append({"id": pid, "grupo": "COMBI" if es_combi else "TG", "fecha": a.get("fecha"), "mes": (a.get("fecha") or "")[:7],
+        picks.append({"id": pid, "version": VERSION, "grupo": "COMBI" if es_combi else "TG", "fecha": a.get("fecha"), "mes": (a.get("fecha") or "")[:7],
                       "semana_id": a.get("semana_id"), "partido": a.get("partido"), "mercado": a.get("mercado"),
                       "casa": a.get("casa"), "cuota": _a_float(a.get("cuota"), 2.0), "stake": _a_float(a.get("stake"), 1.0),
                       "ev": _a_float(a.get("ev"), 0.0), "confirmado_stats": a.get("confirmado_stats"),
@@ -1399,7 +1399,7 @@ def actualizar_ledger(alertas, partidos):
         pid = f"CTRL_{p.get('id')}_{p.get('tipo_mercado')}"
         if pid in ids:
             continue
-        picks.append({"id": pid, "grupo": "CONTROL", "fecha": p.get("fecha"), "mes": (p.get("fecha") or "")[:7],
+        picks.append({"id": pid, "version": VERSION, "grupo": "CONTROL", "fecha": p.get("fecha"), "mes": (p.get("fecha") or "")[:7],
                       "semana_id": p.get("semana_id"), "partido": f"{p.get('local')} vs {p.get('visitante')}",
                       "mercado": p.get("mercado"), "casa": p.get("casa"), "cuota": _a_float(p.get("cuota"), 2.0),
                       "stake": _a_float(p.get("stake"), 1.0), "ev": _a_float(p.get("ev_numero"), 0.0),
