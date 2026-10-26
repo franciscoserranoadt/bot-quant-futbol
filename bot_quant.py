@@ -10,6 +10,8 @@ import difflib
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 
+VERSION = "5.3"
+
 # ==============================================================================
 # CONFIGURACIÓN DE APIS Y TELEGRAM (CANAL OFICIAL)
 # ==============================================================================
@@ -1495,7 +1497,7 @@ def ejecutar_ciclo():
 
     lunes_semana_str, domingo_semana_str = obtener_fechas_limite_semana(ahora_madrid)
 
-    print(f"[{hora_madrid_str}] Iniciando ciclo Apex Quant Pro v3.8 (cuotas reales) (Semana {semana_actual_id}: {lunes_semana_str} al {domingo_semana_str})...")
+    print(f"[{hora_madrid_str}] Iniciando ciclo Apex Quant Pro v{VERSION} (cuotas reales) (Semana {semana_actual_id}: {lunes_semana_str} al {domingo_semana_str})...")
 
     # Comprobación de la clave de The Odds API (el endpoint /sports no consume créditos) y lectura de créditos restantes
     estado_api_cuotas = "sin_clave"
@@ -2053,6 +2055,7 @@ def ejecutar_ciclo():
                 ids_guardados.add(p_id)
 
     datos_completos = {
+        "version_bot": VERSION,
         "ultima_actualizacion": hora_madrid_str,
         "ultima_actualizacion_utc": ahora_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "huso_horario": "Europe/Madrid",
