@@ -2,7 +2,8 @@ name: Apex Quant Bot 24/7
 
 on:
   schedule:
-    - cron: '*/30 * * * *'
+    # Cada 15 min, a destiempo (:07, :22, :37, :52): GitHub retrasa o se salta más las ejecuciones en :00 y :30
+    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
 
 permissions:
