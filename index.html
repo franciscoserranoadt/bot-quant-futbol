@@ -81,7 +81,7 @@
               <span id="badgeTxt">24/7 ONLINE</span>
             </span>
           </h1>
-          <p id="verTxt" class="text-[9px] font-mono text-slate-500 leading-tight">Web v5.4 · Bot --</p>
+          <p id="verTxt" class="text-[9px] font-mono text-slate-500 leading-tight">Web v5.5 · Bot --</p>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -724,7 +724,7 @@
     // =========================================================================
     // ESTADO DEL BOT (frescura de datos, API de cuotas, créditos)
     // =========================================================================
-    const VERSION_WEB = '5.4';
+    const VERSION_WEB = '5.5';
     function actualizarVersion() {
       const el = document.getElementById('verTxt');
       if (!el) return;
@@ -780,6 +780,24 @@
     // =========================================================================
     const MESES_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
+    function etiquetaSemana(semanaId) {
+      const m = /^(\d{4})-W(\d{2})$/.exec(semanaId || '');
+      if (!m) return 'Sin semana';
+      const anio = parseInt(m[1], 10), sem = parseInt(m[2], 10);
+      const ene4 = new Date(Date.UTC(anio, 0, 4));
+      const dow = ene4.getUTCDay() || 7;
+      const lunes = new Date(ene4.getTime() + ((sem - 1) * 7 - (dow - 1)) * 86400000);
+      const domingo = new Date(lunes.getTime() + 6 * 86400000);
+      const f = (d) => `${d.getUTCDate()} ${MESES_ES[d.getUTCMonth()].toLowerCase()}`;
+      return `S${sem} · ${f(lunes)}–${f(domingo)}`;
+    }
+
+    function toggleMes(clave) {
+      document.querySelectorAll('.sem-' + clave).forEach(f => f.classList.toggle('hidden'));
+      const ch = document.getElementById('chev-' + clave);
+      if (ch) ch.innerText = (ch.innerText === '▸') ? '▾' : '▸';
+    }
+
     function resumenPicks(picks) {
       let n = 0, w = 0, stake = 0, net = 0;
       picks.forEach(p => {
@@ -834,18 +852,35 @@
       const rango = (max - min) || 1;
       const ceroY = (36 - ((0 - min) / rango) * 32).toFixed(1);
 
+      // Agrupación por mes y, dentro de cada mes, por semana
+      const vacio = () => ({ TG: [], CONTROL: [], COMBI: [] });
       const meses = {};
-      picks.forEach(p => { const m = p.mes || 'S/D'; (meses[m] = meses[m] || { TG: [], CONTROL: [], COMBI: [] })[p.grupo].push(p); });
+      picks.forEach(p => {
+        const m = p.mes || 'S/D';
+        const s = p.semana_id || 'S/D';
+        const mesObj = (meses[m] = meses[m] || { total: vacio(), semanas: {} });
+        mesObj.total[p.grupo].push(p);
+        (mesObj.semanas[s] = mesObj.semanas[s] || vacio())[p.grupo].push(p);
+      });
+      const celdas = (g, claseExtra) => {
+        const a = resumenPicks(g.TG), b = resumenPicks(g.CONTROL), c = resumenPicks(g.COMBI);
+        const cel = (r) => `<td class="${claseExtra} text-right ${colorNum(r.net)}">${r.n ? fmtU(r.net) : '--'}<span class="text-slate-500"> (${r.n})</span></td>`;
+        return cel(a) + cel(b) + (cb.length ? cel(c) : '');
+      };
       const filas = Object.keys(meses).sort().reverse().map(m => {
-        const a = resumenPicks(meses[m].TG), b = resumenPicks(meses[m].CONTROL), c = resumenPicks(meses[m].COMBI);
         const [y, mm] = m.split('-');
         const nombre = mm ? `${MESES_ES[parseInt(mm, 10) - 1] || mm} ${y}` : m;
-        return `<tr class="border-t border-slate-800/80">
-          <td class="py-1.5 pr-2 text-slate-300 whitespace-nowrap">${nombre}</td>
-          <td class="py-1.5 text-right ${colorNum(a.net)}">${a.n ? fmtU(a.net) : '--'}<span class="text-slate-500"> (${a.n})</span></td>
-          <td class="py-1.5 text-right ${colorNum(b.net)}">${b.n ? fmtU(b.net) : '--'}<span class="text-slate-500"> (${b.n})</span></td>
-          ${cb.length ? `<td class="py-1.5 text-right ${colorNum(c.net)}">${c.n ? fmtU(c.net) : '--'}<span class="text-slate-500"> (${c.n})</span></td>` : ''}
+        const clave = m.replace(/[^0-9A-Za-z-]/g, '_');
+        const semanas = Object.keys(meses[m].semanas).sort().reverse();
+        const filaMes = `<tr class="border-t border-slate-800/80 cursor-pointer active:bg-slate-800/40" onclick="toggleMes('${clave}')">
+          <td class="py-1.5 pr-2 text-slate-300 whitespace-nowrap"><span id="chev-${clave}" class="inline-block w-3 text-brand-primary">▸</span>${nombre}<span class="text-slate-500 text-[9px]"> · ${semanas.length} sem.</span></td>
+          ${celdas(meses[m].total, 'py-1.5')}
         </tr>`;
+        const filasSem = semanas.map(s => `<tr class="sem-${clave} hidden bg-slate-900/50">
+          <td class="py-1 pl-4 pr-2 text-[10px] text-slate-400 whitespace-nowrap">${etiquetaSemana(s)}</td>
+          ${celdas(meses[m].semanas[s], 'py-1 text-[10px]')}
+        </tr>`).join('');
+        return filaMes + filasSem;
       }).join('');
 
       const aviso = (rTG.n + rCT.n + rCB.n) < 50
@@ -872,7 +907,7 @@
           </div>
         </div>
         <div class="p-3 rounded-2xl bg-brand-card border border-brand-border">
-          <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 block mb-1.5">Por mes (unidades y nº de picks)</span>
+          <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 block mb-1.5">Por mes · toca un mes para ver sus semanas</span>
           <table class="w-full text-[11px] font-mono">
             <thead><tr class="text-[9px] uppercase text-slate-500"><th class="text-left font-bold">Mes</th><th class="text-right font-bold">Telegram</th><th class="text-right font-bold">Control</th>${cb.length ? '<th class="text-right font-bold">Combi</th>' : ''}</tr></thead>
             <tbody>${filas}</tbody>

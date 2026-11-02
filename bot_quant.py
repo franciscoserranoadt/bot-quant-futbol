@@ -10,7 +10,7 @@ import difflib
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 
-VERSION = "5.4"
+VERSION = "5.5"
 
 # ==============================================================================
 # CONFIGURACIÓN DE APIS Y TELEGRAM (CANAL OFICIAL)
