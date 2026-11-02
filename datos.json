@@ -1,7 +1,7 @@
 {
   "version_bot": "5.4",
-  "ultima_actualizacion": "08:01",
-  "ultima_actualizacion_utc": "2026-11-02T07:01:06Z",
+  "ultima_actualizacion": "08:15",
+  "ultima_actualizacion_utc": "2026-11-02T07:15:35Z",
   "huso_horario": "Europe/Madrid",
   "semana_activa": "2026-W45",
   "lunes_semana": "2026-11-02",
@@ -1908,7 +1908,7 @@
   "diagnostico": {
     "perfil_mercados": null,
     "presupuesto_dia": 16.6,
-    "partidos_api": 55,
+    "partidos_api": 0,
     "atascados": 0,
     "ausentes": 0,
     "alertas_pendientes": 0,
