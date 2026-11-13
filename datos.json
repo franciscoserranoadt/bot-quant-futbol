@@ -1,7 +1,7 @@
 {
   "version_bot": "5.6",
-  "ultima_actualizacion": "23:45",
-  "ultima_actualizacion_utc": "2026-11-13T22:45:31Z",
+  "ultima_actualizacion": "00:00",
+  "ultima_actualizacion_utc": "2026-11-13T23:00:55Z",
   "huso_horario": "Europe/Madrid",
   "semana_activa": "2026-W46",
   "lunes_semana": "2026-11-09",
@@ -21,7 +21,7 @@
   "creditos_odds_restantes": 360.0,
   "api_cuotas_estado": "ok",
   "creditos_dia": {
-    "fecha": "2026-11-13",
+    "fecha": "2026-11-14",
     "restante_inicio": 360.0
   },
   "formas_equipos": {
@@ -142,7 +142,7 @@
   },
   "diagnostico": {
     "perfil_mercados": null,
-    "presupuesto_dia": 20.0,
+    "presupuesto_dia": 21.2,
     "partidos_api": 2,
     "atascados": 0,
     "ausentes": 0,
