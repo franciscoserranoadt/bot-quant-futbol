@@ -1,7 +1,7 @@
 {
   "version_bot": "5.6",
-  "ultima_actualizacion": "13:00",
-  "ultima_actualizacion_utc": "2026-11-14T12:00:57Z",
+  "ultima_actualizacion": "13:15",
+  "ultima_actualizacion_utc": "2026-11-14T12:15:35Z",
   "huso_horario": "Europe/Madrid",
   "semana_activa": "2026-W46",
   "lunes_semana": "2026-11-09",
@@ -25,7 +25,7 @@
     "restante_inicio": 360.0
   },
   "formas_equipos": {
-    "t": "2026-11-14T10:45:31Z",
+    "t": "2026-11-14T12:15:35Z",
     "e": {
       "57": "D-W-W-W-W",
       "1076": "W-L-L-W-L",
